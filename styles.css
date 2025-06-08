@@ -1,0 +1,16 @@
+.pet-view-wrapper {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden; /* Allow for resizing */
+}
+
+.pet-view-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* Can crop but no distortion */
+	z-index: 0;
+}

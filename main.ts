@@ -6,7 +6,7 @@ export default class PetPlugin extends Plugin {
 
 	async onload(): Promise<void> {
     // Add instance of the view
-		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf));
+		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
 
     // Adds icon on the ribbon (side panel) to open view
 		this.addRibbonIcon("cat", "Create pet", () => {
