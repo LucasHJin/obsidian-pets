@@ -1,39 +1,57 @@
-// Note: Run npm run dev and keep it running in development
-	// cmd option i for developer tools
+import { Plugin, WorkspaceLeaf } from "obsidian";
+import { PetView, VIEW_TYPE_PET } from "petview";
 
-import { Plugin } from 'obsidian';
+export default class PetPlugin extends Plugin {
+	private isViewOpen = false; // Boolean for toggling the view open/close
 
-export default class ExamplePlugin extends Plugin {
-	statusBarTextElement: HTMLSpanElement;
+	async onload(): Promise<void> {
+    // Add instance of the view
+		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf));
 
-	private updateLineCount(fileContent?: string) {
-		const count = fileContent ? fileContent.split(/\r\n|\r|\n/).length : 0;
-		const linesWord = count === 1 ? "line" : "lines";
-		this.statusBarTextElement.textContent = `${count} ${linesWord}` 
+    // Adds icon on the ribbon (side panel) to open view
+		this.addRibbonIcon("cat", "Create pet", () => {
+			this.isViewOpen ? this.closeView() : this.createView();
+		});
 	}
 
-	private async enableLineCount() {
-		const file = this.app.workspace.getActiveFile();
-		if (file) {
-			const content = await this.app.vault.read(file);
-			this.updateLineCount(content);
+	async onunload(): Promise<void> {
+    // Close the view when unloading
+		await this.closeView();
+	}
+
+	// Create the pet leaf
+	async createView() {
+		const { workspace } = this.app;
+
+		let leaf: WorkspaceLeaf | null;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
+		// Check if leaf already exists (if not -> create it)
+		if (leaves.length > 0) {
+			leaf = leaves[0];
 		} else {
-			this.updateLineCount("0");
+			leaf = workspace.getLeftLeaf(true);
+			if (leaf) {
+				await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
+			}
 		}
+
+		// Show the leaf (view) to the user
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
+
+		this.isViewOpen = true;
 	}
 
-	onload(): Promise<void> | void {
-		this.statusBarTextElement = this.addStatusBarItem().createSpan();
-		this.enableLineCount();
+	// Remove the leaf (view) based on its ID
+	async closeView() {
+		const { workspace } = this.app;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
 
-		this.app.workspace.on('active-leaf-change', async () => {
-			this.enableLineCount();
-		});
+		for (const leaf of leaves) {
+			await leaf.detach();
+		}
 
-		this.app.workspace.on('editor-change', editor => {
-			const content = editor.getDoc().getValue();
-			this.updateLineCount(content);
-
-		});
+		this.isViewOpen = false;
 	}
 }

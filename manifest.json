@@ -1,9 +1,9 @@
 {
 	"id": "temp-obsidian",
-	"name": "Temp Obsidian Testing",
+	"name": "Obsidian Pets",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Learning how to use the Obsidian API.",
+	"description": "Adds cute pixel pets to Obsidian.",
 	"author": "Lucas J",
 	"authorUrl": "https://www.lucasjin.biz/",
 	"fundingUrl": "https://obsidian.md/pricing",
