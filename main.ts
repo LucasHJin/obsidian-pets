@@ -1,11 +1,12 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 
-// MAKE IT SAVE STATE OF TOGGLE OPEN CLOSE 
+// MAKE IT SAVE STATE OF TOGGLE OPEN CLOSE
+// Also make ability to select background just in the saved settings
 
 export default class PetPlugin extends Plugin {
 	private isViewOpen = false; // Boolean for toggling the view open/close
-	public selectedBackground = "snowbg-1.png";
+	public selectedBackground = "none";
 
 	async onload(): Promise<void> {
 		// Add instance of the view
@@ -23,7 +24,12 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Create background commands
-		const backgrounds = [
+		const BACKGROUNDS = [
+			{
+				id: "no-background",
+				name: "Set background to none.",
+				file: "none",
+			},
 			{
 				id: "snow-background-1",
 				name: "Set background to snowy background #1.",
@@ -35,18 +41,43 @@ export default class PetPlugin extends Plugin {
 				file: "snowbg-2.png",
 			},
 			{
-				id: "snow-background-3",
-				name: "Set background to snowy background #3.",
-				file: "snowbg-3.png",
+				id: "summer-background-1",
+				name: "Set background to summer background #1.",
+				file: "summerbg-1.png",
 			},
 			{
-				id: "snow-background-4",
-				name: "Set background to snowy background #4.",
-				file: "snowbg-4.png",
+				id: "summer-background-2",
+				name: "Set background to summer background #2.",
+				file: "summerbg-2.png",
+			},
+			{
+				id: "summer-background-3",
+				name: "Set background to summer background #3.",
+				file: "summerbg-3.png",
+			},
+			{
+				id: "temple-background-1",
+				name: "Set background to temple background #1.",
+				file: "templebg-1.png",
+			},
+			{
+				id: "temple-background-2",
+				name: "Set background to temple background #2.",
+				file: "templebg-2.png",
+			},
+			{
+				id: "castle-background-1",
+				name: "Set background to castle background #1.",
+				file: "castlebg-1.png",
+			},
+			{
+				id: "castle-background-2",
+				name: "Set background to castle background #2.",
+				file: "castlebg-2.png",
 			},
 		];
 
-		for (const bg of backgrounds) {
+		for (const bg of BACKGROUNDS) {
 			this.createBackgroundCommand(bg.id, bg.name, bg.file);
 		}
 	}

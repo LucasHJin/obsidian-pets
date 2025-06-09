@@ -41,25 +41,29 @@ export class PetView extends ItemView {
 		const wrapper = container.createDiv({ cls: "pet-view-wrapper" });
 
 		// Background for the view
-		const bg = wrapper.createEl("img", {
-			attr: {
-				src: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${this.plugin.selectedBackground}`
-				),
-				alt: "Background",
-			},
-			cls: "pet-view-background",
-		});
-
-		const bgAnimation = wrapper.createEl("img", {
-			attr: {
-				src: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/snow.gif`
-				),
-				alt: "Snow falling animation",
-			},
-			cls: "pet-view-background-animation",
-		});
+		if (this.plugin.selectedBackground !== "none") {
+			const bg = wrapper.createEl("img", {
+				attr: {
+					src: this.app.vault.adapter.getResourcePath(
+						`${this.plugin.manifest.dir}/assets/${this.plugin.selectedBackground}`
+					),
+					alt: "Background",
+				},
+				cls: "pet-view-background",
+			});
+		}
+		// Add snow falling gif for snow backgrounds
+		if (this.plugin.selectedBackground.includes("snow")) {
+			const bgAnimation = wrapper.createEl("img", {
+				attr: {
+					src: this.app.vault.adapter.getResourcePath(
+						`${this.plugin.manifest.dir}/assets/snow.gif`
+					),
+					alt: "Snow falling animation",
+				},
+				cls: "pet-view-background-animation",
+			});
+		}
 	}
 
 	// Used to clean up content after view is closed
