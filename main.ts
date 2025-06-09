@@ -1,20 +1,44 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 
-// MAKE IT SAVE STATE OF TOGGLE OPEN CLOSE
 // Also make ability to select background just in the saved settings
 
+// Define shape of saved plugin data
+interface PetPluginData {
+	isViewOpen: boolean; // Boolean for toggling the view open/close
+	selectedBackground: string;
+}
+
 export default class PetPlugin extends Plugin {
-	private isViewOpen = false; // Boolean for toggling the view open/close
-	public selectedBackground = "none";
+	private instanceData: PetPluginData = {
+		isViewOpen: false,
+		selectedBackground: "none",
+	};
 
 	async onload(): Promise<void> {
+		// Loads saved data and merges with current data
+		try {
+			const saved = await this.loadData();
+			if (saved) {
+				this.instanceData = Object.assign(this.instanceData, saved);
+			}
+		} catch (err) {
+			console.error("Failed to load pet plugin data:", err);
+		}
+
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
 
+		// Open again if open last session (wait until obsidian is ready first)
+		this.app.workspace.onLayoutReady(async () => {
+			if (this.instanceData.isViewOpen) {
+				await this.createView();
+			}
+		});
+
 		// Adds icon on the ribbon (side panel) to open view
 		const sideIcon = this.addRibbonIcon("cat", "Open pet view", () => {
-			if (this.isViewOpen) {
+			if (this.instanceData.isViewOpen) {
 				this.closeView();
 				sideIcon.setAttr("aria-label", "Open pet view");
 			} else {
@@ -82,12 +106,19 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
+	async onunload(): Promise<void> {
+		// Close the view when unloading
+		await this.closeView();
+	}
+
 	createBackgroundCommand(id: string, name: string, backgroundFile: string) {
 		this.addCommand({
 			id: id,
 			name: name,
-			callback: () => {
-				this.selectedBackground = backgroundFile;
+			callback: async () => {
+				// Persist background accross sessions
+				this.instanceData.selectedBackground = backgroundFile;
+				await this.saveData(this.instanceData);
 
 				const leaves =
 					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
@@ -101,9 +132,9 @@ export default class PetPlugin extends Plugin {
 		});
 	}
 
-	async onunload(): Promise<void> {
-		// Close the view when unloading
-		await this.closeView();
+	// Getter function to get background in petview.ts
+	public getSelectedBackground(): string {
+		return this.instanceData.selectedBackground;
 	}
 
 	// Create the pet leaf
@@ -127,7 +158,9 @@ export default class PetPlugin extends Plugin {
 			workspace.revealLeaf(leaf);
 		}
 
-		this.isViewOpen = true;
+		// Persist if view is open accross sessions
+		this.instanceData.isViewOpen = true;
+		await this.saveData(this.instanceData);
 	}
 
 	// Remove the leaf (view) based on its ID
@@ -139,6 +172,8 @@ export default class PetPlugin extends Plugin {
 			await leaf.detach();
 		}
 
-		this.isViewOpen = false;
+		// Persist if view is open accross sessions
+		this.instanceData.isViewOpen = false;
+		await this.saveData(this.instanceData);
 	}
 }

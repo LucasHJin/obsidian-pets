@@ -41,11 +41,11 @@ export class PetView extends ItemView {
 		const wrapper = container.createDiv({ cls: "pet-view-wrapper" });
 
 		// Background for the view
-		if (this.plugin.selectedBackground !== "none") {
+		if (this.plugin.getSelectedBackground() !== "none") {
 			const bg = wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
-						`${this.plugin.manifest.dir}/assets/${this.plugin.selectedBackground}`
+						`${this.plugin.manifest.dir}/assets/${this.plugin.getSelectedBackground()}`
 					),
 					alt: "Background",
 				},
@@ -53,7 +53,7 @@ export class PetView extends ItemView {
 			});
 		}
 		// Add snow falling gif for snow backgrounds
-		if (this.plugin.selectedBackground.includes("snow")) {
+		if (this.plugin.getSelectedBackground().includes("snow")) {
 			const bgAnimation = wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
