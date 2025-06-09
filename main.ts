@@ -47,7 +47,8 @@ export default class PetPlugin extends Plugin {
 		// Listen for if the view is closed manually and chnage the isViewOpen
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
-				const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+				const leaves =
+					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 				if (leaves.length === 0 && this.instanceData.isViewOpen) {
 					this.instanceData.isViewOpen = false;
 					this.saveData(this.instanceData);
@@ -107,7 +108,7 @@ export default class PetPlugin extends Plugin {
 		// If the view is not open yet -> open it
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		if (leaves.length === 0) {
-			await this.openView(); 
+			await this.openView();
 		}
 
 		// Update all open PetViews
