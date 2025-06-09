@@ -1,6 +1,9 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
-import { PetView, VIEW_TYPE_PET } from "petview";
+import { PetView, VIEW_TYPE_PET } from "petView";
 import { PetSettingTab } from "settings";
+import { SelectorModal, SelectorOption } from "selectorModal";
+
+// MAKE PLUGIN OPEN ON CHOOSING BACKGROUND
 
 // Define shape of saved plugin data
 interface PetPluginData {
@@ -45,63 +48,32 @@ export default class PetPlugin extends Plugin {
 			}
 		});
 
-		// Create background commands
-		const BACKGROUNDS = [
-			{
-				id: "no-background",
-				name: "Set background to none.",
-				file: "none",
-			},
-			{
-				id: "snow-background-1",
-				name: "Set background to snowy background #1.",
-				file: "snowbg-1.png",
-			},
-			{
-				id: "snow-background-2",
-				name: "Set background to snowy background #2.",
-				file: "snowbg-2.png",
-			},
-			{
-				id: "summer-background-1",
-				name: "Set background to summer background #1.",
-				file: "summerbg-1.png",
-			},
-			{
-				id: "summer-background-2",
-				name: "Set background to summer background #2.",
-				file: "summerbg-2.png",
-			},
-			{
-				id: "summer-background-3",
-				name: "Set background to summer background #3.",
-				file: "summerbg-3.png",
-			},
-			{
-				id: "temple-background-1",
-				name: "Set background to temple background #1.",
-				file: "templebg-1.png",
-			},
-			{
-				id: "temple-background-2",
-				name: "Set background to temple background #2.",
-				file: "templebg-2.png",
-			},
-			{
-				id: "castle-background-1",
-				name: "Set background to castle background #1.",
-				file: "castlebg-1.png",
-			},
-			{
-				id: "castle-background-2",
-				name: "Set background to castle background #2.",
-				file: "castlebg-2.png",
-			},
+		// Command to choose the background
+		const BACKGROUNDS: SelectorOption[] = [
+			{ value: "none", label: "None" },
+			{ value: "snowbg-1.png", label: "Snow #1" },
+			{ value: "snowbg-2.png", label: "Snow #2" },
+			{ value: "summerbg-1.png", label: "Summer #1" },
+			{ value: "summerbg-2.png", label: "Summer #2" },
+			{ value: "summerbg-3.png", label: "Summer #3" },
+			{ value: "templebg-1.png", label: "Temple #1" },
+			{ value: "templebg-2.png", label: "Temple #2" },
+			{ value: "castlebg-1.png", label: "Castle #1" },
+			{ value: "castlebg-2.png", label: "Castle #2" },
 		];
-
-		for (const bg of BACKGROUNDS) {
-			this.createBackgroundCommand(bg.id, bg.name, bg.file);
-		}
+		this.addCommand({
+			id: "choose-background-dropdown",
+			name: "Choose Pet View Background",
+			callback: () => {
+				new SelectorModal(
+					this.app,
+					BACKGROUNDS,
+					async (value: string) => {
+						await this.chooseBackground(value); // Pass chooseBackground() function to modal
+					}
+				).open();
+			},
+		});
 
 		this.addSettingTab(new PetSettingTab(this.app, this));
 	}
@@ -118,16 +90,6 @@ export default class PetPlugin extends Plugin {
 			DEFAULT_DATA,
 			await this.loadData()
 		);
-	}
-
-	createBackgroundCommand(id: string, name: string, backgroundFile: string) {
-		this.addCommand({
-			id: id,
-			name: name,
-			callback: async () => {
-				await this.chooseBackground(backgroundFile);
-			},
-		});
 	}
 
 	public async chooseBackground(backgroundFile: string): Promise<void> {

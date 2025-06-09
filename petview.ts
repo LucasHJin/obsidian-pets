@@ -42,7 +42,7 @@ export class PetView extends ItemView {
 
 		// Background for the view
 		if (this.plugin.getSelectedBackground() !== "none") {
-			const bg = wrapper.createEl("img", {
+			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
 						`${
@@ -56,7 +56,7 @@ export class PetView extends ItemView {
 		}
 		// Add snow falling gif for snow backgrounds
 		if (this.plugin.getSelectedBackground().includes("snow")) {
-			const bgAnimation = wrapper.createEl("img", {
+			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
 						`${this.plugin.manifest.dir}/assets/snow.gif`
