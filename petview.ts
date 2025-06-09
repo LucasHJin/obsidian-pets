@@ -45,7 +45,9 @@ export class PetView extends ItemView {
 			const bg = wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
-						`${this.plugin.manifest.dir}/assets/${this.plugin.getSelectedBackground()}`
+						`${
+							this.plugin.manifest.dir
+						}/assets/${this.plugin.getSelectedBackground()}`
 					),
 					alt: "Background",
 				},

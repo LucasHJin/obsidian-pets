@@ -1,7 +1,6 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
-
-// Also make ability to select background just in the saved settings
+import { PetSettingTab } from "settings";
 
 // Define shape of saved plugin data
 interface PetPluginData {
@@ -9,19 +8,18 @@ interface PetPluginData {
 	selectedBackground: string;
 }
 
+const DEFAULT_DATA: Partial<PetPluginData> = {
+	isViewOpen: false,
+	selectedBackground: "none",
+};
+
 export default class PetPlugin extends Plugin {
-	private instanceData: PetPluginData = {
-		isViewOpen: false,
-		selectedBackground: "none",
-	};
+	instanceData: PetPluginData;
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
-			const saved = await this.loadData();
-			if (saved) {
-				this.instanceData = Object.assign(this.instanceData, saved);
-			}
+			await this.loadSettings();
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
 		}
@@ -104,6 +102,8 @@ export default class PetPlugin extends Plugin {
 		for (const bg of BACKGROUNDS) {
 			this.createBackgroundCommand(bg.id, bg.name, bg.file);
 		}
+
+		this.addSettingTab(new PetSettingTab(this.app, this));
 	}
 
 	async onunload(): Promise<void> {
@@ -111,25 +111,39 @@ export default class PetPlugin extends Plugin {
 		await this.closeView();
 	}
 
+	// Merges current data with default data
+	async loadSettings() {
+		this.instanceData = Object.assign(
+			{},
+			DEFAULT_DATA,
+			await this.loadData()
+		);
+	}
+
 	createBackgroundCommand(id: string, name: string, backgroundFile: string) {
 		this.addCommand({
 			id: id,
 			name: name,
 			callback: async () => {
-				// Persist background accross sessions
-				this.instanceData.selectedBackground = backgroundFile;
-				await this.saveData(this.instanceData);
-
-				const leaves =
-					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-				for (const leaf of leaves) {
-					const view = leaf.view;
-					if (view instanceof PetView) {
-						view.updateBackground();
-					}
-				}
+				await this.chooseBackground(backgroundFile);
 			},
 		});
+	}
+
+	public async chooseBackground(backgroundFile: string): Promise<void> {
+		// Persist background data across sessions
+		this.instanceData.selectedBackground = backgroundFile;
+		await this.saveData(this.instanceData);
+
+		// Update all open PetViews
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			// if is a PetView
+			if (view instanceof PetView) {
+				view.updateBackground();
+			}
+		}
 	}
 
 	// Getter function to get background in petview.ts
