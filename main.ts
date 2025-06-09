@@ -3,8 +3,6 @@ import { PetView, VIEW_TYPE_PET } from "petView";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption } from "selectorModal";
 
-// MAKE PLUGIN OPEN ON CHOOSING BACKGROUND
-
 // Define shape of saved plugin data
 interface PetPluginData {
 	isViewOpen: boolean; // Boolean for toggling the view open/close
@@ -33,33 +31,42 @@ export default class PetPlugin extends Plugin {
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
 			if (this.instanceData.isViewOpen) {
-				await this.createView();
+				await this.openView();
 			}
 		});
 
 		// Adds icon on the ribbon (side panel) to open view
-		const sideIcon = this.addRibbonIcon("cat", "Open pet view", () => {
+		this.addRibbonIcon("cat", "Toggle pet view", async () => {
 			if (this.instanceData.isViewOpen) {
-				this.closeView();
-				sideIcon.setAttr("aria-label", "Open pet view");
+				await this.closeView();
 			} else {
-				this.createView();
-				sideIcon.setAttr("aria-label", "Close pet view");
+				await this.openView();
 			}
 		});
+
+		// Listen for if the view is closed manually and chnage the isViewOpen
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+				if (leaves.length === 0 && this.instanceData.isViewOpen) {
+					this.instanceData.isViewOpen = false;
+					this.saveData(this.instanceData);
+				}
+			})
+		);
 
 		// Command to choose the background
 		const BACKGROUNDS: SelectorOption[] = [
 			{ value: "none", label: "None" },
-			{ value: "snowbg-1.png", label: "Snow #1" },
-			{ value: "snowbg-2.png", label: "Snow #2" },
-			{ value: "summerbg-1.png", label: "Summer #1" },
-			{ value: "summerbg-2.png", label: "Summer #2" },
-			{ value: "summerbg-3.png", label: "Summer #3" },
-			{ value: "templebg-1.png", label: "Temple #1" },
-			{ value: "templebg-2.png", label: "Temple #2" },
-			{ value: "castlebg-1.png", label: "Castle #1" },
-			{ value: "castlebg-2.png", label: "Castle #2" },
+			{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
+			{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
+			{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
+			{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
+			{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
+			{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
+			{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
+			{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
+			{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
 		];
 		this.addCommand({
 			id: "choose-background-dropdown",
@@ -97,8 +104,13 @@ export default class PetPlugin extends Plugin {
 		this.instanceData.selectedBackground = backgroundFile;
 		await this.saveData(this.instanceData);
 
-		// Update all open PetViews
+		// If the view is not open yet -> open it
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		if (leaves.length === 0) {
+			await this.openView(); 
+		}
+
+		// Update all open PetViews
 		for (const leaf of leaves) {
 			const view = leaf.view;
 			// if is a PetView
@@ -113,8 +125,8 @@ export default class PetPlugin extends Plugin {
 		return this.instanceData.selectedBackground;
 	}
 
-	// Create the pet leaf
-	async createView() {
+	// Open the leaf view
+	async openView() {
 		const { workspace } = this.app;
 
 		let leaf: WorkspaceLeaf | null;
