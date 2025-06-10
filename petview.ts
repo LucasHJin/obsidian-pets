@@ -59,17 +59,35 @@ export class PetView extends ItemView {
 			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
-						`${this.plugin.manifest.dir}/assets/snow.gif`
+						`${this.plugin.manifest.dir}/assets/backgrounds/snow.gif`
 					),
 					alt: "Snow falling animation",
 				},
 				cls: "pet-view-background-animation",
 			});
 		}
+
+		// Cat animation
+		const idleCat = wrapper.createEl("div", {
+			cls: "idlecat",
+		});
+		const catIdlePath = this.app.vault.adapter.getResourcePath(
+			`${this.plugin.manifest.dir}/assets/pets/white_cat/idle-cat.png`
+		);
+		idleCat.style.backgroundImage = `url(${catIdlePath})`;
+
+		const jumpCat = wrapper.createEl("div", {
+			cls: "jumpcat",
+		});
+		const catJumpPath = this.app.vault.adapter.getResourcePath(
+			`${this.plugin.manifest.dir}/assets/pets/white_cat/jump-cat.png`
+		);
+		jumpCat.style.backgroundImage = `url(${catJumpPath})`;
 	}
 
 	// Used to clean up content after view is closed
 	async onClose() {
 		// Nothing to clean up.
+		console.log("Pet view is closing");
 	}
 }
