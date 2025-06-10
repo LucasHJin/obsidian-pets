@@ -28,26 +28,7 @@ export class SelectorModal extends Modal {
 			// Make the button
 			const button = contentEl.createEl("button", {
 				text: option.label,
-			});
-
-			// Styling
-			button.style.all = "unset";
-			button.style.cursor = "pointer";
-			button.style.display = "block";
-			button.style.width = "100%";
-			button.style.padding = "1vh 0";
-			button.style.margin = "0.5vh 0";
-			button.style.borderRadius = "8px";
-			button.style.transition = "background-color 0.4s ease";
-			button.style.textAlign = "center";
-			button.style.lineHeight = "normal";
-			button.style.fontSize = "1.1em";
-			button.addEventListener("mouseenter", () => {
-				button.style.backgroundColor =
-					"var(--background-secondary-alt)";
-			});
-			button.addEventListener("mouseleave", () => {
-				button.style.backgroundColor = "var(--background-primary)";
+				cls: "selector-button",
 			});
 
 			// Call the chooser function when it is clicked

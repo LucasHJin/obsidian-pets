@@ -24,3 +24,23 @@
 	object-fit: cover; 
 	z-index: 1;
 }
+
+.selector-button {
+	all: unset;
+	cursor: pointer;
+	display: block;
+	width: 100%;
+	padding: 1vh 0;
+	margin: 0.5vh 0;
+	border-radius: 8px;
+	transition: background-color 0.2s ease;
+	text-align: center;
+	line-height: normal;
+	font-size: 1.1em;
+	background-color: var(--background-primary) !important; /* !important to override the default style */
+	box-shadow: none !important;
+}
+
+.selector-button:hover {
+	background-color: var(--background-secondary-alt) !important;
+}
