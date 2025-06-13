@@ -47,47 +47,13 @@
 	background-color: var(--background-secondary-alt) !important;
 }
 
-.idlecat,
-.jumpcat {
-	width: 32px; /* 32px normally */
+.cat {
+	position: absolute;
+	width: 32px;
 	height: 32px;
 	background-repeat: no-repeat;
+	background-position: 0 0;
 	image-rendering: pixelated;
-	position: absolute;
-	transform: translate(-50%, -50%); /* Moves based on 50% of the cat's own size*/
-}
-
-.idlecat {
-	left: 30%;
-	top: 80%;
-	animation: idlecat 0.8s steps(7) infinite;
-	background-size: 224px auto; /* 224px (update based on cat width) */
+	transform: translate(-50%, -50%);
 	z-index: 10;
 }
-
-.jumpcat {
-	left: 70%;
-	top: 80%;
-	animation: jumpcat 1.0s steps(13) infinite;
-	background-size: 416px auto;
-	z-index: 11;
-}
-
-@keyframes idlecat {
-	from {
-		background-position: 0 0;
-	}
-	to {
-		background-position: -224px 0;
-	} /* 7 frames x 32px = 224px (update based on cat width) */
-}
-
-@keyframes jumpcat {
-	from {
-		background-position: 0 0;
-	}
-	to {
-		background-position: -416px 0;
-	}
-}
-

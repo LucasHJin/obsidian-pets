@@ -1,11 +1,15 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
+import { Cat } from "cat";
+
+// NOTE -> To access pet pngs, you need to use this.app.vault.adapter.getResourcePath along with this.plugin.manifest.dir
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
+	cat: Cat | undefined;
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -67,27 +71,37 @@ export class PetView extends ItemView {
 			});
 		}
 
-		// Cat animation
-		const idleCat = wrapper.createEl("div", {
-			cls: "idlecat",
-		});
-		const catIdlePath = this.app.vault.adapter.getResourcePath(
-			`${this.plugin.manifest.dir}/assets/pets/white_cat/idle-cat.png`
-		);
-		idleCat.style.backgroundImage = `url(${catIdlePath})`;
-
-		const jumpCat = wrapper.createEl("div", {
-			cls: "jumpcat",
-		});
-		const catJumpPath = this.app.vault.adapter.getResourcePath(
-			`${this.plugin.manifest.dir}/assets/pets/white_cat/jump-cat.png`
-		);
-		jumpCat.style.backgroundImage = `url(${catJumpPath})`;
+		// Add cat to wrapper
+		const CAT_ANIMATIONS = {
+			idle: {
+				name: "idle",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/pets/white-cat/idle-cat.png`
+				),
+				frameCount: 7,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1000,
+			},
+			jump: {
+				name: "jump",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/pets/white-cat/jump-cat.png`
+				),
+				frameCount: 13,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1000,
+			},
+		};
+		this.cat = new Cat(wrapper, CAT_ANIMATIONS);
 	}
 
 	// Used to clean up content after view is closed
 	async onClose() {
-		// Nothing to clean up.
-		console.log("Pet view is closing");
+		if (this.cat) {
+			this.cat.destroy();
+		}
+		console.log("Pet view closed");
 	}
 }
