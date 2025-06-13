@@ -3,15 +3,24 @@ import { PetView, VIEW_TYPE_PET } from "petView";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption } from "selectorModal";
 
+export interface PetInstance {
+	id: string; // Unique id
+	type: string; // Directory to their type
+}
+
 // Define shape of saved plugin data
 interface PetPluginData {
 	isViewOpen: boolean; // Boolean for toggling the view open/close
 	selectedBackground: string;
+	pets: PetInstance[]; // To keep track of all pet instances
+	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
 	isViewOpen: false,
 	selectedBackground: "none",
+	pets: [],
+	nextPetIdCounters: {},
 };
 
 export default class PetPlugin extends Plugin {
@@ -83,6 +92,82 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
+		// Command to add a pet
+		const PETS: SelectorOption[] = [
+			{ value: "pets/batman-cat", label: "Batman Cat" },
+			{ value: "pets/black-cat", label: "Black Cat" },
+			{ value: "pets/brown-cat", label: "Brown Cat" },
+			{ value: "pets/classic-cat", label: "Classic Cat" },
+			{ value: "pets/demon-cat", label: "Demonic Cat" },
+			{ value: "pets/egypt-cat", label: "Egyptian Cat" },
+			{ value: "pets/siamese-cat", label: "Siamese Cat" },
+			{ value: "pets/three-cat", label: "Tri-colored Cat" },
+			{ value: "pets/tiger-cat", label: "Tiger Cat" },
+			{ value: "pets/white-cat", label: "White Cat" },
+			{ value: "pets/xmas-cat", label: "Christmas Cat" },
+		];
+		this.addCommand({
+			id: "add-pet-dropdown",
+			name: "Add a Pet",
+			callback: () => {
+				new SelectorModal(this.app, PETS, async (value: string) => {
+					await this.addPet(value);
+				}).open();
+			},
+		});
+
+		// Command to remove all pets
+		this.addCommand({
+			id: "clear-all-pets",
+			name: "Remove All Pets",
+			callback: () => {
+				this.clearAllPets();
+			},
+		});
+
+		// Command to remove a specific pet
+		this.addCommand({
+			id: "remove-pet-by-id",
+			name: "Remove a Specific Pet",
+			callback: () => {
+				this.instanceData.pets.map((pet) => console.log(pet.id));
+
+				const options = this.instanceData.pets.map((pet) => ({
+					value: pet.id,
+					// Make the lable more legible
+					label: (() => {
+						// Don't want the general /pets
+						const desired = pet.id.split("/").pop() ?? "";
+
+						// Match everything before last dash before digit (ind 1), match a dash followed by 1+ digits (ind 2)
+							// Parentheses captures groups
+						const match = desired.match(/^(.*)-(\d+)$/);
+						if (!match) {
+							return desired;
+						}
+						// Don't need the full match
+						// eslint-disable-next-line @typescript-eslint/no-unused-vars
+						const [_, base, num] = match;
+						// Capitalize each word
+						const name = base
+							.split("-")
+							.map(
+								(word) =>
+									word.charAt(0).toUpperCase() + word.slice(1)
+							)
+							.join(" ");
+
+						return `${name} #${num}`;
+					})(),
+				}));
+
+				new SelectorModal(this.app, options, async (value: string) => {
+					await this.removePetById(value);
+				}).open();
+			},
+		});
+
+		// Add settings for changing background
 		this.addSettingTab(new PetSettingTab(this.app, this));
 	}
 
@@ -98,9 +183,20 @@ export default class PetPlugin extends Plugin {
 			DEFAULT_DATA,
 			await this.loadData()
 		);
+
+		// Make sure id counter exists
+		if (!this.instanceData.nextPetIdCounters) {
+			this.instanceData.nextPetIdCounters = {};
+		}
 	}
 
 	public async chooseBackground(backgroundFile: string): Promise<void> {
+		// Make sure not already selected background
+		if (this.instanceData.selectedBackground === backgroundFile) {
+			console.log("Same picked");
+			return;
+		}
+
 		// Persist background data across sessions
 		this.instanceData.selectedBackground = backgroundFile;
 		await this.saveData(this.instanceData);
@@ -116,7 +212,7 @@ export default class PetPlugin extends Plugin {
 			const view = leaf.view;
 			// if is a PetView
 			if (view instanceof PetView) {
-				view.updateBackground();
+				view.updateView();
 			}
 		}
 	}
@@ -124,6 +220,66 @@ export default class PetPlugin extends Plugin {
 	// Getter function to get background in petview.ts
 	public getSelectedBackground(): string {
 		return this.instanceData.selectedBackground;
+	}
+
+	public async addPet(petFolder: string): Promise<void> {
+		if (!(petFolder in this.instanceData.nextPetIdCounters)) {
+			this.instanceData.nextPetIdCounters[petFolder] = 1;
+		}
+
+		// Create id (petFolder -> pets/petType)
+		const id = `${petFolder}-${this.instanceData.nextPetIdCounters[petFolder]}`;
+		this.instanceData.nextPetIdCounters[petFolder]++;
+
+		// Add to list of pets
+		this.instanceData.pets.push({ id, type: petFolder });
+		await this.saveData(this.instanceData);
+
+		// Update view
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.addPetToView(view.getWrapper(), { id, type: petFolder });
+			}
+		}
+	}
+
+	// Getter function to get pet list in petview.ts
+	public getPetList(): PetInstance[] {
+		return this.instanceData.pets || [];
+	}
+
+	public async removePetById(id: string): Promise<void> {
+		// Filters out the one with the same id
+		this.instanceData.pets = this.instanceData.pets.filter(
+			(p) => p.id !== id
+		);
+		await this.saveData(this.instanceData);
+
+		// Update view
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.removePet(id);
+			}
+		}
+	}
+
+	public async clearAllPets(): Promise<void> {
+		// Empties out the entire pet list
+		this.instanceData.pets = [];
+		await this.saveData(this.instanceData);
+
+		// Update view
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.removeAllPets();
+			}
+		}
 	}
 
 	// Open the leaf view

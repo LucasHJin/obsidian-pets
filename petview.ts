@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
+import { PetInstance } from "main";
 import { Cat } from "cat";
 
 // NOTE -> To access pet pngs, you need to use this.app.vault.adapter.getResourcePath along with this.plugin.manifest.dir
@@ -9,7 +10,7 @@ export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
-	cat: Cat | undefined;
+	cats: { id: string; cat: Cat }[] = []; // Property for list of existing cats (their id and the instance of the class)
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -34,32 +35,67 @@ export class PetView extends ItemView {
 
 	// Builds content of view when it is opened
 	async onOpen() {
-		this.updateBackground();
+		this.updateView();
 	}
 
-	updateBackground() {
+	updateView() {
+		// Get main container (DOM) of the view
 		const container = this.containerEl.children[1];
-		container.empty();
 
-		// Div container for the entire pet view
-		const wrapper = container.createDiv({ cls: "pet-view-wrapper" });
+		// Find/Create wrapper div for the view specifically
+		let wrapper = container.querySelector(
+			".pet-view-wrapper"
+		) as HTMLDivElement;
+		if (!wrapper) {
+			wrapper = container.createDiv({ cls: "pet-view-wrapper" });
+		}
 
-		// Background for the view
-		if (this.plugin.getSelectedBackground() !== "none") {
+		// Update the background
+		this.updateBackground(wrapper);
+
+		// Create a set of pet-ids in the view (unique ids, faster lookup)
+		const currentPetList = this.plugin.getPetList();
+		const existingPetIds = new Set(this.cats.map((c) => c.id));
+
+		// Add all needed pets to the view
+		for (const pet of currentPetList) {
+			if (!existingPetIds.has(pet.id)) {
+				this.addPetToView(wrapper, pet);
+			}
+		}
+	}
+
+	updateBackground(wrapper: HTMLElement) {
+		// Get selected background
+		const background = this.plugin.getSelectedBackground();
+		const existingBg = wrapper.querySelector(".pet-view-background");
+
+		// Remove existing background
+		if (existingBg) {
+			existingBg.remove();
+		}
+
+		// Remove existing snow gif
+		const existingSnow = wrapper.querySelector(
+			".pet-view-background-animation"
+		);
+		if (existingSnow) {
+			existingSnow.remove();
+		}
+
+		// Add the new backgrounds
+		if (background !== "none") {
 			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
-						`${
-							this.plugin.manifest.dir
-						}/assets/${this.plugin.getSelectedBackground()}`
+						`${this.plugin.manifest.dir}/assets/${background}`
 					),
 					alt: "Background",
 				},
 				cls: "pet-view-background",
 			});
 		}
-		// Add snow falling gif for snow backgrounds
-		if (this.plugin.getSelectedBackground().includes("snow")) {
+		if (background.includes("snow")) {
 			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
@@ -70,13 +106,14 @@ export class PetView extends ItemView {
 				cls: "pet-view-background-animation",
 			});
 		}
+	}
 
-		// Add cat to wrapper
+	addPetToView(wrapper: Element, pet: PetInstance) {
 		const CAT_ANIMATIONS = {
 			idle: {
 				name: "idle",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/pets/white-cat/idle-cat.png`
+					`${this.plugin.manifest.dir}/assets/${pet.type}/idle-cat.png`
 				),
 				frameCount: 7,
 				frameWidth: 32,
@@ -86,7 +123,7 @@ export class PetView extends ItemView {
 			jump: {
 				name: "jump",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/pets/white-cat/jump-cat.png`
+					`${this.plugin.manifest.dir}/assets/${pet.type}/jump-cat.png`
 				),
 				frameCount: 13,
 				frameWidth: 32,
@@ -94,13 +131,44 @@ export class PetView extends ItemView {
 				duration: 1000,
 			},
 		};
-		this.cat = new Cat(wrapper, CAT_ANIMATIONS);
+
+		// Create cat instance and add it to the list of cats
+		const cat = new Cat(wrapper, CAT_ANIMATIONS);
+		this.cats.push({ id: pet.id, cat });
+	}
+
+	removePet(id: string) {
+		// Find the index of the unique id
+		const index = this.cats.findIndex((c) => c.id === id);
+		// Clean up the instance's assets and remove it from the list
+		if (index !== -1) {
+			this.cats[index].cat.destroy();
+			this.cats.splice(index, 1);
+		}
+	}
+
+	removeAllPets() {
+		// Clean up resources used by all instances
+		for (const { cat } of this.cats) {
+			cat.destroy();
+		}
+		// Empty list
+		this.cats = [];
+	}
+
+	// Getter function to get wrapper of entire pet view
+	getWrapper() {
+		const wrapper = this.containerEl.querySelector(".pet-view-wrapper");
+		if (!wrapper) {
+			throw new Error("pet-view-wrapper not found");
+		}
+		return wrapper;
 	}
 
 	// Used to clean up content after view is closed
 	async onClose() {
-		if (this.cat) {
-			this.cat.destroy();
+		for (const { cat } of this.cats) {
+			cat.destroy();
 		}
 		console.log("Pet view closed");
 	}

@@ -8,6 +8,8 @@ type AnimationConfig = {
 	duration: number; // Of animation (ms)
 };
 
+// UPDATE CAT CLASS FOR MORE RANDOM MOVEMENT
+
 // Cat class to make code more modular (each one spawns a new instance of cat)
 export class Cat {
 	private container: Element;
