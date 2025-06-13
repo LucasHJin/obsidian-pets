@@ -40,6 +40,8 @@ export class Cat {
 		const el = this.container.createDiv({ cls: "cat" });
 		el.style.left = `${this.currentX}px`;
 		el.style.top = "80%";
+		el.style.width = `${this.animations["idle"].frameWidth}px`
+		el.style.height = `${this.animations["idle"].frameWidth}px`
 		return el;
 	}
 

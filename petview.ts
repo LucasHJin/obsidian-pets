@@ -118,7 +118,7 @@ export class PetView extends ItemView {
 				frameCount: 7,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 1000,
+				duration: 700,
 			},
 			jump: {
 				name: "jump",
@@ -128,7 +128,7 @@ export class PetView extends ItemView {
 				frameCount: 13,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 1000,
+				duration: 1300,
 			},
 		};
 
