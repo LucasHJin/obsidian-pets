@@ -93,10 +93,13 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to add a pet
+			// Batman has no idle 2
 		const PETS: SelectorOption[] = [
-			{ value: "pets/batman-cat", label: "Batman Cat" },
+			{ value: "pets/batman-black-cat", label: "Black Batman Cat" },
+			{ value: "pets/batman-blue-cat", label: "Blue Batman Cat" },
 			{ value: "pets/black-cat", label: "Black Cat" },
 			{ value: "pets/brown-cat", label: "Brown Cat" },
+			{ value: "pets/xmas-cat", label: "Christmas Cat" },
 			{ value: "pets/classic-cat", label: "Classic Cat" },
 			{ value: "pets/demon-cat", label: "Demonic Cat" },
 			{ value: "pets/egypt-cat", label: "Egyptian Cat" },
@@ -104,7 +107,7 @@ export default class PetPlugin extends Plugin {
 			{ value: "pets/three-cat", label: "Tri-colored Cat" },
 			{ value: "pets/tiger-cat", label: "Tiger Cat" },
 			{ value: "pets/white-cat", label: "White Cat" },
-			{ value: "pets/xmas-cat", label: "Christmas Cat" },
+			{ value: "pets/grey-bunny", label: "Grey Bunny" },
 		];
 		this.addCommand({
 			id: "add-pet-dropdown",
