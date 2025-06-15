@@ -130,6 +130,46 @@ export class PetView extends ItemView {
 				frameHeight: 32,
 				duration: 1300,
 			},
+			run: {
+				name: "run",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/${pet.type}/run-cat.png`
+				),
+				frameCount: 7,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 700,
+			},
+			sit: {
+				name: "sit",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/${pet.type}/sitting-cat.png`
+				),
+				frameCount: 3,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1300,
+			},
+			sleep: {
+				name: "sleep",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/${pet.type}/sleep-cat.png`
+				),
+				frameCount: 3,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 300,
+			},
+			die: {
+				name: "die",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/${pet.type}/die-cat.png`
+				),
+				frameCount: 15,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1500,
+			},
 		};
 
 		// Create cat instance and add it to the list of cats

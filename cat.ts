@@ -18,7 +18,7 @@ export class Cat {
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	private animations: Record<string, AnimationConfig>;
-	private jumpInterval: ReturnType<typeof setInterval> | undefined;
+	private actionInterval: ReturnType<typeof setInterval> | undefined;
 
 	constructor(
 		container: Element,
@@ -119,7 +119,7 @@ export class Cat {
 	// Main actions of the cat
 	private startBehaviorLoop() {
 		// CHANGE TO MAKE IT RANDOMIZE THE ACTION
-		this.jumpInterval = setInterval(() => {
+		this.actionInterval = setInterval(() => {
 			const jumpAnim = this.animations["jump"];
 			const CAT_WIDTH = 32;
 			const containerWidth = (this.container as HTMLElement).offsetWidth;
@@ -152,7 +152,10 @@ export class Cat {
 
 	// Function to clean up the cat instance when unloaded/onClose
 	public destroy() {
-		clearInterval(this.jumpInterval);
-		this.catEl.remove();
+		clearInterval(this.actionInterval);
+		this.setAnimation("die");
+		setTimeout(() => {
+			this.catEl.remove();
+		}, this.animations["die"].duration);
 	}
 }
