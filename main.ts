@@ -25,7 +25,6 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 };
 
 // MAKE SPAWN AT DIFF HEIGHTS DEPENDING ON THE BACKGROUND
-// ADD NAMES FOR PETS
 
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;

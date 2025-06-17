@@ -168,7 +168,7 @@ export class PetView extends ItemView {
 				frameCount: 3,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 600,
+				duration: 750,
 			},
 			sleep: {
 				name: "sleep",
@@ -178,7 +178,7 @@ export class PetView extends ItemView {
 				frameCount: 3,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 600,
+				duration: 750,
 			},
 			die: {
 				name: "die",
@@ -199,8 +199,10 @@ export class PetView extends ItemView {
 			delete CAT_ANIMATIONS["idle2"];
 		}
 
+		const moveDist = Math.floor(Math.random() * 15) + 25;
+
 		// Create cat instance and add it to the list of cats
-		const cat = new Cat(wrapper, CAT_ANIMATIONS);
+		const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist);
 		this.cats.push({ id: pet.id, cat });
 	}
 

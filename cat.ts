@@ -17,13 +17,16 @@ export class Cat {
 	private currentAnimation = "none";
 	private animations: Record<string, AnimationConfig>;
 	private isDestroyed = false; // Check if cat instance has been destroyed
+	private moveDist: number; // For different cat movements
 
 	constructor(
 		container: Element,
-		animations: Record<string, AnimationConfig>
+		animations: Record<string, AnimationConfig>,
+		moveDist: number
 	) {
 		this.container = container;
 		this.animations = animations;
+		this.moveDist = moveDist;
 
 		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
 		for (const key in this.animations) {
@@ -38,7 +41,7 @@ export class Cat {
 					// Move once
 					await this.move(this.animations[key].duration, key);
 				} else if (key === "sit" || key === "sleep") {
-					const extensionAmount = Math.floor(Math.random() * 7) + 4;
+					const extensionAmount = Math.floor(Math.random() * 8) + 5;
 					// Wait to make sure action has time to occur
 					await new Promise((resolve) =>
 						setTimeout(
@@ -48,7 +51,7 @@ export class Cat {
 					);
 				} else {
 					// Idleing animation
-					const extensionAmount = Math.floor(Math.random() * 3) + 2;
+					const extensionAmount = Math.floor(Math.random() * 2) + 2;
 					await new Promise((resolve) =>
 						setTimeout(
 							resolve,
@@ -148,7 +151,10 @@ export class Cat {
 		const minLeft = CAT_WIDTH / 2;
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
-		const magnitude = action === "jump" ? 45 : 30; // Diff distance based on jumping vs running
+		const magnitude =
+			action === "jump"
+				? this.moveDist * (Math.random() * 0.3 + 1.5)
+				: this.moveDist; // Diff distance based on jumping vs running
 		const bias = 0.9;
 		const direction =
 			Math.random() < bias ? this.direction : -this.direction;
