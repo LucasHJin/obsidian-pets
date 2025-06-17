@@ -1,5 +1,5 @@
 // Defines shape for parameters needed to pass in an animation
-type AnimationConfig = {
+export type AnimationConfig = {
 	name: string;
 	spriteUrl: string; // Link to the spritesheet
 	frameCount: number; // Number of frames in spritesheet
@@ -9,12 +9,12 @@ type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
-// MAKE THEM BE ABLE TO SPAWN IN DIFFERENT PLACES AND LONGER ANIMATIONS FOR SLEEP SIT
+// LONGER ANIMATIONS FOR SLEEP SIT
 
 export class Cat {
 	private container: Element;
 	private catEl: HTMLElement;
-	private currentX = 200;
+	private currentX: number;
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	private animations: Record<string, AnimationConfig>;
@@ -46,14 +46,22 @@ export class Cat {
 			};
 		}
 
-		// Create cat HTML element to be shown in view
-		this.catEl = this.createCatElement();
+		requestAnimationFrame(() => {
+			// Randomized spawn within middle 80% of container
+			const containerWidth = (this.container as HTMLElement).offsetWidth;
+			const minX = containerWidth * 0.1;
+			const maxX = containerWidth * 0.9;
+			this.currentX = Math.random() * (maxX - minX) + minX;
 
-		// Start the behavior
-		(async () => {
-			await this.animations["idle"].action?.();
-			this.startActionLoop();
-		})();
+			// Create cat HTML element to be shown in view
+			this.catEl = this.createCatElement();
+
+			// Start the behavior
+			(async () => {
+				await this.animations["idle"].action?.();
+				this.startActionLoop();
+			})();
+		});
 	}
 
 	// Creates the div representing the cat and styles
@@ -126,7 +134,7 @@ export class Cat {
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
 		const magnitude = action === "jump" ? 45 : 30; // Diff distance based on jumping vs running
-		const bias = 0.8; 
+		const bias = 0.9; 
 		const direction = Math.random() < bias ? this.direction : -this.direction;
 		let dx = magnitude * direction;
 		const possibleX = this.currentX + dx;
@@ -181,7 +189,7 @@ export class Cat {
 			await this.animations[randomAction].action?.();
 
 			// Go back to the running action
-			const delay = getRandDelay(3000, 5600, this.animations["run"].duration);
+			const delay = getRandDelay(3000, 8000, this.animations["run"].duration);
 			await this.animations["run"].action?.(Math.floor(delay / this.animations["run"].duration));
 		}
 	}

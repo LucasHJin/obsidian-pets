@@ -2,8 +2,18 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
 import { Cat } from "cat";
+import { AnimationConfig } from "cat";
 
-// NOTE -> To access pet pngs, you need to use this.app.vault.adapter.getResourcePath along with this.plugin.manifest.dir
+// Allow for optional pet animations
+type PetAnimations = {
+	idle: AnimationConfig;
+	idle2?: AnimationConfig; 
+	jump: AnimationConfig;
+	run: AnimationConfig;
+	sit: AnimationConfig;
+	sleep: AnimationConfig;
+	die: AnimationConfig;
+};
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -109,7 +119,7 @@ export class PetView extends ItemView {
 	}
 
 	addPetToView(wrapper: Element, pet: PetInstance) {
-		const CAT_ANIMATIONS = {
+		const CAT_ANIMATIONS: PetAnimations = {
 			idle: {
 				name: "idle",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
@@ -119,6 +129,16 @@ export class PetView extends ItemView {
 				frameWidth: 32,
 				frameHeight: 32,
 				duration: 700,
+			},
+			idle2: {
+				name: "idle2",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					`${this.plugin.manifest.dir}/assets/${pet.type}/idle2-cat.png`
+				),
+				frameCount: 14,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1400,
 			},
 			jump: {
 				name: "jump",
@@ -171,6 +191,10 @@ export class PetView extends ItemView {
 				duration: 1500,
 			},
 		};
+
+		if (pet.type === "pets/batman-black-cat" || pet.type === "pets/batman-blue-cat") {
+			delete CAT_ANIMATIONS["idle2"];
+		}
 
 		// Create cat instance and add it to the list of cats
 		const cat = new Cat(wrapper, CAT_ANIMATIONS);
