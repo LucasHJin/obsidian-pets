@@ -6,11 +6,11 @@ type AnimationConfig = {
 	frameWidth: number;
 	frameHeight: number;
 	duration: number; // Of animation (ms)
+	action?: (multiples?: number) => void; // Function that gets added in
 };
 
-// UPDATE CAT CLASS FOR MORE RANDOM MOVEMENT
+// MAKE THEM BE ABLE TO SPAWN IN DIFFERENT PLACES AND LONGER ANIMATIONS FOR SLEEP SIT
 
-// Cat class to make code more modular (each one spawns a new instance of cat)
 export class Cat {
 	private container: Element;
 	private catEl: HTMLElement;
@@ -18,7 +18,7 @@ export class Cat {
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	private animations: Record<string, AnimationConfig>;
-	private actionInterval: ReturnType<typeof setInterval> | undefined;
+	private isDestroyed = false; // Check if cat instance has been destroyed
 
 	constructor(
 		container: Element,
@@ -27,24 +27,46 @@ export class Cat {
 		this.container = container;
 		this.animations = animations;
 
-		// Create cat
+		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
+		for (const key in this.animations) {
+			this.animations[key].action = async (multiples = 1) => {
+				this.setAnimation(key);
+				if (key === "run") {
+					// Call the moving multiple times
+					for (let i = 0; i < multiples; i++) {
+						await this.move(this.animations[key].duration, key);
+					}
+				} else if (key === "jump") {
+					// Move once
+					await this.move(this.animations[key].duration, key);
+				} else {
+					// Wait to make sure action has time to occur
+					await new Promise(resolve => setTimeout(resolve, this.animations[key].duration));
+				}
+			};
+		}
+
+		// Create cat HTML element to be shown in view
 		this.catEl = this.createCatElement();
-		// Start animation
-		this.setAnimation("idle");
-		// Start other behaviours
-		this.startBehaviorLoop();
+
+		// Start the behavior
+		(async () => {
+			await this.animations["idle"].action?.();
+			this.startActionLoop();
+		})();
 	}
 
+	// Creates the div representing the cat and styles
 	private createCatElement(): HTMLElement {
-		// Create the cat's div and add styling
 		const el = this.container.createDiv({ cls: "cat" });
 		el.style.left = `${this.currentX}px`;
 		el.style.top = "80%";
-		el.style.width = `${this.animations["idle"].frameWidth}px`
-		el.style.height = `${this.animations["idle"].frameWidth}px`
+		el.style.width = `${this.animations["run"].frameWidth}px`;
+		el.style.height = `${this.animations["run"].frameWidth}px`;
 		return el;
 	}
 
+	// 
 	private setAnimation(animationName: string) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
@@ -58,20 +80,17 @@ export class Cat {
 		}
 
 		// Reset animation
-		this.catEl.style.animation = "none";
+		this.catEl.style.animation = "none"; 
+		this.catEl.offsetHeight; // Trigger reflow (make new animation play)
 
 		// Add new animation
-		this.catEl.offsetHeight; // Trigger reflow (make new animation play)
 		this.catEl.style.backgroundImage = `url(${animation.spriteUrl})`;
-		this.catEl.style.backgroundSize = `${
-			animation.frameCount * animation.frameWidth
-		}px auto`;
-		// Play the animation with that name for X long and Y steps
+		this.catEl.style.backgroundSize = `${animation.frameCount * animation.frameWidth}px auto`;
 		this.catEl.style.animation = `${animation.name} ${animation.duration}ms steps(${animation.frameCount}) infinite`;
+
 		// Create the animation for above ^^
 		this.keyFrameAnimation(animation);
-
-		// Set it to the new animation
+		// Update tracking for which animation it is
 		this.currentAnimation = animationName;
 	}
 
@@ -81,7 +100,7 @@ export class Cat {
 			return;
 		}
 
-		// Define style info for the doc w/ tag
+		// Define style info for the doc with tag
 		const style = document.createElement("style");
 		style.id = `kf-${animation.name}`;
 
@@ -92,70 +111,88 @@ export class Cat {
 			to { background-position: -${animation.frameCount * animation.frameWidth}px 0; }
 		}`;
 
-		// Add animation to the html
+		// Add animation to the html of the view
 		document.head.appendChild(style);
 	}
 
 	// Moves the cat in x direction
-	private move(dx: number, duration: number) {
-		// End location and direction
+	private move(duration: number, action?: string): Promise<void> {
+		const CAT_WIDTH = 32;
+		const containerWidth = (this.container as HTMLElement).offsetWidth;
+
+		// Boundaries for the view
+		const maxLeft = containerWidth - CAT_WIDTH / 2;
+		const minLeft = CAT_WIDTH / 2;
+
+		// Get a random change in x direction (biased towards the side that was already being visited)
+		const magnitude = action === "jump" ? 45 : 30; // Diff distance based on jumping vs running
+		const bias = 0.8; 
+		const direction = Math.random() < bias ? this.direction : -this.direction;
+		let dx = magnitude * direction;
+		const possibleX = this.currentX + dx;
+
+		// Clamp it within bounds (reverse the direction if too close to edge)
+		if (possibleX < minLeft || possibleX > maxLeft) {
+			dx = -dx;
+		}
 		const targetX = this.currentX + dx;
+
+		// If no movement, resolve immediately (catching any overlapping of actions)
+		if (targetX === this.currentX) {
+			return Promise.resolve();
+		}
+
+		// Update direction based on movement
 		this.direction = dx < 0 ? -1 : 1;
 
-		// Movement to that position
-		this.catEl.style.transition = `left ${duration}ms linear`;
-		this.catEl.style.left = `${targetX}px`;
-		this.catEl.style.transform = `translate(-50%, -50%) scaleX(${this.direction})`; // Translate + scaleX to ensure its smooth (not unordinary flipping)
+		// Return a promise that is being awaited (to prevent moving on until this is finished)
+		return new Promise(res => {
+			// Cleanup function for after transition
+			const done = () => {
+				this.catEl.removeEventListener("transitionend", done);
+				this.catEl.style.transition = "";
+				this.currentX = targetX;
+				res(); // Resolve the promise
+			};
+			this.catEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
 
-		// Update currentX after movement
-		this.currentX = targetX;
-
-		// Clean up transition after done
-		setTimeout(() => {
-			this.catEl.style.transition = "";
-		}, duration);
+			// Show the moving animation
+			this.catEl.offsetWidth;
+			this.catEl.style.transition = `left ${duration}ms linear`;
+			this.catEl.style.left = `${targetX}px`;
+			this.catEl.style.transform = `translate(-50%, -50%) scaleX(${this.direction})`; // Use transform so no problems with scale overlap
+		});
 	}
 
-	// Main actions of the cat
-	private startBehaviorLoop() {
-		// CHANGE TO MAKE IT RANDOMIZE THE ACTION
-		this.actionInterval = setInterval(() => {
-			const jumpAnim = this.animations["jump"];
-			const CAT_WIDTH = 32;
-			const containerWidth = (this.container as HTMLElement).offsetWidth;
+	// Main loop -> picks random actions
+	private async startActionLoop() {
+		// Gets random delay that is a multiple of the run animation time
+		function getRandDelay(min: number, max: number, multiple: number): number {
+			const random = Math.random() * (max - min) + min;
+			return Math.round(random / multiple) * multiple;
+		}
 
-			// Boundaries for the view
-			const maxLeft = containerWidth - CAT_WIDTH / 2;
-			const minLeft = CAT_WIDTH / 2;
+		// Possible actions excluding dieing and running
+		const ACTIONS = Object.keys(this.animations).filter(a => a !== "die" && a !== "run");
 
-			// Get a random change in x direction
-			const magnitude = Math.floor(Math.random() * 20) + 40;
-			const direction = Math.random() < 0.5 ? -1 : 1;
-			let dx = magnitude * direction;
-			const proposedX = this.currentX + dx;
+		while (!this.isDestroyed) {
+			// Pick and run a random action
+			const randomAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+			await this.animations[randomAction].action?.();
 
-			// Clamp it within bounds (reverse the direction if too close to edge)
-			if (proposedX < minLeft || proposedX > maxLeft) {
-				dx = -dx;
-			}
-
-			// Change the animation to jumping
-			this.setAnimation("jump");
-			this.move(dx, jumpAnim.duration);
-
-			// Change animation back to idle
-			setTimeout(() => {
-				this.setAnimation("idle");
-			}, this.animations["jump"].duration);
-		}, 3000);
+			// Go back to the running action
+			const delay = getRandDelay(3000, 5600, this.animations["run"].duration);
+			await this.animations["run"].action?.(Math.floor(delay / this.animations["run"].duration));
+		}
 	}
 
-	// Function to clean up the cat instance when unloaded/onClose
-	public destroy() {
-		clearInterval(this.actionInterval);
-		this.setAnimation("die");
-		setTimeout(() => {
-			this.catEl.remove();
-		}, this.animations["die"].duration);
+	// Destroys cat instance
+	public async destroy() {
+		this.isDestroyed = true;
+		// Death animation (wait for the animation to finish)
+		this.setAnimation("die"); 
+		await new Promise(resolve => setTimeout(resolve, this.animations["die"].duration));
+		// Removes instance from DOM
+		this.catEl.remove();	
 	}
 }

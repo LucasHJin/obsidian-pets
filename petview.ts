@@ -148,7 +148,7 @@ export class PetView extends ItemView {
 				frameCount: 3,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 1300,
+				duration: 300,
 			},
 			sleep: {
 				name: "sleep",
