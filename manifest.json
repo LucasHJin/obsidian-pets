@@ -1,11 +1,11 @@
 {
-	"id": "temp-obsidian",
+	"id": "obsidian-pets",
 	"name": "Obsidian Pets",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Adds cute pixel pets to Obsidian.",
 	"author": "Lucas J",
 	"authorUrl": "https://www.lucasjin.biz/",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"fundingUrl": "https://www.lucasjin.biz/",
+	"isDesktopOnly": true
 }
