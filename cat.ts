@@ -9,8 +9,6 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
-// LONGER ANIMATIONS FOR SLEEP SIT
-
 export class Cat {
 	private container: Element;
 	private catEl: HTMLElement;
@@ -39,9 +37,13 @@ export class Cat {
 				} else if (key === "jump") {
 					// Move once
 					await this.move(this.animations[key].duration, key);
-				} else {
+				} else if (key === "sit" || key === "sleep") {
+					const extensionAmount = Math.floor(Math.random() * 10) + 6;
 					// Wait to make sure action has time to occur
-					await new Promise(resolve => setTimeout(resolve, this.animations[key].duration));
+					await new Promise(resolve => setTimeout(resolve, this.animations[key].duration * extensionAmount));
+				} else { // Idleing animation
+					const extensionAmount = Math.floor(Math.random() * 3) + 2;
+					await new Promise(resolve => setTimeout(resolve, this.animations[key].duration * extensionAmount));
 				}
 			};
 		}
