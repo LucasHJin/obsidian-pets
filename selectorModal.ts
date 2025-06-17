@@ -4,20 +4,21 @@ import { Modal, App } from "obsidian";
 export interface SelectorOption {
 	value: string;
 	label: string;
+	requiresName?: boolean;
 }
 
 export class SelectorModal extends Modal {
 	options: SelectorOption[]; // Array of options
-	onSelect: (value: string) => Promise<void>; // Expects a function that takes a string and returns a promise (callback to chooser function)
+	onSubmit: (value: string, name: string) => Promise<void>; // Expects a function that takes a value and name and returns a promise (callback to chooser function)
 
 	constructor(
 		app: App,
 		options: SelectorOption[],
-		onSelect: (value: string) => Promise<void>
+		onSubmit: (value: string, name: string) => Promise<void>
 	) {
 		super(app);
 		this.options = options;
-		this.onSelect = onSelect;
+		this.onSubmit = onSubmit;
 	}
 
 	// Show modal options on open
@@ -32,11 +33,63 @@ export class SelectorModal extends Modal {
 			});
 
 			// Call the chooser function when it is clicked
-			button.addEventListener("click", async () => {
-				await this.onSelect(option.value);
-				this.close();
+			button.addEventListener("click", () => {
+				if (option.requiresName) {
+					this.showNameForm(option.value);
+				} else {
+					// No name needed (background)
+					this.onSubmit(option.value, "");
+					this.close();
+				}
 			});
 		}
+	}
+
+	// Form to enter the pet's name
+	private showNameForm(selectedValue: string) {
+		const { contentEl } = this;
+		contentEl.empty();
+
+		const container = contentEl.createDiv({
+			cls: "pet-name-form-container",
+		});
+
+		// Title
+		container.createEl("h3", {
+			text: "Enter a name:",
+			cls: "pet-name-title",
+		});
+
+		// Input form
+		const form = container.createEl("form", {
+			cls: "pet-name-form",
+		});
+		const input = form.createEl("input", {
+			type: "text",
+			placeholder: "Pet name...",
+			cls: "pet-name-input",
+		});
+		input.focus();
+
+		// Button to submit
+		form.createEl("button", {
+			type: "submit",
+			text: "Submit",
+			cls: "pet-name-button",
+		});
+
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+			// Prevent submitting blank name
+			const name = input.value.trim();
+			if (!name) {
+				return;
+			}
+
+			// Call function to use the selected type and pet name
+			await this.onSubmit(selectedValue, name);
+			this.close();
+		});
 	}
 
 	// Clean up DOM on modal close

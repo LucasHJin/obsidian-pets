@@ -25,6 +25,17 @@
 	z-index: 1;
 }
 
+.cat {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	image-rendering: pixelated;
+	transform: translate(-50%, -50%);
+	z-index: 10;
+}
+
 .selector-button {
 	all: unset;
 	cursor: pointer;
@@ -47,13 +58,25 @@
 	background-color: var(--background-secondary-alt) !important;
 }
 
-.cat {
-	position: absolute;
-	width: 32px;
-	height: 32px;
-	background-repeat: no-repeat;
-	background-position: 0 0;
-	image-rendering: pixelated;
-	transform: translate(-50%, -50%);
-	z-index: 10;
+.pet-name-title {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	line-height: 1.1;
+}
+
+.pet-name-form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.8rem;
+	align-items: flex-start;
+}
+
+.pet-name-input {
+	width: 100%;
+	flex: 1;
+	padding: 0.5em !important;
+}
+
+.pet-name-button {
+	transition: background-color 0.2s ease;
 }

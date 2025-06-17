@@ -7,7 +7,7 @@ import { AnimationConfig } from "cat";
 // Allow for optional pet animations
 type PetAnimations = {
 	idle: AnimationConfig;
-	idle2?: AnimationConfig; 
+	idle2?: AnimationConfig;
 	jump: AnimationConfig;
 	run: AnimationConfig;
 	sit: AnimationConfig;
@@ -168,7 +168,7 @@ export class PetView extends ItemView {
 				frameCount: 3,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 300,
+				duration: 600,
 			},
 			sleep: {
 				name: "sleep",
@@ -178,7 +178,7 @@ export class PetView extends ItemView {
 				frameCount: 3,
 				frameWidth: 32,
 				frameHeight: 32,
-				duration: 300,
+				duration: 600,
 			},
 			die: {
 				name: "die",
@@ -192,7 +192,10 @@ export class PetView extends ItemView {
 			},
 		};
 
-		if (pet.type === "pets/batman-black-cat" || pet.type === "pets/batman-blue-cat") {
+		if (
+			pet.type === "pets/batman-black-cat" ||
+			pet.type === "pets/batman-blue-cat"
+		) {
 			delete CAT_ANIMATIONS["idle2"];
 		}
 

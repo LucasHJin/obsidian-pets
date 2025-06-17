@@ -6,6 +6,7 @@ import { SelectorModal, SelectorOption } from "selectorModal";
 export interface PetInstance {
 	id: string; // Unique id
 	type: string; // Directory to their type
+	name: string;
 }
 
 // Define shape of saved plugin data
@@ -22,6 +23,9 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pets: [],
 	nextPetIdCounters: {},
 };
+
+// MAKE SPAWN AT DIFF HEIGHTS DEPENDING ON THE BACKGROUND
+// ADD NAMES FOR PETS
 
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
@@ -85,7 +89,7 @@ export default class PetPlugin extends Plugin {
 				new SelectorModal(
 					this.app,
 					BACKGROUNDS,
-					async (value: string) => {
+					async (value: string, name: string) => {
 						await this.chooseBackground(value); // Pass chooseBackground() function to modal
 					}
 				).open();
@@ -93,29 +97,65 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to add a pet
-			// Batman has no idle 2
+		// Batman has no idle 2
 		const PETS: SelectorOption[] = [
-			{ value: "pets/batman-black-cat", label: "Black Batman Cat" },
-			{ value: "pets/batman-blue-cat", label: "Blue Batman Cat" },
-			{ value: "pets/black-cat", label: "Black Cat" },
-			{ value: "pets/brown-cat", label: "Brown Cat" },
-			{ value: "pets/xmas-cat", label: "Christmas Cat" },
-			{ value: "pets/classic-cat", label: "Classic Cat" },
-			{ value: "pets/demon-cat", label: "Demonic Cat" },
-			{ value: "pets/egypt-cat", label: "Egyptian Cat" },
-			{ value: "pets/siamese-cat", label: "Siamese Cat" },
-			{ value: "pets/three-cat", label: "Tri-colored Cat" },
-			{ value: "pets/tiger-cat", label: "Tiger Cat" },
-			{ value: "pets/white-cat", label: "White Cat" },
+			{
+				value: "pets/batman-black-cat",
+				label: "Black Batman Cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/batman-blue-cat",
+				label: "Blue Batman Cat",
+				requiresName: true,
+			},
+			{ value: "pets/black-cat", label: "Black Cat", requiresName: true },
+			{ value: "pets/brown-cat", label: "Brown Cat", requiresName: true },
+			{
+				value: "pets/xmas-cat",
+				label: "Christmas Cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/classic-cat",
+				label: "Classic Cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/demon-cat",
+				label: "Demonic Cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/egypt-cat",
+				label: "Egyptian Cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/siamese-cat",
+				label: "Siamese Cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/three-cat",
+				label: "Tri-colored Cat",
+				requiresName: true,
+			},
+			{ value: "pets/tiger-cat", label: "Tiger Cat", requiresName: true },
+			{ value: "pets/white-cat", label: "White Cat", requiresName: true },
 			// { value: "pets/grey-bunny", label: "Grey Bunny" },
 		];
 		this.addCommand({
 			id: "add-pet-dropdown",
 			name: "Add a Pet",
 			callback: () => {
-				new SelectorModal(this.app, PETS, async (value: string) => {
-					await this.addPet(value);
-				}).open();
+				new SelectorModal(
+					this.app,
+					PETS,
+					async (value: string, name: string) => {
+						await this.addPet(value, name);
+					}
+				).open();
 			},
 		});
 
@@ -123,8 +163,8 @@ export default class PetPlugin extends Plugin {
 		this.addCommand({
 			id: "clear-all-pets",
 			name: "Remove All Pets",
-			callback: () => {
-				this.clearAllPets();
+			callback: async () => {
+				await this.clearAllPets();
 			},
 		});
 
@@ -133,45 +173,48 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a Specific Pet",
 			callback: () => {
-				this.instanceData.pets.map((pet) => console.log(pet.id));
+				//this.instanceData.pets.map((pet) => console.log(pet.id, pet.name));
 
 				const options = this.instanceData.pets.map((pet) => ({
 					value: pet.id,
-					// Make the lable more legible
-					label: (() => {
-						// Don't want the general /pets
-						const desired = pet.id.split("/").pop() ?? "";
-
-						// Match everything before last dash before digit (ind 1), match a dash followed by 1+ digits (ind 2)
-							// Parentheses captures groups
-						const match = desired.match(/^(.*)-(\d+)$/);
-						if (!match) {
-							return desired;
-						}
-						// Don't need the full match
-						// eslint-disable-next-line @typescript-eslint/no-unused-vars
-						const [_, base, num] = match;
-						// Capitalize each word
-						const name = base
-							.split("-")
-							.map(
-								(word) =>
-									word.charAt(0).toUpperCase() + word.slice(1)
-							)
-							.join(" ");
-
-						return `${name} #${num}`;
-					})(),
+					// Label of name and type
+					label: `${pet.name} (${this.getCleanLabel(pet.id)})`,
 				}));
-
-				new SelectorModal(this.app, options, async (value: string) => {
-					await this.removePetById(value);
-				}).open();
+				new SelectorModal(
+					this.app,
+					options,
+					async (value: string, name: string) => {
+						await this.removePetById(value);
+					}
+				).open();
 			},
 		});
 
 		// Add settings for changing background
 		this.addSettingTab(new PetSettingTab(this.app, this));
+	}
+
+	// Function to get a clean id label
+	getCleanLabel(id: string): string {
+		// Don't want the general /pets
+		const desired = id.split("/").pop() ?? "";
+
+		// Match everything before last dash before digit (ind 1), match a dash followed by 1+ digits (ind 2)
+		// Parentheses captures groups
+		const match = desired.match(/^(.*)-(\d+)$/);
+		if (!match) {
+			return desired;
+		}
+		// Don't need the full match
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const [_, base, num] = match;
+		// Capitalize each word
+		const name = base
+			.split("-")
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(" ");
+
+		return name;
 	}
 
 	async onunload(): Promise<void> {
@@ -225,17 +268,17 @@ export default class PetPlugin extends Plugin {
 		return this.instanceData.selectedBackground;
 	}
 
-	public async addPet(petFolder: string): Promise<void> {
-		if (!(petFolder in this.instanceData.nextPetIdCounters)) {
-			this.instanceData.nextPetIdCounters[petFolder] = 1;
+	public async addPet(type: string, name: string): Promise<void> {
+		if (!(type in this.instanceData.nextPetIdCounters)) {
+			this.instanceData.nextPetIdCounters[type] = 1;
 		}
 
-		// Create id (petFolder -> pets/petType)
-		const id = `${petFolder}-${this.instanceData.nextPetIdCounters[petFolder]}`;
-		this.instanceData.nextPetIdCounters[petFolder]++;
+		// Create id (type format -> pets/petType)
+		const id = `${type}-${this.instanceData.nextPetIdCounters[type]}`;
+		this.instanceData.nextPetIdCounters[type]++;
 
 		// Add to list of pets
-		this.instanceData.pets.push({ id, type: petFolder });
+		this.instanceData.pets.push({ id, type, name });
 		await this.saveData(this.instanceData);
 
 		// Update view
@@ -243,7 +286,7 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of leaves) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
-				view.addPetToView(view.getWrapper(), { id, type: petFolder });
+				view.addPetToView(view.getWrapper(), { id, type, name });
 			}
 		}
 	}
@@ -273,6 +316,10 @@ export default class PetPlugin extends Plugin {
 	public async clearAllPets(): Promise<void> {
 		// Empties out the entire pet list
 		this.instanceData.pets = [];
+		// Reset all counters back to 1
+		for (const type in this.instanceData.nextPetIdCounters) {
+			this.instanceData.nextPetIdCounters[type] = 1;
+		}
 		await this.saveData(this.instanceData);
 
 		// Update view
