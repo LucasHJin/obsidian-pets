@@ -83,7 +83,7 @@ export default class PetPlugin extends Plugin {
 		];
 		this.addCommand({
 			id: "choose-background-dropdown",
-			name: "Choose Pet View Background",
+			name: "Choose pet view background",
 			callback: () => {
 				new SelectorModal(
 					this.app,
@@ -100,53 +100,53 @@ export default class PetPlugin extends Plugin {
 		const PETS: SelectorOption[] = [
 			{
 				value: "pets/batman-black-cat",
-				label: "Black Batman Cat",
+				label: "Black batman cat",
 				requiresName: true,
 			},
 			{
 				value: "pets/batman-blue-cat",
-				label: "Blue Batman Cat",
+				label: "Blue batman cat",
 				requiresName: true,
 			},
 			{ value: "pets/black-cat", label: "Black Cat", requiresName: true },
 			{ value: "pets/brown-cat", label: "Brown Cat", requiresName: true },
 			{
 				value: "pets/xmas-cat",
-				label: "Christmas Cat",
+				label: "Christmas cat",
 				requiresName: true,
 			},
 			{
 				value: "pets/classic-cat",
-				label: "Classic Cat",
+				label: "Classic cat",
 				requiresName: true,
 			},
 			{
 				value: "pets/demon-cat",
-				label: "Demonic Cat",
+				label: "Demonic cat",
 				requiresName: true,
 			},
 			{
 				value: "pets/egypt-cat",
-				label: "Egyptian Cat",
+				label: "Egyptian cat",
 				requiresName: true,
 			},
 			{
 				value: "pets/siamese-cat",
-				label: "Siamese Cat",
+				label: "Siamese cat",
 				requiresName: true,
 			},
 			{
 				value: "pets/three-cat",
-				label: "Tri-colored Cat",
+				label: "Tri-colored cat",
 				requiresName: true,
 			},
-			{ value: "pets/tiger-cat", label: "Tiger Cat", requiresName: true },
-			{ value: "pets/white-cat", label: "White Cat", requiresName: true },
+			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
+			{ value: "pets/white-cat", label: "White cat", requiresName: true },
 			// { value: "pets/grey-bunny", label: "Grey Bunny" },
 		];
 		this.addCommand({
 			id: "add-pet-dropdown",
-			name: "Add a Pet",
+			name: "Add a pet",
 			callback: () => {
 				new SelectorModal(
 					this.app,
@@ -161,7 +161,7 @@ export default class PetPlugin extends Plugin {
 		// Command to remove all pets
 		this.addCommand({
 			id: "clear-all-pets",
-			name: "Remove All Pets",
+			name: "Remove all pets",
 			callback: async () => {
 				await this.clearAllPets();
 			},
@@ -170,7 +170,7 @@ export default class PetPlugin extends Plugin {
 		// Command to remove a specific pet
 		this.addCommand({
 			id: "remove-pet-by-id",
-			name: "Remove a Specific Pet",
+			name: "Remove a specific pet",
 			callback: () => {
 				//this.instanceData.pets.map((pet) => console.log(pet.id, pet.name));
 

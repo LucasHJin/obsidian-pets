@@ -159,19 +159,25 @@ export class Cat {
 			return;
 		}
 
-		// Define style info for the doc with tag
+		// Create the <style> tag
 		const style = document.createElement("style");
 		style.id = `kf-${animation.name}`;
 
-		// Add the animation for the spritesheet
-		style.innerHTML = `
+		// Append the style to the document head first to ensure style.sheet is available
+		document.head.appendChild(style);
+
+		// Keyframe rule for animating the sprite sheet
+		const keyframeRule = `
 		@keyframes ${animation.name} {
 			from { background-position: 0 0; }
 			to { background-position: -${animation.frameCount * animation.frameWidth}px 0; }
 		}`;
 
-		// Add animation to the html of the view
-		document.head.appendChild(style);
+		// Insert the rule using the stylesheet API
+		const sheet = style.sheet as CSSStyleSheet;
+		if (sheet) {
+			sheet.insertRule(keyframeRule, sheet.cssRules.length);
+		}
 	}
 
 	// Moves the cat in x direction

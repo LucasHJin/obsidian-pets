@@ -17,7 +17,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		// Dropdown for background
 		new Setting(containerEl)
-			.setName("Background")
+			.setName("Background").setHeading()
 			.setDesc("Select a background for the pet view.")
 			.addDropdown((dropdown) => {
 				dropdown
