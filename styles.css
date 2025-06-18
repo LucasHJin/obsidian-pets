@@ -1,8 +1,83 @@
-/*
+.pet-view-wrapper {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden; /* Allow for resizing */
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.pet-view-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* Can crop but no distortion */
+	z-index: 0;
+}
 
-If your plugin does not need CSS, delete this file.
+.pet-view-background-animation {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: 1;
+}
 
-*/
+.cat {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	image-rendering: pixelated;
+	transform: translate(-50%, -50%);
+	z-index: 10;
+}
+
+.selector-button {
+	all: unset;
+	cursor: pointer;
+	display: block;
+	width: 100%;
+	padding: 1vh 0;
+	margin: 0.5vh 0;
+	border-radius: 8px;
+	transition: background-color 0.2s ease;
+	text-align: center;
+	line-height: normal;
+	font-size: 1.1em;
+	background-color: var(
+		--background-primary
+	) !important; /* !important to override the default style */
+	box-shadow: none !important;
+}
+
+.selector-button:hover {
+	background-color: var(--background-secondary-alt) !important;
+}
+
+.pet-name-title {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	line-height: 1.1;
+	font-size: 1.1em;
+}
+
+.pet-name-form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.8rem;
+	align-items: flex-start;
+}
+
+.pet-name-input {
+	width: 100%;
+	flex: 1;
+	padding: 0.5em !important;
+}
+
+.pet-name-button {
+	transition: background-color 0.2s ease;
+}

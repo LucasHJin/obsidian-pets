@@ -1,134 +1,378 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { Plugin, WorkspaceLeaf } from "obsidian";
+import { PetView, VIEW_TYPE_PET } from "petView";
+import { PetSettingTab } from "settings";
+import { SelectorModal, SelectorOption } from "selectorModal";
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+export interface PetInstance {
+	id: string; // Unique id
+	type: string; // Directory to their type
+	name: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+// Define shape of saved plugin data
+interface PetPluginData {
+	isViewOpen: boolean; // Boolean for toggling the view open/close
+	selectedBackground: string;
+	pets: PetInstance[]; // To keep track of all pet instances
+	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+const DEFAULT_DATA: Partial<PetPluginData> = {
+	isViewOpen: false,
+	selectedBackground: "none",
+	pets: [],
+	nextPetIdCounters: {},
+};
 
-	async onload() {
-		await this.loadSettings();
+// MAKE SPAWN AT DIFF HEIGHTS DEPENDING ON THE BACKGROUND
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+export default class PetPlugin extends Plugin {
+	instanceData: PetPluginData;
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+	async onload(): Promise<void> {
+		// Loads saved data and merges with current data
+		try {
+			await this.loadSettings();
+		} catch (err) {
+			console.error("Failed to load pet plugin data:", err);
+		}
 
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
+		// Add instance of the view
+		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
+
+		// Open again if open last session (wait until obsidian is ready first)
+		this.app.workspace.onLayoutReady(async () => {
+			if (this.instanceData.isViewOpen) {
+				await this.openView();
 			}
 		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
+
+		// Adds icon on the ribbon (side panel) to open view
+		this.addRibbonIcon("cat", "Toggle pet view", async () => {
+			if (this.instanceData.isViewOpen) {
+				await this.closeView();
+			} else {
+				await this.openView();
 			}
 		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
 
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
+		// Listen for if the view is closed manually and chnage the isViewOpen
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				const leaves =
+					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+				if (leaves.length === 0 && this.instanceData.isViewOpen) {
+					this.instanceData.isViewOpen = false;
+					this.saveData(this.instanceData);
 				}
-			}
+			})
+		);
+
+		// Command to choose the background
+		const BACKGROUNDS: SelectorOption[] = [
+			{ value: "none", label: "None" },
+			{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
+			{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
+			{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
+			{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
+			{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
+			{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
+			{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
+			{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
+			{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
+		];
+		this.addCommand({
+			id: "choose-background-dropdown",
+			name: "Choose pet view background",
+			callback: () => {
+				new SelectorModal(
+					this.app,
+					BACKGROUNDS,
+					async (value: string, name: string) => {
+						await this.chooseBackground(value); // Pass chooseBackground() function to modal
+					}
+				).open();
+			},
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
+		// Command to add a pet
+		// Batman has no idle 2
+		const PETS: SelectorOption[] = [
+			{
+				value: "pets/batman-black-cat",
+				label: "Black batman cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/batman-blue-cat",
+				label: "Blue batman cat",
+				requiresName: true,
+			},
+			{ value: "pets/black-cat", label: "Black Cat", requiresName: true },
+			{ value: "pets/brown-cat", label: "Brown Cat", requiresName: true },
+			{
+				value: "pets/xmas-cat",
+				label: "Christmas cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/classic-cat",
+				label: "Classic cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/demon-cat",
+				label: "Demonic cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/egypt-cat",
+				label: "Egyptian cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/siamese-cat",
+				label: "Siamese cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/three-cat",
+				label: "Tri-colored cat",
+				requiresName: true,
+			},
+			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
+			{ value: "pets/white-cat", label: "White cat", requiresName: true },
+			// { value: "pets/grey-bunny", label: "Grey Bunny" },
+		];
+		this.addCommand({
+			id: "add-pet-dropdown",
+			name: "Add a pet",
+			callback: () => {
+				new SelectorModal(
+					this.app,
+					PETS,
+					async (value: string, name: string) => {
+						await this.addPet(value, name);
+					}
+				).open();
+			},
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-	}
+		// Command to remove all pets
+		this.addCommand({
+			id: "clear-all-pets",
+			name: "Remove all pets",
+			callback: async () => {
+				await this.clearAllPets();
+			},
+		});
 
-	onunload() {
+		// Command to remove a specific pet
+		this.addCommand({
+			id: "remove-pet-by-id",
+			name: "Remove a specific pet",
+			callback: () => {
+				//this.instanceData.pets.map((pet) => console.log(pet.id, pet.name));
 
-	}
-
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
+				const options = this.instanceData.pets.map((pet) => ({
+					value: pet.id,
+					// Label of name and type
+					label: `${pet.name} (${this.getCleanLabel(pet.id)})`,
 				}));
+				new SelectorModal(
+					this.app,
+					options,
+					async (value: string, name: string) => {
+						await this.removePetById(value);
+					}
+				).open();
+			},
+		});
+
+		// Add settings for changing background
+		this.addSettingTab(new PetSettingTab(this.app, this));
+	}
+
+	// Function to get a clean id label
+	getCleanLabel(id: string): string {
+		// Don't want the general /pets
+		const desired = id.split("/").pop() ?? "";
+
+		// Match everything before last dash before digit (ind 1), match a dash followed by 1+ digits (ind 2)
+		// Parentheses captures groups
+		const match = desired.match(/^(.*)-(\d+)$/);
+		if (!match) {
+			return desired;
+		}
+		// Don't need the full match
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const [_, base, num] = match;
+		// Capitalize each word
+		const name = base
+			.split("-")
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(" ");
+
+		return name;
+	}
+
+	async onunload(): Promise<void> {
+		// Close the view when unloading
+		// await this.closeView(); -> don't detach leafs (https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60)
+	}
+
+	// Merges current data with default data
+	async loadSettings() {
+		this.instanceData = Object.assign(
+			{},
+			DEFAULT_DATA,
+			await this.loadData()
+		);
+
+		// Make sure id counter exists
+		if (!this.instanceData.nextPetIdCounters) {
+			this.instanceData.nextPetIdCounters = {};
+		}
+	}
+
+	public async chooseBackground(backgroundFile: string): Promise<void> {
+		// Make sure not already selected background
+		if (this.instanceData.selectedBackground === backgroundFile) {
+			console.log("Same picked");
+			return;
+		}
+
+		// Persist background data across sessions
+		this.instanceData.selectedBackground = backgroundFile;
+		await this.saveData(this.instanceData);
+
+		// If the view is not open yet -> open it
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		if (leaves.length === 0) {
+			await this.openView();
+		}
+
+		// Update all open PetViews
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			// if is a PetView
+			if (view instanceof PetView) {
+				view.updateView();
+			}
+		}
+	}
+
+	// Getter function to get background in petview.ts
+	public getSelectedBackground(): string {
+		return this.instanceData.selectedBackground;
+	}
+
+	public async addPet(type: string, name: string): Promise<void> {
+		if (!(type in this.instanceData.nextPetIdCounters)) {
+			this.instanceData.nextPetIdCounters[type] = 1;
+		}
+
+		// Create id (type format -> pets/petType)
+		const id = `${type}-${this.instanceData.nextPetIdCounters[type]}`;
+		this.instanceData.nextPetIdCounters[type]++;
+
+		// Add to list of pets
+		this.instanceData.pets.push({ id, type, name });
+		await this.saveData(this.instanceData);
+
+		// Open view on adding pets
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		if (leaves.length === 0) {
+			await this.openView();
+		}
+
+		// Update view
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.addPetToView(view.getWrapper(), { id, type, name });
+			}
+		}
+	}
+
+	// Getter function to get pet list in petview.ts
+	public getPetList(): PetInstance[] {
+		return this.instanceData.pets || [];
+	}
+
+	public async removePetById(id: string): Promise<void> {
+		// Filters out the one with the same id
+		this.instanceData.pets = this.instanceData.pets.filter(
+			(p) => p.id !== id
+		);
+		await this.saveData(this.instanceData);
+
+		// Update view
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.removePet(id);
+			}
+		}
+	}
+
+	public async clearAllPets(): Promise<void> {
+		// Empties out the entire pet list
+		this.instanceData.pets = [];
+		// Reset all counters back to 1
+		for (const type in this.instanceData.nextPetIdCounters) {
+			this.instanceData.nextPetIdCounters[type] = 1;
+		}
+		await this.saveData(this.instanceData);
+
+		// Update view
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.removeAllPets();
+			}
+		}
+	}
+
+	// Open the leaf view
+	async openView() {
+		const { workspace } = this.app;
+
+		let leaf: WorkspaceLeaf | null;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
+		// Check if leaf already exists (if not -> create it)
+		if (leaves.length > 0) {
+			leaf = leaves[0];
+		} else {
+			leaf = workspace.getLeftLeaf(true);
+			if (leaf) {
+				await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
+			}
+		}
+
+		// Show the leaf (view) to the user
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
+
+		// Persist if view is open accross sessions
+		this.instanceData.isViewOpen = true;
+		await this.saveData(this.instanceData);
+	}
+
+	// Remove the leaf (view) based on its ID
+	async closeView() {
+		const { workspace } = this.app;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
+
+		for (const leaf of leaves) {
+			await leaf.detach();
+		}
+
+		// Persist if view is open accross sessions
+		this.instanceData.isViewOpen = false;
+		await this.saveData(this.instanceData);
 	}
 }
