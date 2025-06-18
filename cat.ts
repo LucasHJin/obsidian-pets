@@ -9,6 +9,8 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
+// Find the right heights for everything
+
 export class Cat {
 	private container: Element;
 	private catEl: HTMLElement;
@@ -21,16 +23,16 @@ export class Cat {
 	private backgroundName = "default";
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
-		none: "50%",
-		"backgrounds/snowbg-1.png": "80%",
-		"backgrounds/snowbg-2.png": "80%",
-		"backgrounds/summerbg-1.png": "80%",
-		"backgrounds/summerbg-2.png": "80%",
-		"backgrounds/summerbg-3.png": "80%",
-		"backgrounds/templebg-1.png": "80%",
-		"backgrounds/templebg-2.png": "80%",
-		"backgrounds/castlebg-1.png": "80%",
-		"backgrounds/castlebg-2.png": "80%",
+		none: "80%",
+		"backgrounds/snowbg-1.png": "85%",
+		"backgrounds/snowbg-2.png": "86%",
+		"backgrounds/summerbg-1.png": "78%",
+		"backgrounds/summerbg-2.png": "88%",
+		"backgrounds/summerbg-3.png": "75%",
+		"backgrounds/templebg-1.png": "85.5%",
+		"backgrounds/templebg-2.png": "78.3%",
+		"backgrounds/castlebg-1.png": "82.1%",
+		"backgrounds/castlebg-2.png": "74%",
 	};
 
 	constructor(
