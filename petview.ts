@@ -3,6 +3,7 @@ import PetPlugin from "main";
 import { PetInstance } from "main";
 import { Cat } from "cat";
 import { AnimationConfig } from "cat";
+import { normalizePath } from "obsidian";
 
 // Allow for optional pet animations
 type PetAnimations = {
@@ -98,7 +99,9 @@ export class PetView extends ItemView {
 			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
-						`${this.plugin.manifest.dir}/assets/${background}`
+						normalizePath(
+							`${this.plugin.manifest.dir}/assets/${background}`
+						)
 					),
 					alt: "Background",
 				},
@@ -109,7 +112,9 @@ export class PetView extends ItemView {
 			wrapper.createEl("img", {
 				attr: {
 					src: this.app.vault.adapter.getResourcePath(
-						`${this.plugin.manifest.dir}/assets/backgrounds/snow.gif`
+						normalizePath(
+							`${this.plugin.manifest.dir}/assets/backgrounds/snow.gif`
+						)
 					),
 					alt: "Snow falling animation",
 				},
@@ -125,7 +130,9 @@ export class PetView extends ItemView {
 			idle: {
 				name: "idle",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/idle-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/idle-cat.png`
+					)
 				),
 				frameCount: 7,
 				frameWidth: 32,
@@ -135,7 +142,9 @@ export class PetView extends ItemView {
 			idle2: {
 				name: "idle2",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/idle2-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/idle2-cat.png`
+					)
 				),
 				frameCount: 14,
 				frameWidth: 32,
@@ -145,7 +154,9 @@ export class PetView extends ItemView {
 			jump: {
 				name: "jump",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/jump-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/jump-cat.png`
+					)
 				),
 				frameCount: 13,
 				frameWidth: 32,
@@ -155,7 +166,9 @@ export class PetView extends ItemView {
 			run: {
 				name: "run",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/run-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/run-cat.png`
+					)
 				),
 				frameCount: 7,
 				frameWidth: 32,
@@ -165,7 +178,9 @@ export class PetView extends ItemView {
 			sit: {
 				name: "sit",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/sitting-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/sitting-cat.png`
+					)
 				),
 				frameCount: 3,
 				frameWidth: 32,
@@ -175,7 +190,9 @@ export class PetView extends ItemView {
 			sleep: {
 				name: "sleep",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/sleep-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/sleep-cat.png`
+					)
 				),
 				frameCount: 3,
 				frameWidth: 32,
@@ -185,7 +202,9 @@ export class PetView extends ItemView {
 			die: {
 				name: "die",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
-					`${this.plugin.manifest.dir}/assets/${pet.type}/die-cat.png`
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/die-cat.png`
+					)
 				),
 				frameCount: 15,
 				frameWidth: 32,
@@ -249,6 +268,6 @@ export class PetView extends ItemView {
 		for (const { cat } of this.cats) {
 			cat.destroy();
 		}
-		console.log("Pet view closed");
+		// console.log("Pet view closed");
 	}
 }

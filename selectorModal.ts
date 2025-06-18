@@ -55,9 +55,9 @@ export class SelectorModal extends Modal {
 		});
 
 		// Title
-		container.createEl("h3", {
+		container.createEl("div", {
 			text: "Enter a name:",
-			cls: "pet-name-title",
+			cls: "pet-name-title setting-item-heading",
 		});
 
 		// Input form

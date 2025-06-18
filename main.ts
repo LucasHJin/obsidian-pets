@@ -218,7 +218,7 @@ export default class PetPlugin extends Plugin {
 
 	async onunload(): Promise<void> {
 		// Close the view when unloading
-		await this.closeView();
+		// await this.closeView(); -> don't detach leafs (https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60)
 	}
 
 	// Merges current data with default data
