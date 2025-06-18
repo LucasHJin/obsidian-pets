@@ -15,8 +15,6 @@ export class PetSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Pet Plugin Settings" });
-
 		// Dropdown for background
 		new Setting(containerEl)
 			.setName("Background")
@@ -24,15 +22,15 @@ export class PetSettingTab extends PluginSettingTab {
 			.addDropdown((dropdown) => {
 				dropdown
 					.addOption("none", "None")
-					.addOption("snowbg-1.png", "Snow #1")
-					.addOption("snowbg-2.png", "Snow #2")
-					.addOption("summerbg-1.png", "Summer #1")
-					.addOption("summerbg-2.png", "Summer #2")
-					.addOption("summerbg-3.png", "Summer #3")
-					.addOption("templebg-1.png", "Temple #1")
-					.addOption("templebg-2.png", "Temple #2")
-					.addOption("castlebg-1.png", "Castle #1")
-					.addOption("castlebg-2.png", "Castle #2")
+					.addOption("backgrounds/snowbg-1.png", "Snow #1")
+					.addOption("backgrounds/snowbg-2.png", "Snow #2")
+					.addOption("backgrounds/summerbg-1.png", "Summer #1")
+					.addOption("backgrounds/summerbg-2.png", "Summer #2")
+					.addOption("backgrounds/summerbg-3.png", "Summer #3")
+					.addOption("backgrounds/templebg-1.png", "Temple #1")
+					.addOption("backgrounds/templebg-2.png", "Temple #2")
+					.addOption("backgrounds/castlebg-1.png", "Castle #1")
+					.addOption("backgrounds/castlebg-2.png", "Castle #2")
 					.setValue(this.plugin.instanceData.selectedBackground)
 					.onChange(async (value) => {
 						await this.plugin.chooseBackground(value);
