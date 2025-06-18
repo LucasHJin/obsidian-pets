@@ -116,6 +116,8 @@ export class PetView extends ItemView {
 				cls: "pet-view-background-animation",
 			});
 		}
+
+		this.updateAllCatVerticalPositions(background);
 	}
 
 	addPetToView(wrapper: Element, pet: PetInstance) {
@@ -200,9 +202,10 @@ export class PetView extends ItemView {
 		}
 
 		const moveDist = Math.floor(Math.random() * 15) + 25;
+		const background = this.plugin.getSelectedBackground();
 
 		// Create cat instance and add it to the list of cats
-		const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist);
+		const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background);
 		this.cats.push({ id: pet.id, cat });
 	}
 
@@ -223,6 +226,13 @@ export class PetView extends ItemView {
 		}
 		// Empty list
 		this.cats = [];
+	}
+
+	updateAllCatVerticalPositions(newBackground: string) {
+		// Update the position for all of them
+		for (const { cat } of this.cats) {
+			cat.updateVerticalPosition(newBackground);
+		}
 	}
 
 	// Getter function to get wrapper of entire pet view

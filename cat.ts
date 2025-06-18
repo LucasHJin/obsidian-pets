@@ -18,15 +18,31 @@ export class Cat {
 	private animations: Record<string, AnimationConfig>;
 	private isDestroyed = false; // Check if cat instance has been destroyed
 	private moveDist: number; // For different cat movements
+	private backgroundName = "default";
+	private backgroundHeights: Record<string, string> = {
+		default: "80%", // Just in case no others
+		none: "50%",
+		"backgrounds/snowbg-1.png": "80%",
+		"backgrounds/snowbg-2.png": "80%",
+		"backgrounds/summerbg-1.png": "80%",
+		"backgrounds/summerbg-2.png": "80%",
+		"backgrounds/summerbg-3.png": "80%",
+		"backgrounds/templebg-1.png": "80%",
+		"backgrounds/templebg-2.png": "80%",
+		"backgrounds/castlebg-1.png": "80%",
+		"backgrounds/castlebg-2.png": "80%",
+	};
 
 	constructor(
 		container: Element,
 		animations: Record<string, AnimationConfig>,
-		moveDist: number
+		moveDist: number,
+		backgroundName: string
 	) {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
+		this.backgroundName = backgroundName;
 
 		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
 		for (const key in this.animations) {
@@ -84,13 +100,28 @@ export class Cat {
 	private createCatElement(): HTMLElement {
 		const el = this.container.createDiv({ cls: "cat" });
 		el.style.left = `${this.currentX}px`;
-		el.style.top = "80%";
+
+		// Diff heights per background
+		const topPercent =
+			this.backgroundHeights[this.backgroundName] ??
+			this.backgroundHeights["default"];
+		el.style.top = topPercent;
+
 		el.style.width = `${this.animations["run"].frameWidth}px`;
 		el.style.height = `${this.animations["run"].frameWidth}px`;
 		return el;
 	}
 
-	//
+	// Update height when background change
+	public updateVerticalPosition(newBackground: string) {
+		this.backgroundName = newBackground;
+		const newTop =
+			this.backgroundHeights[newBackground] ??
+			this.backgroundHeights["default"];
+		this.catEl.style.top = newTop;
+	}
+
+	// Add an animation for the cat
 	private setAnimation(animationName: string) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
@@ -210,7 +241,6 @@ export class Cat {
 		const ACTIONS = Object.keys(this.animations).filter(
 			(a) => a !== "die" && a !== "run"
 		);
-		console.log(ACTIONS);
 
 		while (!this.isDestroyed) {
 			// Pick and run a random action
