@@ -1,6 +1,6 @@
 {
 	"name": "pixel-pets",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Adds cute pixel pets.",
 	"main": "main.js",
 	"scripts": {
