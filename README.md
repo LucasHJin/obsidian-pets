@@ -1,5 +1,6 @@
 # Obsidian Pixel Pets Plugin
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
 
 ## Key Features
