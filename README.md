@@ -31,10 +31,15 @@ If the plugin isn't available in the community plugin list yet:
 
 ## UI Previews
 Toggle the cat ribbon icon to open and close the view.
+
 ![Indicator of which ribbon icon to press.](images/ribbon-preview.png)
+
 Here is a preview of what the plugin could look like (*Selected background: "Summer #1", added pet: "Christmas cat"*).
+
 ![Default layout for the plugin.](images/full-preview-1.png)
+
 You can click and drag on the highlighted icon above the view to drag it into other views, as well as change the width and height of the view to customize your layout as desired. (See a couple of sample layouts below)
+
 ![A second possible layout for the plugin.](images/full-preview-2.png)
 ![A third possible layout for the plugin.](images/full-preview-3.png)
 
