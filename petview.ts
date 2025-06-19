@@ -220,7 +220,7 @@ export class PetView extends ItemView {
 			delete CAT_ANIMATIONS["idle2"];
 		}
 
-		const moveDist = Math.floor(Math.random() * 15) + 25;
+		const moveDist = Math.floor(Math.random() * 20) + 25;
 		const background = this.plugin.getSelectedBackground();
 
 		// Create cat instance and add it to the list of cats

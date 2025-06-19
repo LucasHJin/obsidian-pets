@@ -25,15 +25,21 @@
 	z-index: 1;
 }
 
+/* Use css variables for most of the dynamically changing values, i.e. top, transition, etc. */
 .cat {
 	position: absolute;
-	width: 32px;
-	height: 32px;
+	width: var(--cat-size);
+	height: var(--cat-size);
+	left: var(--left);
+	top: var(--top);
+	transform: translate(-50%, -50%) scaleX(var(--scale-x, 1));
 	background-repeat: no-repeat;
 	background-position: 0 0;
+	background-image: var(--sprite-url);
+	background-size: var(--sprite-size);
 	image-rendering: pixelated;
-	transform: translate(-50%, -50%);
-	z-index: 10;
+	transition: left var(--move-duration, 300ms) linear;
+	z-index: 100;
 }
 
 .selector-button {

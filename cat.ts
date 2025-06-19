@@ -101,16 +101,17 @@ export class Cat {
 	// Creates the div representing the cat and styles
 	private createCatElement(): HTMLElement {
 		const el = this.container.createDiv({ cls: "cat" });
-		el.style.left = `${this.currentX}px`;
-
-		// Diff heights per background
 		const topPercent =
 			this.backgroundHeights[this.backgroundName] ??
 			this.backgroundHeights["default"];
-		el.style.top = topPercent;
 
-		el.style.width = `${this.animations["run"].frameWidth}px`;
-		el.style.height = `${this.animations["run"].frameWidth}px`;
+		// Set initial CSS custom properties (to be used as variables in styles.css)
+		el.setCssProps({
+			"--left": `${this.currentX}px`,
+			"--top": topPercent,
+			"--cat-size": `${this.animations["run"].frameWidth}px`,
+			"--scale-x": `${this.direction}`,
+		});
 		return el;
 	}
 
@@ -120,7 +121,8 @@ export class Cat {
 		const newTop =
 			this.backgroundHeights[newBackground] ??
 			this.backgroundHeights["default"];
-		this.catEl.style.top = newTop;
+		// Pass a prop for the new height -> CSS instantly reacts to this change
+		this.catEl.setCssProps({ "--top": newTop });
 	}
 
 	// Add an animation for the cat
@@ -136,19 +138,26 @@ export class Cat {
 			return;
 		}
 
-		// Reset animation
-		this.catEl.style.animation = "none";
-		this.catEl.offsetHeight; // Trigger reflow (make new animation play)
-
-		// Add new animation
-		this.catEl.style.backgroundImage = `url(${animation.spriteUrl})`;
-		this.catEl.style.backgroundSize = `${
-			animation.frameCount * animation.frameWidth
-		}px auto`;
-		this.catEl.style.animation = `${animation.name} ${animation.duration}ms steps(${animation.frameCount}) infinite`;
+		// Need to use css styles and not props for animation because it needs a hardcoded value, not variable
+		this.catEl.setCssStyles({ animation: "none" });
+		this.catEl.offsetHeight; // Reflow
 
 		// Create the animation for above ^^
 		this.keyFrameAnimation(animation);
+
+		// Set animation directly 
+		this.catEl.setCssStyles({
+			animation: `${animation.name} ${animation.duration}ms steps(${animation.frameCount}) infinite`
+		});
+
+		// Set background & sizing using props
+		this.catEl.setCssProps({
+			"--sprite-url": `url(${animation.spriteUrl})`,
+			"--sprite-size": `${
+				animation.frameCount * animation.frameWidth
+			}px auto`,
+		});
+
 		// Update tracking for which animation it is
 		this.currentAnimation = animationName;
 	}
@@ -219,17 +228,19 @@ export class Cat {
 			// Cleanup function for after transition
 			const done = () => {
 				this.catEl.removeEventListener("transitionend", done);
-				this.catEl.style.transition = "";
+				this.catEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
 				res(); // Resolve the promise
 			};
 			this.catEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
 
-			// Show the moving animation
-			this.catEl.offsetWidth;
-			this.catEl.style.transition = `left ${duration}ms linear`;
-			this.catEl.style.left = `${targetX}px`;
-			this.catEl.style.transform = `translate(-50%, -50%) scaleX(${this.direction})`; // Use transform so no problems with scale overlap
+			this.catEl.offsetWidth; // Reflow for new animation reset
+			// Show moving animation
+			this.catEl.setCssProps({
+				"--left": `${targetX}px`,
+				"--scale-x": `${this.direction}`,
+				"--move-duration": `${duration}ms`,
+			});
 		});
 	}
 
