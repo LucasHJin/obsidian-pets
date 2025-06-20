@@ -108,8 +108,8 @@ export default class PetPlugin extends Plugin {
 				label: "Blue batman cat",
 				requiresName: true,
 			},
-			{ value: "pets/black-cat", label: "Black Cat", requiresName: true },
-			{ value: "pets/brown-cat", label: "Brown Cat", requiresName: true },
+			{ value: "pets/black-cat", label: "Black cat", requiresName: true },
+			{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
 			{
 				value: "pets/xmas-cat",
 				label: "Christmas cat",
