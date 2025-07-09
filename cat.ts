@@ -11,6 +11,8 @@ export type AnimationConfig = {
 
 // Find the right heights for everything
 
+// CHANGE TO NOT JUST BE CATS
+
 export class Cat {
 	private container: Element;
 	private catEl: HTMLElement;
@@ -34,17 +36,20 @@ export class Cat {
 		"backgrounds/castlebg-1.png": "82.1%",
 		"backgrounds/castlebg-2.png": "74%",
 	};
+	private petType: string; // For unique keyframes
 
 	constructor(
 		container: Element,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
-		backgroundName: string
+		backgroundName: string,
+		petType: string
 	) {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
 		this.backgroundName = backgroundName;
+		this.petType = petType;
 
 		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
 		for (const key in this.animations) {
@@ -79,7 +84,6 @@ export class Cat {
 				}
 			};
 		}
-
 		requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
 			const containerWidth = (this.container as HTMLElement).offsetWidth;
@@ -144,10 +148,11 @@ export class Cat {
 
 		// Create the animation for above ^^
 		this.keyFrameAnimation(animation);
+		const keyframeName = `${animation.name}-${this.petType}`;
 
 		// Set animation directly 
 		this.catEl.setCssStyles({
-			animation: `${animation.name} ${animation.duration}ms steps(${animation.frameCount}) infinite`
+			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
 		});
 
 		// Set background & sizing using props
@@ -163,21 +168,23 @@ export class Cat {
 	}
 
 	private keyFrameAnimation(animation: AnimationConfig) {
+		const keyframeName = `${animation.name}-${this.petType}`;
+
 		// Avoid duplicate animations
-		if (document.getElementById(`kf-${animation.name}`)) {
+		if (document.getElementById(`kf-${keyframeName}`)) {
 			return;
 		}
 
 		// Create the <style> tag
 		const style = document.createElement("style");
-		style.id = `kf-${animation.name}`;
+		style.id = `kf-${keyframeName}`;
 
 		// Append the style to the document head first to ensure style.sheet is available
 		document.head.appendChild(style);
 
 		// Keyframe rule for animating the sprite sheet
 		const keyframeRule = `
-		@keyframes ${animation.name} {
+		@keyframes ${keyframeName} {
 			from { background-position: 0 0; }
 			to { background-position: -${animation.frameCount * animation.frameWidth}px 0; }
 		}`;

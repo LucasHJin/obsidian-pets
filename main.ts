@@ -142,7 +142,7 @@ export default class PetPlugin extends Plugin {
 			},
 			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
 			{ value: "pets/white-cat", label: "White cat", requiresName: true },
-			// { value: "pets/grey-bunny", label: "Grey Bunny" },
+			{ value: "pets/grey-bunny", label: "Grey bunny", requiresName: true },
 		];
 		this.addCommand({
 			id: "add-pet-dropdown",

@@ -213,6 +213,93 @@ export class PetView extends ItemView {
 			},
 		};
 
+		const BUNNY_ANIMATIONS: PetAnimations = {
+            idle: {
+                name: "idle",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/idle-bunny.png`
+                    )
+                ),
+                frameCount: 12,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 1200,
+            },
+            idle2: {
+                name: "idle2",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/liedown-bunny.png`
+                    )
+                ),
+                frameCount: 6,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 600,
+            },
+            jump: {
+                name: "jump",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/jump-bunny.png`
+                    )
+                ),
+                frameCount: 11,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 1100,
+            },
+            run: {
+                name: "run",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/run-bunny.png`
+                    )
+                ),
+                frameCount: 8,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 800,
+            },
+            sit: {
+                name: "sit",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/liking-bunny.png`
+                    )
+                ),
+                frameCount: 5,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 500,
+            },
+            sleep: {
+                name: "sleep",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/sleep-bunny.png`
+                    )
+                ),
+                frameCount: 6,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 600,
+            },
+            die: {
+                name: "die",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/die-bunny.png`
+                    )
+                ),
+                frameCount: 12,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 1200,
+            },
+        };
+
 		if (
 			pet.type === "pets/batman-black-cat" ||
 			pet.type === "pets/batman-blue-cat"
@@ -223,9 +310,19 @@ export class PetView extends ItemView {
 		const moveDist = Math.floor(Math.random() * 20) + 25;
 		const background = this.plugin.getSelectedBackground();
 
+		const cleanPetId = pet.id
+			.replace(/^pets\//, "")
+			.replace(/-\d+$/, "");
+
 		// Create cat instance and add it to the list of cats
-		const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background);
-		this.cats.push({ id: pet.id, cat });
+		if (pet.type.includes("cat")) {
+			console.log(pet.id.split("/")[1])
+			const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+			this.cats.push({ id: pet.id, cat });
+		} else if (pet.type.includes("bunny")) {
+			const cat = new Cat(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
+			this.cats.push({ id: pet.id, cat });
+		}
 	}
 
 	removePet(id: string) {
@@ -256,9 +353,9 @@ export class PetView extends ItemView {
 
 	// Getter function to get wrapper of entire pet view
 	getWrapper() {
-		const wrapper = this.containerEl.querySelector(".pet-view-wrapper");
+		let wrapper = this.containerEl.querySelector(".pet-view-wrapper");
 		if (!wrapper) {
-			throw new Error("pet-view-wrapper not found");
+			wrapper = this.containerEl.createDiv({ cls: "pet-view-wrapper" });
 		}
 		return wrapper;
 	}
