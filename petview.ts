@@ -1,8 +1,8 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
-import { Cat } from "cat";
-import { AnimationConfig } from "cat";
+import { Pet } from "pet-classes/pet";
+import { AnimationConfig } from "pet-classes/pet";
 import { normalizePath } from "obsidian";
 
 // Allow for optional pet animations
@@ -21,7 +21,7 @@ export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
-	cats: { id: string; cat: Cat }[] = []; // Property for list of existing cats (their id and the instance of the class)
+	pets: { id: string; pet: Pet }[] = []; // Property for list of existing pets (their id and the instance of the class)
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -66,7 +66,7 @@ export class PetView extends ItemView {
 
 		// Create a set of pet-ids in the view (unique ids, faster lookup)
 		const currentPetList = this.plugin.getPetList();
-		const existingPetIds = new Set(this.cats.map((c) => c.id));
+		const existingPetIds = new Set(this.pets.map((c) => c.id));
 
 		// Add all needed pets to the view
 		for (const pet of currentPetList) {
@@ -125,13 +125,13 @@ export class PetView extends ItemView {
 		this.updateAllCatVerticalPositions(background);
 	}
 
-	addPetToView(wrapper: Element, pet: PetInstance) {
+	addPetToView(wrapper: Element, singlePet: PetInstance) {
 		const CAT_ANIMATIONS: PetAnimations = {
 			idle: {
 				name: "idle",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/idle-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/idle-cat.png`
 					)
 				),
 				frameCount: 7,
@@ -143,7 +143,7 @@ export class PetView extends ItemView {
 				name: "idle2",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/idle2-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/idle2-cat.png`
 					)
 				),
 				frameCount: 14,
@@ -155,7 +155,7 @@ export class PetView extends ItemView {
 				name: "jump",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/jump-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/jump-cat.png`
 					)
 				),
 				frameCount: 13,
@@ -167,7 +167,7 @@ export class PetView extends ItemView {
 				name: "run",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/run-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/run-cat.png`
 					)
 				),
 				frameCount: 7,
@@ -179,7 +179,7 @@ export class PetView extends ItemView {
 				name: "sit",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/sitting-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/sitting-cat.png`
 					)
 				),
 				frameCount: 3,
@@ -191,7 +191,7 @@ export class PetView extends ItemView {
 				name: "sleep",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/sleep-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/sleep-cat.png`
 					)
 				),
 				frameCount: 3,
@@ -203,7 +203,7 @@ export class PetView extends ItemView {
 				name: "die",
 				spriteUrl: this.app.vault.adapter.getResourcePath(
 					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/die-cat.png`
+						`${this.plugin.manifest.dir}/assets/${singlePet.type}/die-cat.png`
 					)
 				),
 				frameCount: 15,
@@ -218,7 +218,7 @@ export class PetView extends ItemView {
                 name: "idle",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/idle-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/idle-bunny.png`
                     )
                 ),
                 frameCount: 12,
@@ -230,7 +230,7 @@ export class PetView extends ItemView {
                 name: "idle2",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/liedown-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/liedown-bunny.png`
                     )
                 ),
                 frameCount: 6,
@@ -242,7 +242,7 @@ export class PetView extends ItemView {
                 name: "jump",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/jump-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/jump-bunny.png`
                     )
                 ),
                 frameCount: 11,
@@ -254,7 +254,7 @@ export class PetView extends ItemView {
                 name: "run",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/run-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/run-bunny.png`
                     )
                 ),
                 frameCount: 8,
@@ -266,7 +266,7 @@ export class PetView extends ItemView {
                 name: "sit",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/liking-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/liking-bunny.png`
                     )
                 ),
                 frameCount: 5,
@@ -278,7 +278,7 @@ export class PetView extends ItemView {
                 name: "sleep",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/sleep-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/sleep-bunny.png`
                     )
                 ),
                 frameCount: 6,
@@ -290,7 +290,7 @@ export class PetView extends ItemView {
                 name: "die",
                 spriteUrl: this.app.vault.adapter.getResourcePath(
                     normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${pet.type}/die-bunny.png`
+                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/die-bunny.png`
                     )
                 ),
                 frameCount: 12,
@@ -301,8 +301,8 @@ export class PetView extends ItemView {
         };
 
 		if (
-			pet.type === "pets/batman-black-cat" ||
-			pet.type === "pets/batman-blue-cat"
+			singlePet.type === "pets/batman-black-cat" ||
+			singlePet.type === "pets/batman-blue-cat"
 		) {
 			delete CAT_ANIMATIONS["idle2"];
 		}
@@ -310,44 +310,45 @@ export class PetView extends ItemView {
 		const moveDist = Math.floor(Math.random() * 20) + 25;
 		const background = this.plugin.getSelectedBackground();
 
-		const cleanPetId = pet.id
+		const cleanPetId = singlePet.id
 			.replace(/^pets\//, "")
 			.replace(/-\d+$/, "");
 
-		// Create cat instance and add it to the list of cats
-		if (pet.type.includes("cat")) {
-			console.log(pet.id.split("/")[1])
-			const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
-			this.cats.push({ id: pet.id, cat });
-		} else if (pet.type.includes("bunny")) {
-			const cat = new Cat(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
-			this.cats.push({ id: pet.id, cat });
+		// Create cat instance and add it to the list of pets
+		if (singlePet.type.includes("cat")) {
+			const cat = new Pet(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+			this.pets.push({ id: singlePet.id, pet: cat });
+		} else if (singlePet.type.includes("bunny")) {
+			const bunny = new Pet(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
+			this.pets.push({ id: singlePet.id, pet: bunny });
 		}
+
+		console.log(this.pets);
 	}
 
 	removePet(id: string) {
 		// Find the index of the unique id
-		const index = this.cats.findIndex((c) => c.id === id);
+		const index = this.pets.findIndex((c) => c.id === id);
 		// Clean up the instance's assets and remove it from the list
 		if (index !== -1) {
-			this.cats[index].cat.destroy();
-			this.cats.splice(index, 1);
+			this.pets[index].pet.destroy();
+			this.pets.splice(index, 1);
 		}
 	}
 
 	removeAllPets() {
 		// Clean up resources used by all instances
-		for (const { cat } of this.cats) {
-			cat.destroy();
+		for (const { pet } of this.pets) {
+			pet.destroy();
 		}
 		// Empty list
-		this.cats = [];
+		this.pets = [];
 	}
 
 	updateAllCatVerticalPositions(newBackground: string) {
 		// Update the position for all of them
-		for (const { cat } of this.cats) {
-			cat.updateVerticalPosition(newBackground);
+		for (const { pet } of this.pets) {
+			pet.updateVerticalPosition(newBackground);
 		}
 	}
 
@@ -362,8 +363,8 @@ export class PetView extends ItemView {
 
 	// Used to clean up content after view is closed
 	async onClose() {
-		for (const { cat } of this.cats) {
-			cat.destroy();
+		for (const { pet } of this.pets) {
+			pet.destroy();
 		}
 		// console.log("Pet view closed");
 	}

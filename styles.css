@@ -26,10 +26,10 @@
 }
 
 /* Use css variables for most of the dynamically changing values, i.e. top, transition, etc. */
-.cat {
+.pet {
 	position: absolute;
-	width: var(--cat-size);
-	height: var(--cat-size);
+	width: var(--pet-size);
+	height: var(--pet-size);
 	left: var(--left);
 	top: var(--top);
 	transform: translate(-50%, -50%) scaleX(var(--scale-x, 1));

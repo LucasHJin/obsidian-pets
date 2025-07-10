@@ -9,19 +9,17 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
-// Find the right heights for everything
-
 // CHANGE TO NOT JUST BE CATS
 
-export class Cat {
+export class Pet {
 	private container: Element;
-	private catEl: HTMLElement;
+	private petEl: HTMLElement;
 	private currentX: number;
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	private animations: Record<string, AnimationConfig>;
-	private isDestroyed = false; // Check if cat instance has been destroyed
-	private moveDist: number; // For different cat movements
+	private isDestroyed = false; // Check if pet instance has been destroyed
+	private moveDist: number; // For different pet movements
 	private backgroundName = "default";
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -91,8 +89,8 @@ export class Cat {
 			const maxX = containerWidth * 0.9;
 			this.currentX = Math.random() * (maxX - minX) + minX;
 
-			// Create cat HTML element to be shown in view
-			this.catEl = this.createCatElement();
+			// Create pet HTML element to be shown in view
+			this.petEl = this.createPetElement();
 
 			// Start the behavior
 			(async () => {
@@ -102,9 +100,9 @@ export class Cat {
 		});
 	}
 
-	// Creates the div representing the cat and styles
-	private createCatElement(): HTMLElement {
-		const el = this.container.createDiv({ cls: "cat" });
+	// Creates the div representing the pet and styles
+	private createPetElement(): HTMLElement {
+		const el = this.container.createDiv({ cls: "pet" });
 		const topPercent =
 			this.backgroundHeights[this.backgroundName] ??
 			this.backgroundHeights["default"];
@@ -113,7 +111,7 @@ export class Cat {
 		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--top": topPercent,
-			"--cat-size": `${this.animations["run"].frameWidth}px`,
+			"--pet-size": `${this.animations["run"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
 		});
 		return el;
@@ -126,10 +124,10 @@ export class Cat {
 			this.backgroundHeights[newBackground] ??
 			this.backgroundHeights["default"];
 		// Pass a prop for the new height -> CSS instantly reacts to this change
-		this.catEl.setCssProps({ "--top": newTop });
+		this.petEl.setCssProps({ "--top": newTop });
 	}
 
-	// Add an animation for the cat
+	// Add an animation for the pet
 	private setAnimation(animationName: string) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
@@ -143,20 +141,20 @@ export class Cat {
 		}
 
 		// Need to use css styles and not props for animation because it needs a hardcoded value, not variable
-		this.catEl.setCssStyles({ animation: "none" });
-		this.catEl.offsetHeight; // Reflow
+		this.petEl.setCssStyles({ animation: "none" });
+		this.petEl.offsetHeight; // Reflow
 
 		// Create the animation for above ^^
 		this.keyFrameAnimation(animation);
 		const keyframeName = `${animation.name}-${this.petType}`;
 
 		// Set animation directly 
-		this.catEl.setCssStyles({
+		this.petEl.setCssStyles({
 			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
 		});
 
 		// Set background & sizing using props
-		this.catEl.setCssProps({
+		this.petEl.setCssProps({
 			"--sprite-url": `url(${animation.spriteUrl})`,
 			"--sprite-size": `${
 				animation.frameCount * animation.frameWidth
@@ -170,7 +168,7 @@ export class Cat {
 	private keyFrameAnimation(animation: AnimationConfig) {
 		const keyframeName = `${animation.name}-${this.petType}`;
 
-		// Avoid duplicate animations
+		// Avoid duplipete animations
 		if (document.getElementById(`kf-${keyframeName}`)) {
 			return;
 		}
@@ -196,7 +194,7 @@ export class Cat {
 		}
 	}
 
-	// Moves the cat in x direction
+	// Moves the pet in x direction
 	private move(duration: number, action?: string): Promise<void> {
 		const CAT_WIDTH = 32;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
@@ -210,7 +208,7 @@ export class Cat {
 			action === "jump"
 				? this.moveDist * (Math.random() * 0.3 + 1.5)
 				: this.moveDist; // Diff distance based on jumping vs running
-		const bias = 0.9;
+		const bias = 0.95;
 		const direction =
 			Math.random() < bias ? this.direction : -this.direction;
 		let dx = magnitude * direction;
@@ -222,7 +220,7 @@ export class Cat {
 		}
 		const targetX = this.currentX + dx;
 
-		// If no movement, resolve immediately (catching any overlapping of actions)
+		// If no movement, resolve immediately (petching any overlapping of actions)
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
@@ -234,16 +232,16 @@ export class Cat {
 		return new Promise((res) => {
 			// Cleanup function for after transition
 			const done = () => {
-				this.catEl.removeEventListener("transitionend", done);
-				this.catEl.setCssStyles({ transition: "" }); // Remove the transition property
+				this.petEl.removeEventListener("transitionend", done);
+				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
 				res(); // Resolve the promise
 			};
-			this.catEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
+			this.petEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
 
-			this.catEl.offsetWidth; // Reflow for new animation reset
+			this.petEl.offsetWidth; // Reflow for new animation reset
 			// Show moving animation
-			this.catEl.setCssProps({
+			this.petEl.setCssProps({
 				"--left": `${targetX}px`,
 				"--scale-x": `${this.direction}`,
 				"--move-duration": `${duration}ms`,
@@ -286,7 +284,7 @@ export class Cat {
 		}
 	}
 
-	// Destroys cat instance
+	// Destroys pet instance
 	public async destroy() {
 		this.isDestroyed = true;
 		// Death animation (wait for the animation to finish)
@@ -295,6 +293,6 @@ export class Cat {
 			setTimeout(resolve, this.animations["die"].duration)
 		);
 		// Removes instance from DOM
-		this.catEl.remove();
+		this.petEl.remove();
 	}
 }
