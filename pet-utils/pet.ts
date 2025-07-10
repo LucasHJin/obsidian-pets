@@ -11,15 +11,16 @@ export type AnimationConfig = {
 
 // CHANGE TO NOT JUST BE CATS
 
-export class Pet {
+// Abstract -> a class that cannot be instantiated directly, and is meant to be inherited by other classes
+export abstract class Pet {
 	private container: Element;
 	private petEl: HTMLElement;
 	private currentX: number;
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
-	private animations: Record<string, AnimationConfig>;
+	protected animations: Record<string, AnimationConfig>;
 	private isDestroyed = false; // Check if pet instance has been destroyed
-	private moveDist: number; // For different pet movements
+	protected moveDist: number; // For different pet movements
 	private backgroundName = "default";
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -50,38 +51,8 @@ export class Pet {
 		this.petType = petType;
 
 		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
-		for (const key in this.animations) {
-			this.animations[key].action = async (multiples = 1) => {
-				this.setAnimation(key);
-				if (key === "run") {
-					// Call the moving multiple times
-					for (let i = 0; i < multiples; i++) {
-						await this.move(this.animations[key].duration, key);
-					}
-				} else if (key === "jump") {
-					// Move once
-					await this.move(this.animations[key].duration, key);
-				} else if (key === "sit" || key === "sleep") {
-					const extensionAmount = Math.floor(Math.random() * 8) + 5;
-					// Wait to make sure action has time to occur
-					await new Promise((resolve) =>
-						setTimeout(
-							resolve,
-							this.animations[key].duration * extensionAmount
-						)
-					);
-				} else {
-					// Idleing animation
-					const extensionAmount = Math.floor(Math.random() * 2) + 2;
-					await new Promise((resolve) =>
-						setTimeout(
-							resolve,
-							this.animations[key].duration * extensionAmount
-						)
-					);
-				}
-			};
-		}
+		this.configureAnimations();
+
 		requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
 			const containerWidth = (this.container as HTMLElement).offsetWidth;
@@ -99,6 +70,8 @@ export class Pet {
 			})();
 		});
 	}
+	// Defines animation behavior (changed within children classes)
+	protected abstract configureAnimations(): void;
 
 	// Creates the div representing the pet and styles
 	private createPetElement(): HTMLElement {
@@ -128,7 +101,7 @@ export class Pet {
 	}
 
 	// Add an animation for the pet
-	private setAnimation(animationName: string) {
+	protected setAnimation(animationName: string) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
 			return;
@@ -148,9 +121,9 @@ export class Pet {
 		this.keyFrameAnimation(animation);
 		const keyframeName = `${animation.name}-${this.petType}`;
 
-		// Set animation directly 
+		// Set animation directly
 		this.petEl.setCssStyles({
-			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
+			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`,
 		});
 
 		// Set background & sizing using props
@@ -195,7 +168,7 @@ export class Pet {
 	}
 
 	// Moves the pet in x direction
-	private move(duration: number, action?: string): Promise<void> {
+	protected move(duration: number, action?: string): Promise<void> {
 		const CAT_WIDTH = 32;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 
@@ -272,12 +245,23 @@ export class Pet {
 				ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
 			await this.animations[randomAction].action?.();
 
+			let delay = 0;
+
 			// Go back to the running action
-			const delay = getRandDelay(
-				3000,
-				8000,
-				this.animations["run"].duration
-			);
+			if (this.petType.includes("cat")) {
+				delay = getRandDelay(
+					2000,
+					9000,
+					this.animations["run"].duration
+				);
+			} else if (this.petType.includes("bunny")) {
+				delay = getRandDelay(
+					3000,
+					12000,
+					this.animations["run"].duration
+				);
+			}
+
 			await this.animations["run"].action?.(
 				Math.floor(delay / this.animations["run"].duration)
 			);

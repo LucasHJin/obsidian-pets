@@ -1,20 +1,15 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
-import { Pet } from "pet-classes/pet";
-import { AnimationConfig } from "pet-classes/pet";
+import { Pet } from "pet-utils/pet";
+import { Cat } from "pet-utils/cat";
+import { Bunny } from "pet-utils/bunny";
 import { normalizePath } from "obsidian";
-
-// Allow for optional pet animations
-type PetAnimations = {
-	idle: AnimationConfig;
-	idle2?: AnimationConfig;
-	jump: AnimationConfig;
-	run: AnimationConfig;
-	sit: AnimationConfig;
-	sleep: AnimationConfig;
-	die: AnimationConfig;
-};
+import {
+	getCatAnimations,
+	getBunnyAnimations,
+	PetAnimations,
+} from "pet-utils/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -126,204 +121,49 @@ export class PetView extends ItemView {
 	}
 
 	addPetToView(wrapper: Element, singlePet: PetInstance) {
-		const CAT_ANIMATIONS: PetAnimations = {
-			idle: {
-				name: "idle",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/idle-cat.png`
-					)
-				),
-				frameCount: 7,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 700,
-			},
-			idle2: {
-				name: "idle2",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/idle2-cat.png`
-					)
-				),
-				frameCount: 14,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 1400,
-			},
-			jump: {
-				name: "jump",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/jump-cat.png`
-					)
-				),
-				frameCount: 13,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 1300,
-			},
-			run: {
-				name: "run",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/run-cat.png`
-					)
-				),
-				frameCount: 7,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 700,
-			},
-			sit: {
-				name: "sit",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/sitting-cat.png`
-					)
-				),
-				frameCount: 3,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 750,
-			},
-			sleep: {
-				name: "sleep",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/sleep-cat.png`
-					)
-				),
-				frameCount: 3,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 750,
-			},
-			die: {
-				name: "die",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${singlePet.type}/die-cat.png`
-					)
-				),
-				frameCount: 15,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 1500,
-			},
-		};
-
-		const BUNNY_ANIMATIONS: PetAnimations = {
-            idle: {
-                name: "idle",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/idle-bunny.png`
-                    )
-                ),
-                frameCount: 12,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 1200,
-            },
-            idle2: {
-                name: "idle2",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/liedown-bunny.png`
-                    )
-                ),
-                frameCount: 6,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 600,
-            },
-            jump: {
-                name: "jump",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/jump-bunny.png`
-                    )
-                ),
-                frameCount: 11,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 1100,
-            },
-            run: {
-                name: "run",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/run-bunny.png`
-                    )
-                ),
-                frameCount: 8,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 800,
-            },
-            sit: {
-                name: "sit",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/liking-bunny.png`
-                    )
-                ),
-                frameCount: 5,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 500,
-            },
-            sleep: {
-                name: "sleep",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/sleep-bunny.png`
-                    )
-                ),
-                frameCount: 6,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 600,
-            },
-            die: {
-                name: "die",
-                spriteUrl: this.app.vault.adapter.getResourcePath(
-                    normalizePath(
-                        `${this.plugin.manifest.dir}/assets/${singlePet.type}/die-bunny.png`
-                    )
-                ),
-                frameCount: 12,
-                frameWidth: 32,
-                frameHeight: 32,
-                duration: 1200,
-            },
-        };
-
-		if (
-			singlePet.type === "pets/batman-black-cat" ||
-			singlePet.type === "pets/batman-blue-cat"
-		) {
-			delete CAT_ANIMATIONS["idle2"];
-		}
-
-		const moveDist = Math.floor(Math.random() * 20) + 25;
+		// Get background for height adjustment of pet
 		const background = this.plugin.getSelectedBackground();
-
 		const cleanPetId = singlePet.id
 			.replace(/^pets\//, "")
 			.replace(/-\d+$/, "");
 
+		let animations: PetAnimations;
+		let moveDist: number;
+
 		// Create cat instance and add it to the list of pets
 		if (singlePet.type.includes("cat")) {
-			const cat = new Pet(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+			animations = getCatAnimations(
+				this.app,
+				this.plugin,
+				singlePet.type
+			);
+			moveDist = Math.floor(Math.random() * 20) + 25;
+
+			const cat = new Cat(
+				wrapper,
+				animations,
+				moveDist,
+				background,
+				cleanPetId
+			);
 			this.pets.push({ id: singlePet.id, pet: cat });
 		} else if (singlePet.type.includes("bunny")) {
-			const bunny = new Pet(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
+			animations = getBunnyAnimations(
+				this.app,
+				this.plugin,
+				singlePet.type
+			);
+			moveDist = Math.floor(Math.random() * 25) + 35;
+
+			const bunny = new Bunny(
+				wrapper,
+				animations,
+				moveDist,
+				background,
+				cleanPetId
+			);
 			this.pets.push({ id: singlePet.id, pet: bunny });
 		}
-
-		console.log(this.pets);
 	}
 
 	removePet(id: string) {
