@@ -9,18 +9,19 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
+// Find the right heights for everything
+
 // CHANGE TO NOT JUST BE CATS
 
-// Abstract -> a class that cannot be instantiated directly, and is meant to be inherited by other classes
-export abstract class Pet {
+export class Cat {
 	private container: Element;
-	private petEl: HTMLElement;
+	private catEl: HTMLElement;
 	private currentX: number;
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
-	protected animations: Record<string, AnimationConfig>;
-	private isDestroyed = false; // Check if pet instance has been destroyed
-	protected moveDist: number; // For different pet movements
+	private animations: Record<string, AnimationConfig>;
+	private isDestroyed = false; // Check if cat instance has been destroyed
+	private moveDist: number; // For different cat movements
 	private backgroundName = "default";
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -51,8 +52,38 @@ export abstract class Pet {
 		this.petType = petType;
 
 		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
-		this.configureAnimations();
-
+		for (const key in this.animations) {
+			this.animations[key].action = async (multiples = 1) => {
+				this.setAnimation(key);
+				if (key === "run") {
+					// Call the moving multiple times
+					for (let i = 0; i < multiples; i++) {
+						await this.move(this.animations[key].duration, key);
+					}
+				} else if (key === "jump") {
+					// Move once
+					await this.move(this.animations[key].duration, key);
+				} else if (key === "sit" || key === "sleep") {
+					const extensionAmount = Math.floor(Math.random() * 8) + 5;
+					// Wait to make sure action has time to occur
+					await new Promise((resolve) =>
+						setTimeout(
+							resolve,
+							this.animations[key].duration * extensionAmount
+						)
+					);
+				} else {
+					// Idleing animation
+					const extensionAmount = Math.floor(Math.random() * 2) + 2;
+					await new Promise((resolve) =>
+						setTimeout(
+							resolve,
+							this.animations[key].duration * extensionAmount
+						)
+					);
+				}
+			};
+		}
 		requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
 			const containerWidth = (this.container as HTMLElement).offsetWidth;
@@ -60,8 +91,8 @@ export abstract class Pet {
 			const maxX = containerWidth * 0.9;
 			this.currentX = Math.random() * (maxX - minX) + minX;
 
-			// Create pet HTML element to be shown in view
-			this.petEl = this.createPetElement();
+			// Create cat HTML element to be shown in view
+			this.catEl = this.createCatElement();
 
 			// Start the behavior
 			(async () => {
@@ -70,12 +101,10 @@ export abstract class Pet {
 			})();
 		});
 	}
-	// Defines animation behavior (changed within children classes)
-	protected abstract configureAnimations(): void;
 
-	// Creates the div representing the pet and styles
-	private createPetElement(): HTMLElement {
-		const el = this.container.createDiv({ cls: "pet" });
+	// Creates the div representing the cat and styles
+	private createCatElement(): HTMLElement {
+		const el = this.container.createDiv({ cls: "cat" });
 		const topPercent =
 			this.backgroundHeights[this.backgroundName] ??
 			this.backgroundHeights["default"];
@@ -84,7 +113,7 @@ export abstract class Pet {
 		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--top": topPercent,
-			"--pet-size": `${this.animations["run"].frameWidth}px`,
+			"--cat-size": `${this.animations["run"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
 		});
 		return el;
@@ -97,11 +126,11 @@ export abstract class Pet {
 			this.backgroundHeights[newBackground] ??
 			this.backgroundHeights["default"];
 		// Pass a prop for the new height -> CSS instantly reacts to this change
-		this.petEl.setCssProps({ "--top": newTop });
+		this.catEl.setCssProps({ "--top": newTop });
 	}
 
-	// Add an animation for the pet
-	protected setAnimation(animationName: string) {
+	// Add an animation for the cat
+	private setAnimation(animationName: string) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
 			return;
@@ -114,20 +143,20 @@ export abstract class Pet {
 		}
 
 		// Need to use css styles and not props for animation because it needs a hardcoded value, not variable
-		this.petEl.setCssStyles({ animation: "none" });
-		this.petEl.offsetHeight; // Reflow
+		this.catEl.setCssStyles({ animation: "none" });
+		this.catEl.offsetHeight; // Reflow
 
 		// Create the animation for above ^^
 		this.keyFrameAnimation(animation);
 		const keyframeName = `${animation.name}-${this.petType}`;
 
-		// Set animation directly
-		this.petEl.setCssStyles({
-			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`,
+		// Set animation directly 
+		this.catEl.setCssStyles({
+			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
 		});
 
 		// Set background & sizing using props
-		this.petEl.setCssProps({
+		this.catEl.setCssProps({
 			"--sprite-url": `url(${animation.spriteUrl})`,
 			"--sprite-size": `${
 				animation.frameCount * animation.frameWidth
@@ -141,7 +170,7 @@ export abstract class Pet {
 	private keyFrameAnimation(animation: AnimationConfig) {
 		const keyframeName = `${animation.name}-${this.petType}`;
 
-		// Avoid duplipete animations
+		// Avoid duplicate animations
 		if (document.getElementById(`kf-${keyframeName}`)) {
 			return;
 		}
@@ -167,8 +196,8 @@ export abstract class Pet {
 		}
 	}
 
-	// Moves the pet in x direction
-	protected move(duration: number, action?: string): Promise<void> {
+	// Moves the cat in x direction
+	private move(duration: number, action?: string): Promise<void> {
 		const CAT_WIDTH = 32;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 
@@ -181,7 +210,7 @@ export abstract class Pet {
 			action === "jump"
 				? this.moveDist * (Math.random() * 0.3 + 1.5)
 				: this.moveDist; // Diff distance based on jumping vs running
-		const bias = 0.95;
+		const bias = 0.9;
 		const direction =
 			Math.random() < bias ? this.direction : -this.direction;
 		let dx = magnitude * direction;
@@ -193,7 +222,7 @@ export abstract class Pet {
 		}
 		const targetX = this.currentX + dx;
 
-		// If no movement, resolve immediately (petching any overlapping of actions)
+		// If no movement, resolve immediately (catching any overlapping of actions)
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
@@ -205,16 +234,16 @@ export abstract class Pet {
 		return new Promise((res) => {
 			// Cleanup function for after transition
 			const done = () => {
-				this.petEl.removeEventListener("transitionend", done);
-				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
+				this.catEl.removeEventListener("transitionend", done);
+				this.catEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
 				res(); // Resolve the promise
 			};
-			this.petEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
+			this.catEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
 
-			this.petEl.offsetWidth; // Reflow for new animation reset
+			this.catEl.offsetWidth; // Reflow for new animation reset
 			// Show moving animation
-			this.petEl.setCssProps({
+			this.catEl.setCssProps({
 				"--left": `${targetX}px`,
 				"--scale-x": `${this.direction}`,
 				"--move-duration": `${duration}ms`,
@@ -245,30 +274,19 @@ export abstract class Pet {
 				ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
 			await this.animations[randomAction].action?.();
 
-			let delay = 0;
-
 			// Go back to the running action
-			if (this.petType.includes("cat")) {
-				delay = getRandDelay(
-					2000,
-					9000,
-					this.animations["run"].duration
-				);
-			} else if (this.petType.includes("bunny")) {
-				delay = getRandDelay(
-					3000,
-					12000,
-					this.animations["run"].duration
-				);
-			}
-
+			const delay = getRandDelay(
+				3000,
+				8000,
+				this.animations["run"].duration
+			);
 			await this.animations["run"].action?.(
 				Math.floor(delay / this.animations["run"].duration)
 			);
 		}
 	}
 
-	// Destroys pet instance
+	// Destroys cat instance
 	public async destroy() {
 		this.isDestroyed = true;
 		// Death animation (wait for the animation to finish)
@@ -277,6 +295,6 @@ export abstract class Pet {
 			setTimeout(resolve, this.animations["die"].duration)
 		);
 		// Removes instance from DOM
-		this.petEl.remove();
+		this.catEl.remove();
 	}
 }

@@ -1,22 +1,27 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
-import { Pet } from "pet-utils/pet";
-import { Cat } from "pet-utils/cat";
-import { Bunny } from "pet-utils/bunny";
+import { Cat } from "cat";
+import { AnimationConfig } from "cat";
 import { normalizePath } from "obsidian";
-import {
-	getCatAnimations,
-	getBunnyAnimations,
-	PetAnimations,
-} from "pet-utils/pet-animations";
+
+// Allow for optional pet animations
+type PetAnimations = {
+	idle: AnimationConfig;
+	idle2?: AnimationConfig;
+	jump: AnimationConfig;
+	run: AnimationConfig;
+	sit: AnimationConfig;
+	sleep: AnimationConfig;
+	die: AnimationConfig;
+};
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
-	pets: { id: string; pet: Pet }[] = []; // Property for list of existing pets (their id and the instance of the class)
+	cats: { id: string; cat: Cat }[] = []; // Property for list of existing cats (their id and the instance of the class)
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -61,7 +66,7 @@ export class PetView extends ItemView {
 
 		// Create a set of pet-ids in the view (unique ids, faster lookup)
 		const currentPetList = this.plugin.getPetList();
-		const existingPetIds = new Set(this.pets.map((c) => c.id));
+		const existingPetIds = new Set(this.cats.map((c) => c.id));
 
 		// Add all needed pets to the view
 		for (const pet of currentPetList) {
@@ -120,75 +125,229 @@ export class PetView extends ItemView {
 		this.updateAllCatVerticalPositions(background);
 	}
 
-	addPetToView(wrapper: Element, singlePet: PetInstance) {
-		// Get background for height adjustment of pet
+	addPetToView(wrapper: Element, pet: PetInstance) {
+		const CAT_ANIMATIONS: PetAnimations = {
+			idle: {
+				name: "idle",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/idle-cat.png`
+					)
+				),
+				frameCount: 7,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 700,
+			},
+			idle2: {
+				name: "idle2",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/idle2-cat.png`
+					)
+				),
+				frameCount: 14,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1400,
+			},
+			jump: {
+				name: "jump",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/jump-cat.png`
+					)
+				),
+				frameCount: 13,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1300,
+			},
+			run: {
+				name: "run",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/run-cat.png`
+					)
+				),
+				frameCount: 7,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 700,
+			},
+			sit: {
+				name: "sit",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/sitting-cat.png`
+					)
+				),
+				frameCount: 3,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 750,
+			},
+			sleep: {
+				name: "sleep",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/sleep-cat.png`
+					)
+				),
+				frameCount: 3,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 750,
+			},
+			die: {
+				name: "die",
+				spriteUrl: this.app.vault.adapter.getResourcePath(
+					normalizePath(
+						`${this.plugin.manifest.dir}/assets/${pet.type}/die-cat.png`
+					)
+				),
+				frameCount: 15,
+				frameWidth: 32,
+				frameHeight: 32,
+				duration: 1500,
+			},
+		};
+
+		const BUNNY_ANIMATIONS: PetAnimations = {
+            idle: {
+                name: "idle",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/idle-bunny.png`
+                    )
+                ),
+                frameCount: 12,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 1200,
+            },
+            idle2: {
+                name: "idle2",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/liedown-bunny.png`
+                    )
+                ),
+                frameCount: 6,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 600,
+            },
+            jump: {
+                name: "jump",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/jump-bunny.png`
+                    )
+                ),
+                frameCount: 11,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 1100,
+            },
+            run: {
+                name: "run",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/run-bunny.png`
+                    )
+                ),
+                frameCount: 8,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 800,
+            },
+            sit: {
+                name: "sit",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/liking-bunny.png`
+                    )
+                ),
+                frameCount: 5,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 500,
+            },
+            sleep: {
+                name: "sleep",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/sleep-bunny.png`
+                    )
+                ),
+                frameCount: 6,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 600,
+            },
+            die: {
+                name: "die",
+                spriteUrl: this.app.vault.adapter.getResourcePath(
+                    normalizePath(
+                        `${this.plugin.manifest.dir}/assets/${pet.type}/die-bunny.png`
+                    )
+                ),
+                frameCount: 12,
+                frameWidth: 32,
+                frameHeight: 32,
+                duration: 1200,
+            },
+        };
+
+		if (
+			pet.type === "pets/batman-black-cat" ||
+			pet.type === "pets/batman-blue-cat"
+		) {
+			delete CAT_ANIMATIONS["idle2"];
+		}
+
+		const moveDist = Math.floor(Math.random() * 20) + 25;
 		const background = this.plugin.getSelectedBackground();
-		const cleanPetId = singlePet.id
+
+		const cleanPetId = pet.id
 			.replace(/^pets\//, "")
 			.replace(/-\d+$/, "");
 
-		let animations: PetAnimations;
-		let moveDist: number;
-
-		// Create cat instance and add it to the list of pets
-		if (singlePet.type.includes("cat")) {
-			animations = getCatAnimations(
-				this.app,
-				this.plugin,
-				singlePet.type
-			);
-			moveDist = Math.floor(Math.random() * 20) + 25;
-
-			const cat = new Cat(
-				wrapper,
-				animations,
-				moveDist,
-				background,
-				cleanPetId
-			);
-			this.pets.push({ id: singlePet.id, pet: cat });
-		} else if (singlePet.type.includes("bunny")) {
-			animations = getBunnyAnimations(
-				this.app,
-				this.plugin,
-				singlePet.type
-			);
-			moveDist = Math.floor(Math.random() * 25) + 35;
-
-			const bunny = new Bunny(
-				wrapper,
-				animations,
-				moveDist,
-				background,
-				cleanPetId
-			);
-			this.pets.push({ id: singlePet.id, pet: bunny });
+		// Create cat instance and add it to the list of cats
+		if (pet.type.includes("cat")) {
+			console.log(pet.id.split("/")[1])
+			const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+			this.cats.push({ id: pet.id, cat });
+		} else if (pet.type.includes("bunny")) {
+			const cat = new Cat(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
+			this.cats.push({ id: pet.id, cat });
 		}
 	}
 
 	removePet(id: string) {
 		// Find the index of the unique id
-		const index = this.pets.findIndex((c) => c.id === id);
+		const index = this.cats.findIndex((c) => c.id === id);
 		// Clean up the instance's assets and remove it from the list
 		if (index !== -1) {
-			this.pets[index].pet.destroy();
-			this.pets.splice(index, 1);
+			this.cats[index].cat.destroy();
+			this.cats.splice(index, 1);
 		}
 	}
 
 	removeAllPets() {
 		// Clean up resources used by all instances
-		for (const { pet } of this.pets) {
-			pet.destroy();
+		for (const { cat } of this.cats) {
+			cat.destroy();
 		}
 		// Empty list
-		this.pets = [];
+		this.cats = [];
 	}
 
 	updateAllCatVerticalPositions(newBackground: string) {
 		// Update the position for all of them
-		for (const { pet } of this.pets) {
-			pet.updateVerticalPosition(newBackground);
+		for (const { cat } of this.cats) {
+			cat.updateVerticalPosition(newBackground);
 		}
 	}
 
@@ -203,8 +362,8 @@ export class PetView extends ItemView {
 
 	// Used to clean up content after view is closed
 	async onClose() {
-		for (const { pet } of this.pets) {
-			pet.destroy();
+		for (const { cat } of this.cats) {
+			cat.destroy();
 		}
 		// console.log("Pet view closed");
 	}
