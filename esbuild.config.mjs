@@ -39,6 +39,12 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	loader: {
+		".png": "dataurl",
+		".jpg": "dataurl",
+		".jpeg": "dataurl",
+		".gif": "dataurl",
+	},
 });
 
 if (prod) {

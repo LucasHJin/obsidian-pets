@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption } from "selectorModal";
@@ -11,14 +11,12 @@ export interface PetInstance {
 
 // Define shape of saved plugin data
 interface PetPluginData {
-	isViewOpen: boolean; // Boolean for toggling the view open/close
 	selectedBackground: string;
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
-	isViewOpen: false,
 	selectedBackground: "none",
 	pets: [],
 	nextPetIdCounters: {},
@@ -42,31 +40,21 @@ export default class PetPlugin extends Plugin {
 
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
-			if (this.instanceData.isViewOpen) {
+			const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+			if (!isOpen) {
 				await this.openView();
 			}
 		});
 
 		// Adds icon on the ribbon (side panel) to open view
 		this.addRibbonIcon("cat", "Toggle pet view", async () => {
-			if (this.instanceData.isViewOpen) {
+			const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+			if (isOpen) {
 				await this.closeView();
 			} else {
 				await this.openView();
 			}
 		});
-
-		// Listen for if the view is closed manually and chnage the isViewOpen
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf) => {
-				const leaves =
-					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-				if (leaves.length === 0 && this.instanceData.isViewOpen) {
-					this.instanceData.isViewOpen = false;
-					this.saveData(this.instanceData);
-				}
-			})
-		);
 
 		// Command to choose the background
 		const BACKGROUNDS: SelectorOption[] = [
@@ -142,7 +130,7 @@ export default class PetPlugin extends Plugin {
 			},
 			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
 			{ value: "pets/white-cat", label: "White cat", requiresName: true },
-			{ value: "pets/grey-bunny", label: "Grey bunny", requiresName: true },
+			// { value: "pets/grey-bunny", label: "Grey bunny", requiresName: true },
 		];
 		this.addCommand({
 			id: "add-pet-dropdown",
@@ -340,39 +328,25 @@ export default class PetPlugin extends Plugin {
 	async openView() {
 		const { workspace } = this.app;
 
-		let leaf: WorkspaceLeaf | null;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
-		// Check if leaf already exists (if not -> create it)
 		if (leaves.length > 0) {
-			leaf = leaves[0];
-		} else {
-			leaf = workspace.getLeftLeaf(true);
-			if (leaf) {
-				await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
-			}
+			workspace.revealLeaf(leaves[0]);
+			return;
 		}
 
-		// Show the leaf (view) to the user
+		const leaf = workspace.getLeftLeaf(true);
 		if (leaf) {
+			await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
 			workspace.revealLeaf(leaf);
 		}
-
-		// Persist if view is open accross sessions
-		this.instanceData.isViewOpen = true;
-		await this.saveData(this.instanceData);
 	}
 
 	// Remove the leaf (view) based on its ID
 	async closeView() {
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
-
 		for (const leaf of leaves) {
 			await leaf.detach();
 		}
-
-		// Persist if view is open accross sessions
-		this.instanceData.isViewOpen = false;
-		await this.saveData(this.instanceData);
 	}
 }

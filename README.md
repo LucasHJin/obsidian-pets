@@ -1,4 +1,4 @@
-# Obsidian Pixel Pets Plugin
+# Pixel Pets Plugin
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
@@ -13,7 +13,7 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
 ### Installation
 #### Method 1: Community Plugins (Recommended)
 1. In Obsidian, go to **Settings > Community Plugins**.
-2. Click **Browse** and search for **"Obsidian Pets"**.
+2. Click **Browse** and search for **"Pixel Pets"**.
 3. Click **Install**, then **Enable** the plugin.
 
 #### Method 2: Manual Installation
@@ -21,10 +21,10 @@ If the plugin isn't available in the community plugin list yet:
 1. Download or clone this repository.
 2. Copy the entire folder into your vault's `.obsidian/plugins/` directory.
 3. In Obsidian, go to **Settings > Community Plugins** and click **Reload plugins**.
-4. Enable **Obsidian Pets** in the list of installed plugins.
+4. Enable **Pixel Pets** in the list of installed plugins.
 
 ### Adding Your First Pet
-1. Enable the **Obsidian Pets** plugin.
+1. Enable the **Pixel Pets** plugin.
 2. Once enabled, select the command `Add a pet`. Choose the pet's species and give it a name.
     - This will automatically open the pet view.
 3. Select a background using the `Choose pet view background` command.
