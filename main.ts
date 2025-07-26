@@ -226,7 +226,7 @@ export default class PetPlugin extends Plugin {
 	public async chooseBackground(backgroundFile: string): Promise<void> {
 		// Make sure not already selected background
 		if (this.instanceData.selectedBackground === backgroundFile) {
-			console.log("Same picked");
+			// console.log("Same picked");
 			return;
 		}
 

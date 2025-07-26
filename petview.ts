@@ -198,7 +198,7 @@ export class PetView extends ItemView {
 			const moveDist = Math.floor(Math.random() * 20) + 25;
 			const background = this.plugin.getSelectedBackground();
 
-			console.log(pet.id);
+			// console.log(pet.id);
 
 			const cleanPetId = pet.id.replace(/^pets\//, "");
 
