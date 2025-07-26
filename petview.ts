@@ -3,9 +3,7 @@ import PetPlugin from "main";
 import { PetInstance } from "main";
 import { Cat } from "cat";
 import { AnimationConfig } from "cat";
-import { normalizePath } from "obsidian";
-
-// HELP WITH ESBUILD PLEASE
+import { getPetAsset, getBackgroundAsset } from "./assets";
 
 // Allow for optional pet animations
 type PetAnimations = {
@@ -98,149 +96,118 @@ export class PetView extends ItemView {
 
 		// Add the new backgrounds
 		if (background !== "none") {
-			wrapper.createEl("img", {
-				attr: {
-					src: this.app.vault.adapter.getResourcePath(
-						normalizePath(
-							`${this.plugin.manifest.dir}/assets/${background}`
-						)
-					),
-					alt: "Background",
-				},
-				cls: "pet-view-background",
-			});
+			try {
+				const backgroundUrl = getBackgroundAsset(background);
+				wrapper.createEl("img", {
+					attr: {
+						src: backgroundUrl,
+						alt: "Background",
+					},
+					cls: "pet-view-background",
+				});
+			} catch (error) {
+				console.error(`Failed to load background: ${background}`, error);
+			}
 		}
 		if (background.includes("snow")) {
-			wrapper.createEl("img", {
-				attr: {
-					src: this.app.vault.adapter.getResourcePath(
-						normalizePath(
-							`${this.plugin.manifest.dir}/assets/backgrounds/snow.gif`
-						)
-					),
-					alt: "Snow falling animation",
-				},
-				cls: "pet-view-background-animation",
-			});
+			try {
+				const snowUrl = getBackgroundAsset("snow.gif");
+				wrapper.createEl("img", {
+					attr: {
+						src: snowUrl,
+						alt: "Snow falling animation",
+					},
+					cls: "pet-view-background-animation",
+				});
+			} catch (error) {
+				console.error("Failed to load snow animation", error);
+			}
 		}
 
 		this.updateAllCatVerticalPositions(background);
 	}
 
 	addPetToView(wrapper: Element, pet: PetInstance) {
-		const CAT_ANIMATIONS: PetAnimations = {
-			idle: {
-				name: "idle",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/idle-cat.png`
-					)
-				),
-				frameCount: 7,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 700,
-			},
-			idle2: {
-				name: "idle2",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/idle2-cat.png`
-					)
-				),
-				frameCount: 14,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 1400,
-			},
-			jump: {
-				name: "jump",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/jump-cat.png`
-					)
-				),
-				frameCount: 13,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 1300,
-			},
-			run: {
-				name: "run",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/run-cat.png`
-					)
-				),
-				frameCount: 7,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 700,
-			},
-			sit: {
-				name: "sit",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/sitting-cat.png`
-					)
-				),
-				frameCount: 3,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 750,
-			},
-			sleep: {
-				name: "sleep",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/sleep-cat.png`
-					)
-				),
-				frameCount: 3,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 750,
-			},
-			die: {
-				name: "die",
-				spriteUrl: this.app.vault.adapter.getResourcePath(
-					normalizePath(
-						`${this.plugin.manifest.dir}/assets/${pet.type}/die-cat.png`
-					)
-				),
-				frameCount: 15,
-				frameWidth: 32,
-				frameHeight: 32,
-				duration: 1500,
-			},
-		};
+		try {
+			const CAT_ANIMATIONS: PetAnimations = {
+				idle: {
+					name: "idle",
+					spriteUrl: getPetAsset(pet.type, "idle-cat.png"),
+					frameCount: 7,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 700,
+				},
+				jump: {
+					name: "jump",
+					spriteUrl: getPetAsset(pet.type, "jump-cat.png"),
+					frameCount: 13,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 1300,
+				},
+				run: {
+					name: "run",
+					spriteUrl: getPetAsset(pet.type, "run-cat.png"),
+					frameCount: 7,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 700,
+				},
+				sit: {
+					name: "sit",
+					spriteUrl: getPetAsset(pet.type, "sitting-cat.png"),
+					frameCount: 3,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 750,
+				},
+				sleep: {
+					name: "sleep",
+					spriteUrl: getPetAsset(pet.type, "sleep-cat.png"),
+					frameCount: 3,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 750,
+				},
+				die: {
+					name: "die",
+					spriteUrl: getPetAsset(pet.type, "die-cat.png"),
+					frameCount: 15,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 1500,
+				},
+			};
 
-		if (
-			pet.type === "pets/batman-black-cat" ||
-			pet.type === "pets/batman-blue-cat"
-		) {
-			delete CAT_ANIMATIONS["idle2"];
+			// Add idle2 animation for non-batman cats
+			if (
+				pet.type !== "pets/batman-black-cat" &&
+				pet.type !== "pets/batman-blue-cat"
+			) {
+				CAT_ANIMATIONS.idle2 = {
+					name: "idle2",
+					spriteUrl: getPetAsset(pet.type, "idle2-cat.png"),
+					frameCount: 14,
+					frameWidth: 32,
+					frameHeight: 32,
+					duration: 1400,
+				};
+			}
+
+			const moveDist = Math.floor(Math.random() * 20) + 25;
+			const background = this.plugin.getSelectedBackground();
+
+			console.log(pet.id);
+
+			const cleanPetId = pet.id.replace(/^pets\//, "");
+
+			// Create cat instance and add it to the list of cats
+			const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+			this.cats.push({ id: pet.id, cat });
+		} catch (error) {
+			console.error(`Failed to create pet ${pet.id}:`, error);
 		}
-
-		const moveDist = Math.floor(Math.random() * 20) + 25;
-		const background = this.plugin.getSelectedBackground();
-
-		console.log(pet.id);
-
-		const cleanPetId = pet.id
-			.replace(/^pets\//, "")
-
-		// Create cat instance and add it to the list of cats
-		// if (pet.type.includes("cat")) {
-		// 	console.log(pet.id.split("/")[1])
-		// 	const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
-		// 	this.cats.push({ id: pet.id, cat });
-		// } else if (pet.type.includes("bunny")) {
-		// 	const cat = new Cat(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
-		// 	this.cats.push({ id: pet.id, cat });
-		// }
-		const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
-		this.cats.push({ id: pet.id, cat });
 	}
 
 	removePet(id: string) {

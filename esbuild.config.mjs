@@ -1,6 +1,8 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import { readFileSync } from "fs";
+import path from "path";
 
 const banner =
 `/*
@@ -10,6 +12,36 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+// Plugin to bundle images as base64 data URLs
+const imagePlugin = {
+	name: 'images',
+	setup(build) {
+		build.onResolve({ filter: /\.(png|jpg|jpeg|gif|svg)$/ }, args => {
+			return {
+				path: path.resolve(args.resolveDir, args.path),
+				namespace: 'image'
+			};
+		});
+
+		build.onLoad({ filter: /.*/, namespace: 'image' }, args => {
+			const imageBuffer = readFileSync(args.path);
+			const base64 = imageBuffer.toString('base64');
+			const ext = path.extname(args.path).slice(1);
+			const mimeType = {
+				'png': 'image/png',
+				'jpg': 'image/jpeg',
+				'jpeg': 'image/jpeg',
+				'gif': 'image/gif',
+				'svg': 'image/svg+xml'
+			}[ext] || 'application/octet-stream';
+			
+			return {
+				contents: `export default "data:${mimeType};base64,${base64}"`,
+				loader: 'js'
+			};
+		});
+	}
+};
 
 const context = await esbuild.context({
 	banner: {
@@ -39,12 +71,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
-	loader: {
-		".png": "dataurl",
-		".jpg": "dataurl",
-		".jpeg": "dataurl",
-		".gif": "dataurl",
-	},
+	plugins: [imagePlugin],
 });
 
 if (prod) {
