@@ -16,6 +16,12 @@ type PetAnimations = {
 	die: AnimationConfig;
 };
 
+// ±100ms variation for each animation duration
+function alterDuration(base: number, variation = 100): number {
+	const offset = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
+	return base + offset;
+}
+
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
 
@@ -136,7 +142,7 @@ export class PetView extends ItemView {
 					frameCount: 7,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 700,
+					duration: alterDuration(700, 100),
 				},
 				jump: {
 					name: "jump",
@@ -144,7 +150,7 @@ export class PetView extends ItemView {
 					frameCount: 13,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 1300,
+					duration: alterDuration(1300, 100),
 				},
 				run: {
 					name: "run",
@@ -152,7 +158,7 @@ export class PetView extends ItemView {
 					frameCount: 7,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 700,
+					duration: alterDuration(700, 100),
 				},
 				sit: {
 					name: "sit",
@@ -160,7 +166,7 @@ export class PetView extends ItemView {
 					frameCount: 3,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 750,
+					duration: alterDuration(750, 100),
 				},
 				sleep: {
 					name: "sleep",
@@ -168,7 +174,7 @@ export class PetView extends ItemView {
 					frameCount: 3,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 750,
+					duration: alterDuration(750, 100),
 				},
 				die: {
 					name: "die",
@@ -176,7 +182,7 @@ export class PetView extends ItemView {
 					frameCount: 15,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 1500,
+					duration: alterDuration(1500, 100),
 				},
 			};
 
@@ -191,7 +197,7 @@ export class PetView extends ItemView {
 					frameCount: 14,
 					frameWidth: 32,
 					frameHeight: 32,
-					duration: 1400,
+					duration: alterDuration(1400, 100),
 				};
 			}
 
