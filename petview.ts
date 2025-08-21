@@ -1,11 +1,11 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
-import { Pet } from "pet-classes/pet";
-import { Cat } from "pet-classes/cat";
-import { Bunny } from "pet-classes/bunny";
-import { AnimationConfig } from "pet-classes/pet";
-import { getPetAsset, getBackgroundAsset } from "./assets";
+import { Pet } from "pet-utils/pet";
+import { Cat } from "pet-utils/cat";
+import { Bunny } from "pet-utils/bunny";
+import { AnimationConfig } from "pet-utils/pet";
+import { getPetAsset, getBackgroundAsset } from "./pet-utils/assets";
 
 // Allow for optional pet animations
 type PetAnimations = {
@@ -268,7 +268,7 @@ export class PetView extends ItemView {
 						duration: alterDuration(1200, 150),
 					},
 				}
-				const moveDist = Math.floor(Math.random() * 20) + 25;
+				const moveDist = Math.floor(Math.random() * 30) + 40;
 				const bunny = new Bunny(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			}
