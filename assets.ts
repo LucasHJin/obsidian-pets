@@ -106,6 +106,13 @@ import batmanBlueCatSit from './assets/pets/batman-blue-cat/sitting-cat.png';
 import batmanBlueCatSleep from './assets/pets/batman-blue-cat/sleep-cat.png';
 import batmanBlueCatDie from './assets/pets/batman-blue-cat/die-cat.png';
 
+import greyBunnyIdle from './assets/pets/grey-bunny/idle-bunny.png';
+import greyBunnyJump from './assets/pets/grey-bunny/jump-bunny.png';
+import greyBunnyRun from './assets/pets/grey-bunny/run-bunny.png';
+import greyBunnyLike from './assets/pets/grey-bunny/like-bunny.png';
+import greyBunnyLiedown from './assets/pets/grey-bunny/liedown-bunny.png';
+import greyBunnySleep from './assets/pets/grey-bunny/sleep-bunny.png';
+import greyBunnyDie from './assets/pets/grey-bunny/die-bunny.png';
 
 // Export organized by type
 export const backgrounds = {
@@ -229,6 +236,15 @@ export const petAssets = {
     'sleep-cat.png': xmasCatSleep,
     'die-cat.png': xmasCatDie,
   },
+  'pets/grey-bunny': {
+    'idle-bunny.png': greyBunnyIdle,
+    'liedown-bunny.png': greyBunnyLiedown,
+    'jump-bunny.png': greyBunnyJump,
+    'run-bunny.png': greyBunnyRun,
+    'like-bunny.png': greyBunnyLike,
+    'sleep-bunny.png': greyBunnySleep,
+    'die-bunny.png': greyBunnyDie,
+  }
 };
 
 // Helper function to get pet asset

@@ -1,7 +1,9 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
+import { Pet } from "pet-classes/pet";
 import { Cat } from "pet-classes/cat";
+import { Bunny } from "pet-classes/bunny";
 import { AnimationConfig } from "pet-classes/pet";
 import { getPetAsset, getBackgroundAsset } from "./assets";
 
@@ -27,7 +29,7 @@ export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
-	cats: { id: string; cat: Cat }[] = []; // Property for list of existing cats (their id and the instance of the class)
+	pets: { id: string; pet: Pet }[] = []; // Property for list of existing pets (their id and the instance of the class)
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -72,7 +74,7 @@ export class PetView extends ItemView {
 
 		// Create a set of pet-ids in the view (unique ids, faster lookup)
 		const currentPetList = this.plugin.getPetList();
-		const existingPetIds = new Set(this.cats.map((c) => c.id));
+		const existingPetIds = new Set(this.pets.map((p) => p.id));
 
 		// Add all needed pets to the view
 		for (const pet of currentPetList) {
@@ -133,112 +135,171 @@ export class PetView extends ItemView {
 		this.updateAllCatVerticalPositions(background);
 	}
 
-	addPetToView(wrapper: Element, pet: PetInstance) {
-		try {
-			const CAT_ANIMATIONS: PetAnimations = {
-				idle: {
-					name: "idle",
-					spriteUrl: getPetAsset(pet.type, "idle-cat.png"),
-					frameCount: 7,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(700, 100),
-				},
-				jump: {
-					name: "jump",
-					spriteUrl: getPetAsset(pet.type, "jump-cat.png"),
-					frameCount: 13,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(1300, 100),
-				},
-				run: {
-					name: "run",
-					spriteUrl: getPetAsset(pet.type, "run-cat.png"),
-					frameCount: 7,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(700, 100),
-				},
-				sit: {
-					name: "sit",
-					spriteUrl: getPetAsset(pet.type, "sitting-cat.png"),
-					frameCount: 3,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(750, 100),
-				},
-				sleep: {
-					name: "sleep",
-					spriteUrl: getPetAsset(pet.type, "sleep-cat.png"),
-					frameCount: 3,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(750, 100),
-				},
-				die: {
-					name: "die",
-					spriteUrl: getPetAsset(pet.type, "die-cat.png"),
-					frameCount: 15,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(1500, 100),
-				},
-			};
-
-			// Add idle2 animation for non-batman cats
-			if (
-				pet.type !== "pets/batman-black-cat" &&
-				pet.type !== "pets/batman-blue-cat"
-			) {
-				CAT_ANIMATIONS.idle2 = {
-					name: "idle2",
-					spriteUrl: getPetAsset(pet.type, "idle2-cat.png"),
-					frameCount: 14,
-					frameWidth: 32,
-					frameHeight: 32,
-					duration: alterDuration(1400, 100),
-				};
-			}
-
-			const moveDist = Math.floor(Math.random() * 20) + 25;
+	addPetToView(wrapper: Element, singlePet: PetInstance) {
+		try {	
 			const background = this.plugin.getSelectedBackground();
+			const cleanPetId = singlePet.id.replace(/^pets\//, "");
 
-			// console.log(pet.id);
+			if (singlePet.type.includes("cat")) {
+				const CAT_ANIMATIONS: PetAnimations = {
+					idle: {
+						name: "idle",
+						spriteUrl: getPetAsset(singlePet.type, "idle-cat.png"),
+						frameCount: 7,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(700, 100),
+					},
+					jump: {
+						name: "jump",
+						spriteUrl: getPetAsset(singlePet.type, "jump-cat.png"),
+						frameCount: 13,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(1300, 100),
+					},
+					run: {
+						name: "run",
+						spriteUrl: getPetAsset(singlePet.type, "run-cat.png"),
+						frameCount: 7,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(700, 100),
+					},
+					sit: {
+						name: "sit",
+						spriteUrl: getPetAsset(singlePet.type, "sitting-cat.png"),
+						frameCount: 3,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(750, 100),
+					},
+					sleep: {
+						name: "sleep",
+						spriteUrl: getPetAsset(singlePet.type, "sleep-cat.png"),
+						frameCount: 3,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(750, 100),
+					},
+					die: {
+						name: "die",
+						spriteUrl: getPetAsset(singlePet.type, "die-cat.png"),
+						frameCount: 15,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(1500, 100),
+					},
+				};
 
-			const cleanPetId = pet.id.replace(/^pets\//, "");
-
-			// Create cat instance and add it to the list of cats
-			const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
-			this.cats.push({ id: pet.id, cat });
+				// Add idle2 animation for non-batman cats
+				if (
+					singlePet.type !== "pets/batman-black-cat" &&
+					singlePet.type !== "pets/batman-blue-cat"
+				) {
+					CAT_ANIMATIONS.idle2 = {
+						name: "idle2",
+						spriteUrl: getPetAsset(singlePet.type, "idle2-cat.png"),
+						frameCount: 14,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(1400, 100),
+					};
+				}
+				const moveDist = Math.floor(Math.random() * 20) + 25;
+				const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+				this.pets.push({ id: singlePet.id, pet: cat });
+			} else if (singlePet.type.includes("bunny")) {
+				const BUNNY_ANIMATIONS: PetAnimations = { 
+					idle: {
+						name: "idle",
+						spriteUrl: getPetAsset(singlePet.type, "idle-bunny.png"),
+						frameCount: 12,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(1200, 150),
+					},
+					idle2: {
+						name: "liedown",
+						spriteUrl: getPetAsset(singlePet.type, "liedown-bunny.png"),
+						frameCount: 6,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(600, 150),
+					},
+					jump: {
+						name: "jump",
+						spriteUrl: getPetAsset(singlePet.type, "jump-bunny.png"),
+						frameCount: 11,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(1100, 150),
+					},
+					run: {
+						name: "run",
+						spriteUrl: getPetAsset(singlePet.type, "run-bunny.png"),
+						frameCount: 8,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(800, 150),
+					},
+					sit: {
+						name: "like",
+						spriteUrl: getPetAsset(singlePet.type, "like-bunny.png"),
+						frameCount: 5,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(500, 150),
+					},
+					sleep: {
+						name: "sleep",
+						spriteUrl: getPetAsset(singlePet.type, "sleep-bunny.png"),
+						frameCount: 6,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(600, 150),
+					},
+					die: {
+						name: "die",
+						spriteUrl: getPetAsset(singlePet.type, "die-bunny.png"),
+						frameCount: 12,
+						frameWidth: 32,
+						frameHeight: 32,
+						duration: alterDuration(1200, 150),
+					},
+				}
+				const moveDist = Math.floor(Math.random() * 20) + 25;
+				const bunny = new Bunny(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
+				this.pets.push({ id: singlePet.id, pet: bunny });
+			}
 		} catch (error) {
-			console.error(`Failed to create pet ${pet.id}:`, error);
+			console.error(`Failed to create pet ${singlePet.id}:`, error);
 		}
 	}
 
 	removePet(id: string) {
 		// Find the index of the unique id
-		const index = this.cats.findIndex((c) => c.id === id);
+		const index = this.pets.findIndex((p) => p.id === id);
 		// Clean up the instance's assets and remove it from the list
 		if (index !== -1) {
-			this.cats[index].cat.destroy();
-			this.cats.splice(index, 1);
+			this.pets[index].pet.destroy();
+			this.pets.splice(index, 1);
 		}
 	}
 
 	removeAllPets() {
 		// Clean up resources used by all instances
-		for (const { cat } of this.cats) {
-			cat.destroy();
+		for (const { pet } of this.pets) {
+			pet.destroy();
 		}
 		// Empty list
-		this.cats = [];
+		this.pets = [];
 	}
 
 	updateAllCatVerticalPositions(newBackground: string) {
 		// Update the position for all of them
-		for (const { cat } of this.cats) {
-			cat.updateVerticalPosition(newBackground);
+		for (const { pet } of this.pets) {
+			pet.updateVerticalPosition(newBackground);
 		}
 	}
 
@@ -253,8 +314,8 @@ export class PetView extends ItemView {
 
 	// Used to clean up content after view is closed
 	async onClose() {
-		for (const { cat } of this.cats) {
-			cat.destroy();
+		for (const { pet } of this.pets) {
+			pet.destroy();
 		}
 		// console.log("Pet view closed");
 	}
