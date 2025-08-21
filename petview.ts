@@ -1,8 +1,8 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "main";
 import { PetInstance } from "main";
-import { Cat } from "cat";
-import { AnimationConfig } from "cat";
+import { Cat } from "pet-classes/cat";
+import { AnimationConfig } from "pet-classes/pet";
 import { getPetAsset, getBackgroundAsset } from "./assets";
 
 // Allow for optional pet animations

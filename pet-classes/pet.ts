@@ -9,19 +9,15 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
-// Find the right heights for everything
-
-// CHANGE TO NOT JUST BE CATS
-
-export class Cat {
+export class Pet {
 	private container: Element;
-	private catEl: HTMLElement;
+	private petEl: HTMLElement;
 	private currentX: number;
 	private direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
-	private animations: Record<string, AnimationConfig>;
-	private isDestroyed = false; // Check if cat instance has been destroyed
-	private moveDist: number; // For different cat movements
+	protected animations: Record<string, AnimationConfig>;
+	private isDestroyed = false; // Check if pet instance has been destroyed
+	private moveDist: number; // For different pet movements
 	private backgroundName = "default";
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -36,54 +32,23 @@ export class Cat {
 		"backgrounds/castlebg-1.png": "82.1%",
 		"backgrounds/castlebg-2.png": "74%",
 	};
-	private petType: string; // For unique keyframes
+	private petId: string; // For unique keyframes
 
 	constructor(
 		container: Element,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
-		petType: string
+		petId: string
 	) {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
 		this.backgroundName = backgroundName;
-		this.petType = petType;
+		this.petId = petId;
 
-		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
-		for (const key in this.animations) {
-			this.animations[key].action = async (multiples = 1) => {
-				this.setAnimation(key);
-				if (key === "run") {
-					// Call the moving multiple times
-					for (let i = 0; i < multiples; i++) {
-						await this.move(this.animations[key].duration, key);
-					}
-				} else if (key === "jump") {
-					// Move once
-					await this.move(this.animations[key].duration, key);
-				} else if (key === "sit" || key === "sleep") {
-					const extensionAmount = Math.floor(Math.random() * 8) + 5;
-					// Wait to make sure action has time to occur
-					await new Promise((resolve) =>
-						setTimeout(
-							resolve,
-							this.animations[key].duration * extensionAmount
-						)
-					);
-				} else {
-					// Idleing animation
-					const extensionAmount = Math.floor(Math.random() * 2) + 2;
-					await new Promise((resolve) =>
-						setTimeout(
-							resolve,
-							this.animations[key].duration * extensionAmount
-						)
-					);
-				}
-			};
-		}
+		this.setupActions();
+
 		requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
 			const containerWidth = (this.container as HTMLElement).offsetWidth;
@@ -91,8 +56,8 @@ export class Cat {
 			const maxX = containerWidth * 0.9;
 			this.currentX = Math.random() * (maxX - minX) + minX;
 
-			// Create cat HTML element to be shown in view
-			this.catEl = this.createCatElement();
+			// Create pet HTML element to be shown in view
+			this.petEl = this.createPetElement();
 
 			// Start the behavior
 			(async () => {
@@ -102,9 +67,9 @@ export class Cat {
 		});
 	}
 
-	// Creates the div representing the cat and styles
-	private createCatElement(): HTMLElement {
-		const el = this.container.createDiv({ cls: "cat" });
+	// Creates the div representing the pet and styles
+	protected createPetElement(): HTMLElement {
+		const el = this.container.createDiv({ cls: "pet" });
 		const topPercent =
 			this.backgroundHeights[this.backgroundName] ??
 			this.backgroundHeights["default"];
@@ -113,11 +78,14 @@ export class Cat {
 		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--top": topPercent,
-			"--cat-size": `${this.animations["run"].frameWidth}px`,
+			"--pet-size": `${this.animations["run"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
 		});
 		return el;
 	}
+
+	// Leave empty to override in subclasses
+	protected setupActions() {}
 
 	// Update height when background change
 	public updateVerticalPosition(newBackground: string) {
@@ -126,11 +94,11 @@ export class Cat {
 			this.backgroundHeights[newBackground] ??
 			this.backgroundHeights["default"];
 		// Pass a prop for the new height -> CSS instantly reacts to this change
-		this.catEl.setCssProps({ "--top": newTop });
+		this.petEl.setCssProps({ "--top": newTop });
 	}
 
-	// Add an animation for the cat
-	private setAnimation(animationName: string) {
+	// Add an animation for the pet
+	protected setAnimation(animationName: string) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
 			return;
@@ -143,20 +111,20 @@ export class Cat {
 		}
 
 		// Need to use css styles and not props for animation because it needs a hardcoded value, not variable
-		this.catEl.setCssStyles({ animation: "none" });
-		this.catEl.offsetHeight; // Reflow
+		this.petEl.setCssStyles({ animation: "none" });
+		this.petEl.offsetHeight; // Reflow
 
 		// Create the animation for above ^^
 		this.keyFrameAnimation(animation);
-		const keyframeName = `${animation.name}-${this.petType}`;
+		const keyframeName = `${animation.name}-${this.petId}`;
 
 		// Set animation directly 
-		this.catEl.setCssStyles({
+		this.petEl.setCssStyles({
 			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
 		});
 
 		// Set background & sizing using props
-		this.catEl.setCssProps({
+		this.petEl.setCssProps({
 			"--sprite-url": `url(${animation.spriteUrl})`,
 			"--sprite-size": `${
 				animation.frameCount * animation.frameWidth
@@ -167,10 +135,10 @@ export class Cat {
 		this.currentAnimation = animationName;
 	}
 
-	private keyFrameAnimation(animation: AnimationConfig) {
-		const keyframeName = `${animation.name}-${this.petType}`;
+	protected keyFrameAnimation(animation: AnimationConfig) {
+		const keyframeName = `${animation.name}-${this.petId}`;
 
-		// Avoid duplicate animations
+		// Avoid duplipete animations
 		if (document.getElementById(`kf-${keyframeName}`)) {
 			return;
 		}
@@ -196,14 +164,14 @@ export class Cat {
 		}
 	}
 
-	// Moves the cat in x direction
-	private move(duration: number, action?: string): Promise<void> {
-		const CAT_WIDTH = 32;
+	// Moves the pet in x direction
+	protected move(duration: number, action?: string): Promise<void> {
+		const PET_WIDTH = 32;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 
 		// Boundaries for the view
-		const maxLeft = containerWidth - CAT_WIDTH / 2;
-		const minLeft = CAT_WIDTH / 2;
+		const maxLeft = containerWidth - PET_WIDTH / 2;
+		const minLeft = PET_WIDTH / 2;
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
 		const magnitude =
@@ -222,7 +190,7 @@ export class Cat {
 		}
 		const targetX = this.currentX + dx;
 
-		// If no movement, resolve immediately (catching any overlapping of actions)
+		// If no movement, resolve immediately (petching any overlapping of actions)
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
@@ -234,16 +202,16 @@ export class Cat {
 		return new Promise((res) => {
 			// Cleanup function for after transition
 			const done = () => {
-				this.catEl.removeEventListener("transitionend", done);
-				this.catEl.setCssStyles({ transition: "" }); // Remove the transition property
+				this.petEl.removeEventListener("transitionend", done);
+				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
 				res(); // Resolve the promise
 			};
-			this.catEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
+			this.petEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
 
-			this.catEl.offsetWidth; // Reflow for new animation reset
+			this.petEl.offsetWidth; // Reflow for new animation reset
 			// Show moving animation
-			this.catEl.setCssProps({
+			this.petEl.setCssProps({
 				"--left": `${targetX}px`,
 				"--scale-x": `${this.direction}`,
 				"--move-duration": `${duration}ms`,
@@ -252,7 +220,7 @@ export class Cat {
 	}
 
 	// Main loop -> picks random actions
-	private async startActionLoop() {
+	protected async startActionLoop() {
 		// Gets random delay that is a multiple of the run animation time
 		function getRandDelay(
 			min: number,
@@ -286,7 +254,7 @@ export class Cat {
 		}
 	}
 
-	// Destroys cat instance
+	// Destroys pet instance
 	public async destroy() {
 		this.isDestroyed = true;
 		// Death animation (wait for the animation to finish)
@@ -295,6 +263,6 @@ export class Cat {
 			setTimeout(resolve, this.animations["die"].duration)
 		);
 		// Removes instance from DOM
-		this.catEl.remove();
+		this.petEl.remove();
 	}
 }
