@@ -4,25 +4,8 @@ import { PetInstance } from "main";
 import { Pet } from "pet-utils/pet";
 import { Cat } from "pet-utils/cat";
 import { Bunny } from "pet-utils/bunny";
-import { AnimationConfig } from "pet-utils/pet";
-import { getPetAsset, getBackgroundAsset } from "./pet-utils/assets";
-
-// Allow for optional pet animations
-type PetAnimations = {
-	idle: AnimationConfig;
-	idle2?: AnimationConfig;
-	jump: AnimationConfig;
-	run: AnimationConfig;
-	sit: AnimationConfig;
-	sleep: AnimationConfig;
-	die: AnimationConfig;
-};
-
-// ±100ms variation for each animation duration
-function alterDuration(base: number, variation = 100): number {
-	const offset = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
-	return base + offset;
-}
+import { getBackgroundAsset } from "./pet-utils/pet-assets";
+import { getCatAnimations, getBunnyAnimations } from "pet-utils/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -141,135 +124,14 @@ export class PetView extends ItemView {
 			const cleanPetId = singlePet.id.replace(/^pets\//, "");
 
 			if (singlePet.type.includes("cat")) {
-				const CAT_ANIMATIONS: PetAnimations = {
-					idle: {
-						name: "idle",
-						spriteUrl: getPetAsset(singlePet.type, "idle-cat.png"),
-						frameCount: 7,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(700, 100),
-					},
-					jump: {
-						name: "jump",
-						spriteUrl: getPetAsset(singlePet.type, "jump-cat.png"),
-						frameCount: 13,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(1300, 100),
-					},
-					run: {
-						name: "run",
-						spriteUrl: getPetAsset(singlePet.type, "run-cat.png"),
-						frameCount: 7,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(700, 100),
-					},
-					sit: {
-						name: "sit",
-						spriteUrl: getPetAsset(singlePet.type, "sitting-cat.png"),
-						frameCount: 3,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(750, 100),
-					},
-					sleep: {
-						name: "sleep",
-						spriteUrl: getPetAsset(singlePet.type, "sleep-cat.png"),
-						frameCount: 3,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(750, 100),
-					},
-					die: {
-						name: "die",
-						spriteUrl: getPetAsset(singlePet.type, "die-cat.png"),
-						frameCount: 15,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(1500, 100),
-					},
-				};
-
-				// Add idle2 animation for non-batman cats
-				if (
-					singlePet.type !== "pets/batman-black-cat" &&
-					singlePet.type !== "pets/batman-blue-cat"
-				) {
-					CAT_ANIMATIONS.idle2 = {
-						name: "idle2",
-						spriteUrl: getPetAsset(singlePet.type, "idle2-cat.png"),
-						frameCount: 14,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(1400, 100),
-					};
-				}
+				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, CAT_ANIMATIONS, moveDist, background, cleanPetId);
+				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId);
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
-				const BUNNY_ANIMATIONS: PetAnimations = { 
-					idle: {
-						name: "idle",
-						spriteUrl: getPetAsset(singlePet.type, "idle-bunny.png"),
-						frameCount: 12,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(1200, 150),
-					},
-					idle2: {
-						name: "liedown",
-						spriteUrl: getPetAsset(singlePet.type, "liedown-bunny.png"),
-						frameCount: 6,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(600, 150),
-					},
-					jump: {
-						name: "jump",
-						spriteUrl: getPetAsset(singlePet.type, "jump-bunny.png"),
-						frameCount: 11,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(1100, 150),
-					},
-					run: {
-						name: "run",
-						spriteUrl: getPetAsset(singlePet.type, "run-bunny.png"),
-						frameCount: 8,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(800, 150),
-					},
-					sit: {
-						name: "like",
-						spriteUrl: getPetAsset(singlePet.type, "like-bunny.png"),
-						frameCount: 5,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(500, 150),
-					},
-					sleep: {
-						name: "sleep",
-						spriteUrl: getPetAsset(singlePet.type, "sleep-bunny.png"),
-						frameCount: 6,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(600, 150),
-					},
-					die: {
-						name: "die",
-						spriteUrl: getPetAsset(singlePet.type, "die-bunny.png"),
-						frameCount: 12,
-						frameWidth: 32,
-						frameHeight: 32,
-						duration: alterDuration(1200, 150),
-					},
-				}
-				const moveDist = Math.floor(Math.random() * 30) + 40;
-				const bunny = new Bunny(wrapper, BUNNY_ANIMATIONS, moveDist, background, cleanPetId);
+				const bunnyAnimations = getBunnyAnimations(singlePet.type);
+				const moveDist = Math.floor(Math.random() * 30) + 45;
+				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			}
 		} catch (error) {
