@@ -84,7 +84,6 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to add a pet
-		// Batman has no idle 2
 		const PETS: SelectorOption[] = [
 			{
 				value: "pets/batman-black-cat",
@@ -104,8 +103,23 @@ export default class PetPlugin extends Plugin {
 				requiresName: true,
 			},
 			{
+				value: "pets/xmas-v2-cat",
+				label: "Christmas cat v2",
+				requiresName: true,
+			},
+			{
+				value: "pets/xmas-v3-cat",
+				label: "Christmas cat v3",
+				requiresName: true,
+			},
+			{
 				value: "pets/classic-cat",
 				label: "Classic cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/deer-cat",
+				label: "Deer cat",
 				requiresName: true,
 			},
 			{
@@ -116,6 +130,23 @@ export default class PetPlugin extends Plugin {
 			{
 				value: "pets/egypt-cat",
 				label: "Egyptian cat",
+				requiresName: true,
+			},
+			{ value: "pets/ghost", label: "Ghost", requiresName: true },
+			{ value: "pets/grey-bunny", label: "Grey bunny", requiresName: true },
+			{
+				value: "pets/pirate-cat",
+				label: "Pirate cat",
+				requiresName: true,
+			},
+			{
+				value: "pets/pirate-v2-cat",
+				label: "Pirate cat v2",
+				requiresName: true,
+			},
+			{
+				value: "pets/pirate-v3-cat",
+				label: "Pirate cat v3",
 				requiresName: true,
 			},
 			{
@@ -129,8 +160,9 @@ export default class PetPlugin extends Plugin {
 				requiresName: true,
 			},
 			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
+			{ value: "pets/vampire-cat", label: "Vampire cat", requiresName: true },
 			{ value: "pets/white-cat", label: "White cat", requiresName: true },
-			{ value: "pets/grey-bunny", label: "Grey bunny", requiresName: true },
+			{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
 		];
 		this.addCommand({
 			id: "add-pet-dropdown",
