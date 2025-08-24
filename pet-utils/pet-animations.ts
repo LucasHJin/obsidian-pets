@@ -21,6 +21,11 @@ function alterDuration(base: number, variation = 100): number {
 export function getCatAnimations(
 	type: string
 ): PetAnimations {
+    /*
+    Exceptions:
+    - Classic cat -> liking
+    - Witch cat -> flying
+    */
     const animations: PetAnimations = {
         idle: {
             name: "idle",
