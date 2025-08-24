@@ -10,14 +10,14 @@ export type AnimationConfig = {
 };
 
 export class Pet {
-	private container: Element;
-	private petEl: HTMLElement;
-	private currentX: number;
-	private direction = 1; // 1 right, -1 left
+	protected container: Element;
+	protected petEl: HTMLElement;
+	protected currentX: number;
+	protected direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	protected animations: Record<string, AnimationConfig>;
-	private isDestroyed = false; // Check if pet instance has been destroyed
-	private moveDist: number; // For different pet movements
+	protected isDestroyed = false; // Check if pet instance has been destroyed
+	protected moveDist: number; // For different pet movements
 	private backgroundName = "default";
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -78,7 +78,7 @@ export class Pet {
 		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--top": topPercent,
-			"--pet-size": `${this.animations["run"].frameWidth}px`,
+			"--pet-size": `${this.animations["idle"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
 		});
 		return el;

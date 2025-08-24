@@ -5,12 +5,12 @@ import { getPetAsset } from "./pet-assets";
 type PetAnimations = {
 	idle: AnimationConfig;
 	idle2?: AnimationConfig;
-	jump: AnimationConfig;
+	jump?: AnimationConfig;
     jump2?: AnimationConfig;
-	run: AnimationConfig;
-	sit: AnimationConfig;
-	sleep: AnimationConfig;
-	die: AnimationConfig;
+	run?: AnimationConfig;
+	sit?: AnimationConfig;
+	sleep?: AnimationConfig;
+	die?: AnimationConfig;
     liking?: AnimationConfig;
     fly?: AnimationConfig;
 };
@@ -165,5 +165,21 @@ export function getBunnyAnimations(
         },
     }
 
+    return animations;
+}
+
+export function getGhostAnimations(
+	type: string
+): PetAnimations {
+    const animations: PetAnimations = { 
+        idle: {
+            name: "idle",
+            spriteUrl: getPetAsset(type, "idle-ghost.png"),
+            frameCount: 8,
+            frameWidth: 32,
+            frameHeight: 32,
+            duration: alterDuration(1200, 150),
+        },
+    }
     return animations;
 }

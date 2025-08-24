@@ -4,8 +4,9 @@ import { PetInstance } from "main";
 import { Pet } from "pet-utils/pet";
 import { Cat } from "pet-utils/cat";
 import { Bunny } from "pet-utils/bunny";
+import { Ghost } from "pet-utils/ghost";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
-import { getCatAnimations, getBunnyAnimations } from "pet-utils/pet-animations";
+import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "pet-utils/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -133,6 +134,11 @@ export class PetView extends ItemView {
 				const moveDist = Math.floor(Math.random() * 30) + 45;
 				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId);
 				this.pets.push({ id: singlePet.id, pet: bunny });
+			} else if (singlePet.type.includes("ghost")) {
+				const ghostAnimations = getGhostAnimations(singlePet.type);
+				const moveDist = Math.floor(Math.random() * 20) + 20;
+				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId);
+				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
 		} catch (error) {
 			console.error(`Failed to create pet ${singlePet.id}:`, error);
