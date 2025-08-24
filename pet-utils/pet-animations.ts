@@ -6,10 +6,13 @@ type PetAnimations = {
 	idle: AnimationConfig;
 	idle2?: AnimationConfig;
 	jump: AnimationConfig;
+    jump2?: AnimationConfig;
 	run: AnimationConfig;
 	sit: AnimationConfig;
 	sleep: AnimationConfig;
 	die: AnimationConfig;
+    liking?: AnimationConfig;
+    fly?: AnimationConfig;
 };
 
 // ±100ms variation for each animation duration
@@ -46,6 +49,14 @@ export function getCatAnimations(
         jump: {
             name: "jump",
             spriteUrl: getPetAsset(type, "jump-cat.png"),
+            frameCount: 13,
+            frameWidth: 32,
+            frameHeight: 32,
+            duration: alterDuration(1300, 100),
+        },
+        jump2: {
+            name: "jump2",
+            spriteUrl: getPetAsset(type, "jump2-cat.png"),
             frameCount: 13,
             frameWidth: 32,
             frameHeight: 32,
