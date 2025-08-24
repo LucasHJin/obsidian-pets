@@ -20,7 +20,7 @@ export class Cat extends Pet {
 					for (let i = 0; i < multiples; i++) {
 						await this.move(this.animations[key].duration, key);
 					}
-				} else if (key === "jump") {
+				} else if (key === "jump" || key === "jump2") {
 					// Move once
 					await this.move(this.animations[key].duration, key);
 				} else if (key === "sit" || key === "sleep") {

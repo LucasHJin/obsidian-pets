@@ -175,7 +175,7 @@ export class Pet {
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
 		const magnitude =
-			action === "jump"
+			action?.includes("jump")
 				? this.moveDist * (Math.random() * 0.3 + 1.5)
 				: this.moveDist; // Diff distance based on jumping vs running
 		const bias = 0.9;

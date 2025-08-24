@@ -57,10 +57,10 @@ export function getCatAnimations(
         jump2: {
             name: "jump2",
             spriteUrl: getPetAsset(type, "jump2-cat.png"),
-            frameCount: 13,
+            frameCount: 9,
             frameWidth: 32,
             frameHeight: 32,
-            duration: alterDuration(1300, 100),
+            duration: alterDuration(900, 100),
         },
         run: {
             name: "run",
