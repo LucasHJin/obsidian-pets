@@ -38,7 +38,6 @@ export class Ghost extends Pet {
 			if (shouldMove) {
 				const repeats = 3 + Math.floor(Math.random() * 6);
 				for (let i = 0; i < repeats; i++) {
-					console.log("MOVING")
 					await this.move(this.animations["idle"].duration, "idle");
 				}
 			}
