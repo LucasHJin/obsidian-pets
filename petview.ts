@@ -127,7 +127,7 @@ export class PetView extends ItemView {
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId);
+				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, singlePet.type.includes("witch"));
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);

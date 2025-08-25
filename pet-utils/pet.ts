@@ -32,7 +32,7 @@ export class Pet {
 		"backgrounds/castlebg-1.png": "82.1%",
 		"backgrounds/castlebg-2.png": "74%",
 	};
-	private petId: string; // For unique keyframes
+	protected petId: string; // For unique keyframes
 
 	constructor(
 		container: Element,

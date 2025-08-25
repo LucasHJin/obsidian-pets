@@ -98,12 +98,27 @@ export function getCatAnimations(
 
     if (type === "pets/batman-black-cat" || type === "pets/batman-blue-cat") {
 		delete animations.idle2;
-	}
-
-    // Remove jumping from witch cat because of issue with spritesheet
-    if (type === "witch-cat") {
+	} else if (type === "pets/witch-cat") {
+        // Remove jumping from witch cat because of issue with spritesheet
         delete animations.jump;
         delete animations.jump2;
+        animations.fly = {
+            name: "fly",
+            spriteUrl: getPetAsset(type, "fly-cat.png"),
+            frameCount: 3,
+            frameWidth: 32,
+            frameHeight: 32,
+            duration: alterDuration(600, 100),
+        };
+    } else if (type === "pets/classic-cat") {
+        animations.liking = {
+            name: "liking",
+            spriteUrl: getPetAsset(type, "liking-cat.png"),
+            frameCount: 18,
+            frameWidth: 32,
+            frameHeight: 32,
+            duration: alterDuration(1800, 100),
+        };
     }
 
     return animations;
