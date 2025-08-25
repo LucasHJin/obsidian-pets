@@ -4,7 +4,7 @@
 A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
 
 ## Key Features
-- 🐱 13 different cats with 7 different animations (and more pets on the way!)
+- 🐱 22 different cats with 7+ different animations (and more pets on the way!)
     - Customizable with individual names (interactions coming soon...)
 - 🖼️ 10 different backgrounds for your pets to play in
 - ➡️ Movable view to allow for personal customization
