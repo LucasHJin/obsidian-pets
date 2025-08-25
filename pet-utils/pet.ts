@@ -166,12 +166,12 @@ export class Pet {
 
 	// Moves the pet in x direction
 	protected move(duration: number, action?: string): Promise<void> {
-		const PET_WIDTH = 32;
+		const petWidth = this.animations["idle"].frameWidth;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 
 		// Boundaries for the view
-		const maxLeft = containerWidth - PET_WIDTH / 2;
-		const minLeft = PET_WIDTH / 2;
+		const maxLeft = containerWidth - petWidth / 2;
+		const minLeft = petWidth / 2;
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
 		const magnitude =

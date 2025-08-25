@@ -100,6 +100,12 @@ export function getCatAnimations(
 		delete animations.idle2;
 	}
 
+    // Remove jumping from witch cat because of issue with spritesheet
+    if (type === "witch-cat") {
+        delete animations.jump;
+        delete animations.jump2;
+    }
+
     return animations;
 }
 
