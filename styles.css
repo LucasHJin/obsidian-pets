@@ -87,3 +87,14 @@
 .pet-name-button {
 	transition: background-color 0.2s ease;
 }
+
+.ball {
+  position: absolute; /* So you can place it wherever */
+  top: 50%; /* Example vertical placement */
+  left: 50%; /* Example horizontal placement */
+  transform: translate(-50%, -50%); /* Center it */
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  width: var(--ball-size);
+  height: var(--ball-size);
+}

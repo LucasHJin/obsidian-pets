@@ -1,5 +1,5 @@
 import { AnimationConfig } from "./pet";
-import { getPetAsset } from "./pet-assets";
+import { getPetAsset, getToyAsset } from "./pet-assets";
 
 // Allow for optional pet animations
 type PetAnimations = {
@@ -203,4 +203,17 @@ export function getGhostAnimations(
         },
     }
     return animations;
+}
+
+export function getBallAnimations(type: string): AnimationConfig {
+    const animation: AnimationConfig = {
+        name: "bounce",
+        spriteUrl: getToyAsset(type),
+        frameCount: 5,
+        frameWidth: 24,
+        frameHeight: 16,
+        duration: alterDuration(800, 150),
+    };
+
+    return animation;
 }

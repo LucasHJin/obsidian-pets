@@ -178,6 +178,26 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
+		// Command to add a ball
+		const BALLS: SelectorOption[] = [
+			{ value: "toys/blue-ball", label: "Blue ball" },
+			{ value: "toys/orange-ball", label: "Orange ball" },
+			{ value: "toys/pink-ball", label: "Pink ball" },
+		];
+		this.addCommand({
+			id: "add-ball-dropdown",
+			name: "Add a ball",
+			callback: () => {
+				new SelectorModal(
+					this.app,
+					BALLS,
+					async (value: string) => {
+						await this.addBall(value);
+					}
+				).open();
+			},
+		});
+
 		// Command to remove all pets
 		this.addCommand({
 			id: "clear-all-pets",
@@ -311,6 +331,20 @@ export default class PetPlugin extends Plugin {
 			const view = leaf.view;
 			if (view instanceof PetView) {
 				view.addPetToView(view.getWrapper(), { id, type, name });
+			}
+		}
+	}
+
+	public async addBall(type: string): Promise<void> {
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		if (leaves.length === 0) {
+			await this.openView();
+		}
+
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.addBallToView(view.getWrapper(), type);
 			}
 		}
 	}
