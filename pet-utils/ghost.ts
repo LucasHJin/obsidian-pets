@@ -48,4 +48,18 @@ export class Ghost extends Pet {
 			await new Promise((res) => setTimeout(res, delay2));
 		}
 	}
+
+	public async destroy() {
+		if (this.isDestroyed) return;
+		this.isDestroyed = true;
+
+		// Fade out and then remove (to replace death animation)
+		this.petEl.setCssProps({
+			transition: "opacity 1s ease",
+			opacity: "0"
+		});
+		setTimeout(() => {
+			this.petEl.remove();
+		}, 1000);
+	}
 }
