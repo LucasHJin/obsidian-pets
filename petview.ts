@@ -5,8 +5,11 @@ import { Pet } from "pet-utils/pet";
 import { Cat } from "pet-utils/cat";
 import { Bunny } from "pet-utils/bunny";
 import { Ghost } from "pet-utils/ghost";
+import { Ball } from "pet-utils/ball";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "pet-utils/pet-animations";
+import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "pet-utils/pet-animations";
+
+// NOTE -> GHOST REMOVAL DOESN'T WORK RIGHT NOW -> FIX
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -14,6 +17,7 @@ export const VIEW_TYPE_PET = "pet-view";
 export class PetView extends ItemView {
 	plugin: PetPlugin;
 	pets: { id: string; pet: Pet }[] = []; // Property for list of existing pets (their id and the instance of the class)
+	balls: { id: string; ball: Ball }[] = []; // Property for list of existing balls (their id and the instance of the class)
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -171,6 +175,36 @@ export class PetView extends ItemView {
 		}
 	}
 
+	addBallToView(wrapper: Element, type: string) {
+		try {
+			const background = this.plugin.getSelectedBackground();
+			const cleanBallId = type.replace(/^toys\//, "");
+
+			// Add the ball to the view
+			const ballAnimation = getBallAnimations(cleanBallId);
+			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background);
+			this.balls.push({ id: cleanBallId, ball });
+
+			// Choose a random cat to chase after the ball
+			const cats = this.pets.filter(p => p.pet instanceof Cat);
+			if (cats.length > 0) {
+				const randomCat = cats[Math.floor(Math.random() * cats.length)].pet as Cat;
+				randomCat.startChasingBall(ball);
+				// Sets the callback function for on destroy (DOES NOT RUN IT YET)
+				ball.onDestroy = () => {
+					// Stop chasing + remove ball from array
+					randomCat.stopChasingBall();
+					const index = this.balls.findIndex(b => b.id === cleanBallId);
+					if (index !== -1) {
+						this.balls.splice(index, 1);
+					}
+				};
+			}
+		} catch (error) {
+			console.error("Failed to add ball to view:", error);
+		}
+	}
+
 	// Getter function to get wrapper of entire pet view
 	getWrapper() {
 		const wrapper = this.containerEl.querySelector(".pet-view-wrapper");
@@ -185,6 +219,8 @@ export class PetView extends ItemView {
 		for (const { pet } of this.pets) {
 			pet.destroy();
 		}
-		// console.log("Pet view closed");
+		for (const { ball } of this.balls) {
+			ball.destroy();
+		}
 	}
 }

@@ -10,7 +10,7 @@ import summer3Background from '../assets/backgrounds/summerbg-3.png';
 import temple1Background from '../assets/backgrounds/templebg-1.png';
 import temple2Background from '../assets/backgrounds/templebg-2.png';
 
-// Cat animations
+// Pet animations
 import blackCatIdle from '../assets/pets/black-cat/idle-cat.png';
 import blackCatIdle2 from '../assets/pets/black-cat/idle2-cat.png';
 import blackCatJump from '../assets/pets/black-cat/jump-cat.png';
@@ -200,6 +200,16 @@ import greyBunnySleep from '../assets/pets/grey-bunny/sleep-bunny.png';
 import greyBunnyDie from '../assets/pets/grey-bunny/die-bunny.png';
 
 import ghostIdle from '../assets/pets/ghost/idle-ghost.png';
+
+// Ball animations
+import blueBall from '../assets/toys/blue-ball.png';
+import cyanBall from '../assets/toys/cyan-ball.png';
+import greenBall from '../assets/toys/green-ball.png';
+import orangeBall from '../assets/toys/orange-ball.png';
+import pinkBall from '../assets/toys/pink-ball.png';
+import purpleBall from '../assets/toys/purple-ball.png';
+import redBall from '../assets/toys/red-ball.png';
+import yellowBall from '../assets/toys/yellow-ball.png';
 
 // Export organized by type
 export const backgrounds = {
@@ -430,6 +440,17 @@ export const petAssets = {
   }
 };
 
+export const toyAssets = {
+  'blue-ball': blueBall,
+  'cyan-ball': cyanBall,
+  'green-ball': greenBall,
+  'orange-ball': orangeBall,
+  'pink-ball': pinkBall,
+  'purple-ball': purpleBall,
+  'red-ball': redBall,
+  'yellow-ball': yellowBall,
+};
+
 // Helper function to get pet asset
 export function getPetAsset(petType: string, assetName: string): string {
   const assets = petAssets[petType as keyof typeof petAssets];
@@ -448,6 +469,15 @@ export function getBackgroundAsset(backgroundName: string): string {
   const asset = backgrounds[backgroundName as keyof typeof backgrounds];
   if (!asset) {
     throw new Error(`Background "${backgroundName}" not found`);
+  }
+  return asset;
+}
+
+// Helper function to get toy asset
+export function getToyAsset(toyName: string): string {
+  const asset = toyAssets[toyName as keyof typeof toyAssets];
+  if (!asset) {
+    throw new Error(`Toy "${toyName}" not found`);
   }
   return asset;
 }
