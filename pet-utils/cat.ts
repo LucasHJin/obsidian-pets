@@ -167,7 +167,7 @@ export class Cat extends Pet {
 			this.setAnimation("run");
 
 			// Wait a second to make it more smooth (not teleporting)
-			await new Promise(res => setTimeout(res, 300));
+			await new Promise(res => setTimeout(res, 200));
 			if (this.interruptAction) {
 				break;
 			}

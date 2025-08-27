@@ -202,9 +202,14 @@ import greyBunnyDie from '../assets/pets/grey-bunny/die-bunny.png';
 import ghostIdle from '../assets/pets/ghost/idle-ghost.png';
 
 // Ball animations
-import blueBall from '../assets/toys/blue-ball.png'
-import orangeBall from '../assets/toys/orange-ball.png'
-import pinkBall from '../assets/toys/pink-ball.png'
+import blueBall from '../assets/toys/blue-ball.png';
+import cyanBall from '../assets/toys/cyan-ball.png';
+import greenBall from '../assets/toys/green-ball.png';
+import orangeBall from '../assets/toys/orange-ball.png';
+import pinkBall from '../assets/toys/pink-ball.png';
+import purpleBall from '../assets/toys/purple-ball.png';
+import redBall from '../assets/toys/red-ball.png';
+import yellowBall from '../assets/toys/yellow-ball.png';
 
 // Export organized by type
 export const backgrounds = {
@@ -437,8 +442,13 @@ export const petAssets = {
 
 export const toyAssets = {
   'blue-ball': blueBall,
+  'cyan-ball': cyanBall,
+  'green-ball': greenBall,
   'orange-ball': orangeBall,
   'pink-ball': pinkBall,
+  'purple-ball': purpleBall,
+  'red-ball': redBall,
+  'yellow-ball': yellowBall,
 };
 
 // Helper function to get pet asset

@@ -178,7 +178,8 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		// Command to add a ball
+		// Command to add a ball 
+		// CHANGE TO BE RANDOM
 		const BALLS: SelectorOption[] = [
 			{ value: "toys/blue-ball", label: "Blue ball" },
 			{ value: "toys/orange-ball", label: "Orange ball" },

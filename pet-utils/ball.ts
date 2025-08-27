@@ -25,7 +25,7 @@ export class Ball {
 	private radius: number;
 	private gravity = 0.4; // Acceleration from gravity (0 = no gravity)
 	private damping = 0.99; // Bounce energy retention (1 = all)
-	private airRes = 0.995; // Air resistance (1 = none)
+	private airRes = 0.985; // Air resistance (1 = none)
 	private frameId: number | null = null;
 
 	public onDestroy?: () => void; // Callback to tie cat to ball being deleted
@@ -59,12 +59,12 @@ export class Ball {
 		const el = this.container.createDiv({ cls: "ball" });
 		const img = document.createElement("img");
 
-		const ballSize = 9 * 1.3;
-		this.radius = ballSize / 2;
+		const BALL_SIZE = 10;
+		this.radius = BALL_SIZE / 2;
 		img.src = spriteUrl;
 		el.setCssProps({
-			"--ballwidth": `${Math.round(ballSize)}px`,
-			"--ballheight": `${Math.round(ballSize)}px`,
+			"--ballwidth": `${Math.round(BALL_SIZE)}px`,
+			"--ballheight": `${Math.round(BALL_SIZE)}px`,
 		});
 		el.appendChild(img);
 
