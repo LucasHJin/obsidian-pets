@@ -131,7 +131,7 @@ export class PetView extends ItemView {
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, singlePet.type.includes("witch"), () => this.balls.map(b => b.ball));
+				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, singlePet.type.includes("witch"));
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
@@ -184,6 +184,22 @@ export class PetView extends ItemView {
 			const ballAnimation = getBallAnimations(cleanBallId);
 			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background);
 			this.balls.push({ id: cleanBallId, ball });
+
+			// Choose a random cat to chase after the ball
+			const cats = this.pets.filter(p => p.pet instanceof Cat);
+			if (cats.length > 0) {
+				const randomCat = cats[Math.floor(Math.random() * cats.length)].pet as Cat;
+				randomCat.startChasingBall(ball);
+				// Sets the callback function for on destroy (DOES NOT RUN IT YET)
+				ball.onDestroy = () => {
+					// Stop chasing + remove ball from array
+					randomCat.stopChasingBall();
+					const index = this.balls.findIndex(b => b.id === cleanBallId);
+					if (index !== -1) {
+						this.balls.splice(index, 1);
+					}
+				};
+			}
 		} catch (error) {
 			console.error("Failed to add ball to view:", error);
 		}
