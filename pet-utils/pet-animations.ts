@@ -205,15 +205,7 @@ export function getGhostAnimations(
     return animations;
 }
 
-export function getBallAnimations(type: string): AnimationConfig {
-    const animation: AnimationConfig = {
-        name: "bounce",
-        spriteUrl: getToyAsset(type),
-        frameCount: 5,
-        frameWidth: 24,
-        frameHeight: 16,
-        duration: alterDuration(800, 150),
-    };
-
-    return animation;
+export function getBallAnimations(type: string): string {
+    const ball = getToyAsset(type)
+    return ball;
 }

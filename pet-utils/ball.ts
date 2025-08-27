@@ -1,68 +1,100 @@
-import { AnimationConfig } from "./pet";
-
 export class Ball {
-	private container: Element;
+	private container: HTMLElement;
 	private ballEl: HTMLElement;
-	private animation: AnimationConfig;
 	private ballId: string;
 
-	constructor(container: Element, animation: AnimationConfig, ballId: string) {
+	// Physics states
+	private x: number;
+	private y: number;
+	private vx: number;
+	private vy: number;
+	private radius: number;
+	private gravity = 0.4; // Acceleration from gravity (0 = no gravity)
+	private damping = 0.99; // Bounce energy retention (1 = all)
+	private airRes = 0.99; // Air resistance (1 = none)
+	private frameId: number | null = null;
+
+	constructor(container: HTMLElement, spriteUrl: string, ballId: string) {
 		this.container = container;
-		this.animation = animation;
 		this.ballId = ballId;
 
-		// Create ball element immediately
-		this.ballEl = this.createBallElement();
+		// Create ball element
+		this.ballEl = this.createBallElement(spriteUrl);
 
-		// Set up animation
-		this.setAnimation();
+		// Spawn ball in random position (top 15%) of the container
+		const rect = this.container.getBoundingClientRect();
+		this.x = Math.random() * (rect.width - this.radius * 2) + this.radius;
+		this.y = Math.random() * (rect.height * 0.15 - this.radius * 2) + this.radius;
+		// Random initial velocity
+		this.vx = (Math.random() - 0.5) * 13;
+		this.vy = (Math.random() - 0.5) * 10;
 
-		// Remove ball after 5 seconds
-		setTimeout(() => {
-			this.destroy();
-		}, 5000);
+		// Start physics loop
+		this.update = this.update.bind(this);
+		this.frameId = requestAnimationFrame(this.update);
+
+		// Auto-destroy after 5 seconds
+		setTimeout(() => this.destroy(), 5000);
 	}
 
-	private createBallElement(): HTMLElement {
+	// Creates the HTML for ball element
+	private createBallElement(spriteUrl: string): HTMLElement {
 		const el = this.container.createDiv({ cls: "ball" });
+		const img = document.createElement("img");
 
-		// Initial CSS properties
+		const ballSize = 9 * 1.3;
+		this.radius = ballSize / 2;
+		img.src = spriteUrl;
 		el.setCssProps({
-			"--ball-size": `${this.animation.frameWidth}px`,
+			"--ballwidth": `${Math.round(ballSize)}px`,
+			"--ballheight": `${Math.round(ballSize)}px`,
 		});
+		el.appendChild(img);
 
 		return el;
 	}
 
-	private setAnimation() {
-		const anim = this.animation;
-		const keyframeName = `${anim.name}-${this.ballId}`;
+	// Updates states for ball physics
+	private update() {
+		const rect = this.container.getBoundingClientRect();
 
-		// Generate keyframes once
-		if (!document.getElementById(`kf-${keyframeName}`)) {
-			const style = document.createElement("style");
-			style.id = `kf-${keyframeName}`;
-			document.head.appendChild(style);
-
-			const keyframeRule = `
-				@keyframes ${keyframeName} {
-					from { background-position: 0 0; }
-					to { background-position: -${anim.frameCount * anim.frameWidth}px 0; }
-				}`;
-			(style.sheet as CSSStyleSheet).insertRule(keyframeRule, 0);
+		// Updating physics
+		this.vy += this.gravity;
+		this.x += this.vx;
+		this.y += this.vy;
+		// Bouncing off walls
+		if (this.x - this.radius < 0) {
+			this.x = this.radius;
+			this.vx *= -this.damping;
+		} else if (this.x + this.radius > rect.width) {
+			this.x = rect.width - this.radius;
+			this.vx *= -this.damping;
 		}
+		// Bouncing off bottom
+		if (this.y - this.radius < 0) {
+			this.y = this.radius;
+			this.vy *= -this.damping;
+		} else if (this.y + this.radius > rect.height) {
+			this.y = rect.height - this.radius;
+			this.vy *= -this.damping;
+		}
+		// Apply air resistance
+		this.vx *= this.airRes;
+		this.vy *= this.airRes;
 
-		// Apply animation + sprite
-		this.ballEl.setCssStyles({
-			animation: `${keyframeName} ${anim.duration}ms steps(${anim.frameCount}) infinite`,
-			width: `${anim.frameWidth}px`,
-			height: `${anim.frameHeight}px`,
-			backgroundImage: `url(${anim.spriteUrl})`,
-			backgroundSize: `${anim.frameCount * anim.frameWidth}px auto`,
+		this.ballEl.setCssProps({
+			"--x": `${this.x - this.radius}px`,
+			"--y": `${this.y - this.radius}px`,
 		});
+
+		// Loop (schedule itself to run on next frame)
+		this.frameId = requestAnimationFrame(this.update);
 	}
 
 	public destroy() {
+		if (this.frameId) {
+			cancelAnimationFrame(this.frameId);
+		}
 		this.ballEl.remove();
 	}
 }

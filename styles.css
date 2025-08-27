@@ -89,12 +89,14 @@
 }
 
 .ball {
-  position: absolute; /* So you can place it wherever */
-  top: 50%; /* Example vertical placement */
-  left: 50%; /* Example horizontal placement */
-  transform: translate(-50%, -50%); /* Center it */
-  background-repeat: no-repeat;
-  background-position: 0 0;
-  width: var(--ball-size);
-  height: var(--ball-size);
+  position: absolute;
+  transform: translate(var(--x, 0), var(--y, 0));
+  width: var(--ballwidth);
+  height: var(--ballheight);
+}
+.ball img {
+  display: block;
+  image-rendering: pixelated;
+  width: 100%;
+  height: 100%;
 }
