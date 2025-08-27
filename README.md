@@ -7,6 +7,7 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
 - 🐱 22 different cats with 7+ different animations (and more pets on the way!)
     - Customizable with individual names (interactions coming soon...)
 - 🖼️ 10 different backgrounds for your pets to play in
+- 🎾 Pet interactivity - you can play fetch and throw balls for your pets to retrieve
 - ➡️ Movable view to allow for personal customization
 
 ## Getting Started
@@ -50,6 +51,8 @@ You can click and drag on the highlighted icon above the view to drag it into ot
 - Removing pets
     - `Remove a specific pet`: Remove a specific pet. Provides a list of all the pets with their name and species.
     - `Remove all pets`: Removes all pets from the view.
+- Interacting with pets
+    - `Add a ball`: Chooses a random ball and launches it in the view for a pet to chase after.
 - Background
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
 
