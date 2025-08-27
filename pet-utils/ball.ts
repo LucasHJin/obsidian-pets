@@ -2,6 +2,20 @@ export class Ball {
 	private container: HTMLElement;
 	private ballEl: HTMLElement;
 	private ballId: string;
+	private backgroundName: string;
+	private backgroundHeights: Record<string, string> = {
+		default: "80%", // Just in case no others
+		none: "80%",
+		"backgrounds/snowbg-1.png": "85%",
+		"backgrounds/snowbg-2.png": "86%",
+		"backgrounds/summerbg-1.png": "78%",
+		"backgrounds/summerbg-2.png": "88%",
+		"backgrounds/summerbg-3.png": "75%",
+		"backgrounds/templebg-1.png": "85.5%",
+		"backgrounds/templebg-2.png": "78.3%",
+		"backgrounds/castlebg-1.png": "82.1%",
+		"backgrounds/castlebg-2.png": "74%",
+	};
 
 	// Physics states
 	private x: number;
@@ -14,9 +28,10 @@ export class Ball {
 	private airRes = 0.99; // Air resistance (1 = none)
 	private frameId: number | null = null;
 
-	constructor(container: HTMLElement, spriteUrl: string, ballId: string) {
+	constructor(container: HTMLElement, spriteUrl: string, ballId: string, backgroundImage: string) {
 		this.container = container;
 		this.ballId = ballId;
+		this.backgroundName = backgroundImage;
 
 		// Create ball element
 		this.ballEl = this.createBallElement(spriteUrl);
@@ -54,6 +69,14 @@ export class Ball {
 		return el;
 	}
 
+	// Gets 'ground' height (not just bottom of container)
+	private getGroundHeight(): number {
+		const rect = this.container.getBoundingClientRect();
+		const bgHeightPercent = this.backgroundHeights[this.backgroundName] || this.backgroundHeights["default"];
+		const fraction = parseFloat(bgHeightPercent) / 100;
+		return rect.height * fraction + 16; // 16 is half of sprite size
+	}
+
 	// Updates states for ball physics
 	private update() {
 		const rect = this.container.getBoundingClientRect();
@@ -71,11 +94,12 @@ export class Ball {
 			this.vx *= -this.damping;
 		}
 		// Bouncing off bottom
+		const ground = this.getGroundHeight();
 		if (this.y - this.radius < 0) {
 			this.y = this.radius;
 			this.vy *= -this.damping;
-		} else if (this.y + this.radius > rect.height) {
-			this.y = rect.height - this.radius;
+		} else if (this.y + this.radius > ground) {
+			this.y = ground - this.radius;
 			this.vy *= -this.damping;
 		}
 		// Apply air resistance
@@ -89,6 +113,11 @@ export class Ball {
 
 		// Loop (schedule itself to run on next frame)
 		this.frameId = requestAnimationFrame(this.update);
+	}
+
+	// For tracking for pets
+	public getPosition(): { x: number; y: number } {
+		return { x: this.x, y: this.y };
 	}
 
 	public destroy() {

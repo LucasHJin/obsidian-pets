@@ -131,7 +131,7 @@ export class PetView extends ItemView {
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, singlePet.type.includes("witch"));
+				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, singlePet.type.includes("witch"), () => this.balls.map(b => b.ball));
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
@@ -175,13 +175,14 @@ export class PetView extends ItemView {
 		}
 	}
 
-	addBallToView(wrapper: Element, type: string) {
+	addBallToView(wrapper: HTMLElement, type: string) {
 		try {
+			const background = this.plugin.getSelectedBackground();
 			const cleanBallId = type.replace(/^toys\//, "");
 
 			// Add the ball to the view
 			const ballAnimation = getBallAnimations(cleanBallId);
-			const ball = new Ball(wrapper, ballAnimation, cleanBallId);
+			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background);
 			this.balls.push({ id: cleanBallId, ball });
 		} catch (error) {
 			console.error("Failed to add ball to view:", error);
