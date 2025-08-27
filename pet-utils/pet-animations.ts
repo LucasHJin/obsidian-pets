@@ -38,14 +38,6 @@ export function getCatAnimations(
             frameHeight: 32,
             duration: alterDuration(700, 100),
         },
-        idle2: {
-            name: "idle2",
-            spriteUrl: getPetAsset(type, "idle2-cat.png"),
-            frameCount: 14,
-            frameWidth: 32,
-            frameHeight: 32,
-            duration: alterDuration(1400, 100),
-        },
         jump: {
             name: "jump",
             spriteUrl: getPetAsset(type, "jump-cat.png"),
@@ -96,9 +88,18 @@ export function getCatAnimations(
         },
     }
 
-    if (type === "pets/batman-black-cat" || type === "pets/batman-blue-cat") {
-		delete animations.idle2;
-	} else if (type === "pets/witch-cat") {
+    if (type !== "pets/batman-black-cat" && type !== "pets/batman-blue-cat") {
+        animations.idle2 = {
+            name: "idle2",
+            spriteUrl: getPetAsset(type, "idle2-cat.png"),
+            frameCount: 14,
+            frameWidth: 32,
+            frameHeight: 32,
+            duration: alterDuration(1400, 100),
+        };
+	} 
+    
+    if (type === "pets/witch-cat") {
         // Remove jumping from witch cat because of issue with spritesheet
         delete animations.jump;
         delete animations.jump2;
