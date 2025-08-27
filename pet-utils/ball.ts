@@ -1,5 +1,5 @@
 export class Ball {
-	private container: HTMLElement;
+	private container: Element;
 	private ballEl: HTMLElement;
 	private ballId: string;
 	private backgroundName: string;
@@ -23,14 +23,14 @@ export class Ball {
 	private vx: number;
 	private vy: number;
 	private radius: number;
-	private gravity = 0.4; // Acceleration from gravity (0 = no gravity)
+	private gravity = 0.42; // Acceleration from gravity (0 = no gravity)
 	private damping = 0.99; // Bounce energy retention (1 = all)
-	private airRes = 0.985; // Air resistance (1 = none)
+	private airRes = 0.99; // Air resistance (1 = none)
 	private frameId: number | null = null;
 
 	public onDestroy?: () => void; // Callback to tie cat to ball being deleted
 
-	constructor(container: HTMLElement, spriteUrl: string, ballId: string, backgroundImage: string) {
+	constructor(container: Element, spriteUrl: string, ballId: string, backgroundImage: string) {
 		this.container = container;
 		this.ballId = ballId;
 		this.backgroundName = backgroundImage;
@@ -43,15 +43,15 @@ export class Ball {
 		this.x = Math.random() * (rect.width - this.radius * 2) + this.radius;
 		this.y = Math.random() * (rect.height * 0.15 - this.radius * 2) + this.radius;
 		// Random initial velocity
-		this.vx = (Math.random() - 0.5) * 13;
-		this.vy = (Math.random() - 0.5) * 10;
+		this.vx = (Math.random() - 0.5) * 15;
+		this.vy = (Math.random() - 0.5) * 8;
 
 		// Start physics loop
 		this.update = this.update.bind(this);
 		this.frameId = requestAnimationFrame(this.update);
 
-		// Auto-destroy after 5 seconds
-		setTimeout(() => this.destroy(), 5000);
+		// Auto-destroy after 3.5 seconds
+		setTimeout(() => this.destroy(), 3500);
 	}
 
 	// Creates the HTML for ball element
@@ -76,7 +76,7 @@ export class Ball {
 		const rect = this.container.getBoundingClientRect();
 		const bgHeightPercent = this.backgroundHeights[this.backgroundName] || this.backgroundHeights["default"];
 		const fraction = parseFloat(bgHeightPercent) / 100;
-		return rect.height * fraction + 10.7; // 10.7 is half of sprite size of ball and pet
+		return rect.height * fraction + 15; // 10.7 is half of sprite size of ball and pet
 	}
 
 	// Updates states for ball physics

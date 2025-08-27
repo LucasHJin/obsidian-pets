@@ -175,7 +175,7 @@ export class PetView extends ItemView {
 		}
 	}
 
-	addBallToView(wrapper: HTMLElement, type: string) {
+	addBallToView(wrapper: Element, type: string) {
 		try {
 			const background = this.plugin.getSelectedBackground();
 			const cleanBallId = type.replace(/^toys\//, "");

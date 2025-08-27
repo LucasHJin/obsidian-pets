@@ -179,23 +179,23 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to add a ball 
-		// CHANGE TO BE RANDOM
-		const BALLS: SelectorOption[] = [
-			{ value: "toys/blue-ball", label: "Blue ball" },
-			{ value: "toys/orange-ball", label: "Orange ball" },
-			{ value: "toys/pink-ball", label: "Pink ball" },
+		const BALLS: string[] = [
+			"toys/blue-ball",
+			"toys/cyan-ball",
+			"toys/green-ball",
+			"toys/orange-ball",
+			"toys/pink-ball",
+			"toys/purple-ball",
+			"toys/red-ball",
+			"toys/yellow-ball",
 		];
 		this.addCommand({
 			id: "add-ball-dropdown",
 			name: "Add a ball",
-			callback: () => {
-				new SelectorModal(
-					this.app,
-					BALLS,
-					async (value: string) => {
-						await this.addBall(value);
-					}
-				).open();
+			callback: async () => {
+				// Random ball color
+				const randomBall = BALLS[Math.floor(Math.random() * BALLS.length)];
+				await this.addBall(randomBall);
 			},
 		});
 
