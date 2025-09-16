@@ -36,5 +36,16 @@ export class PetSettingTab extends PluginSettingTab {
 						await this.plugin.chooseBackground(value);
 					});
 			});
+
+		new Setting(containerEl)
+			.setName("Animations").setHeading()
+			.setDesc("Toggle the background's animation ON or OFF.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.instanceData.animatedBackground)
+					.onChange(async (value) => {
+						await this.plugin.toggleBackgroundAnimation(value);
+					});
+			});
 	}
 }

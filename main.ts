@@ -14,6 +14,7 @@ interface PetPluginData {
 	selectedBackground: string;
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
+	animatedBackground: boolean; // Whether background animations are on or off
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -306,6 +307,21 @@ export default class PetPlugin extends Plugin {
 	// Getter function to get background in petview.ts
 	public getSelectedBackground(): string {
 		return this.instanceData.selectedBackground;
+	}
+
+	public toggleBackgroundAnimation(value: boolean): void {
+		this.instanceData.animatedBackground = value;
+		this.saveData(this.instanceData);
+		
+		// Update all open PetViews
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			// if is a PetView
+			if (view instanceof PetView) {
+				view.updateView();
+			}
+		}
 	}
 
 	public async addPet(type: string, name: string): Promise<void> {

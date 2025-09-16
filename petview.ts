@@ -104,8 +104,9 @@ export class PetView extends ItemView {
 			} catch (error) {
 				console.error(`Failed to load background: ${background}`, error);
 			}
-		}
-		if (background.includes("snow")) {
+		} 
+	
+		if (background.includes("snow") && this.plugin.instanceData.animatedBackground) {
 			try {
 				const snowUrl = getBackgroundAsset("snow.gif");
 				wrapper.createEl("img", {
