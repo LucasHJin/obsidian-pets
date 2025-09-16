@@ -23,8 +23,6 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	nextPetIdCounters: {},
 };
 
-// MAKE SPAWN AT DIFF HEIGHTS DEPENDING ON THE BACKGROUND
-
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
 
