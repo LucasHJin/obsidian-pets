@@ -126,7 +126,7 @@
 }
 
 .chat-message {
-	padding: 8px 12px;
+	padding: 10px 15px;
 	border-radius: 6px;
 	max-width: 70%; 
 	word-wrap: break-word;
@@ -170,4 +170,10 @@
 	padding: 8px 12px;
 	white-space: nowrap;
 	align-self: flex-start;
+}
+
+.chat-message pre {
+	margin: 0;
+	padding: 0;
+	white-space: pre; 
 }

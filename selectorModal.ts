@@ -118,6 +118,18 @@ export class ChatModal extends Modal {
 		contentEl.addClass("pp-chat-modal-content");
 
 		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
+		
+		this.addMessage("bot", 
+			`/\\_/\\ ♥
+>^.^<   ~meow~
+/   \\
+(___)_/
+-------
+
+you're my meeeooooowwwwner~
+Cat (chat) with me anything about~
+(except about rats, I hate them)~`,
+			chatContainer);
 
 		const form = contentEl.createEl("form", { cls: "chat-form" });
 
@@ -162,7 +174,14 @@ export class ChatModal extends Modal {
 		const messageBox = container.createDiv({
 			cls: `chat-message ${sender}`,
 		});
-		messageBox.setText(text);
+
+		// Different font styling for bot
+		if (sender === "bot") {
+			const pre = messageBox.createEl("pre");
+			pre.setText(text);
+		} else {
+			messageBox.setText(text);
+		}
 
 		messageBox.scrollIntoView({ behavior: "smooth" });
 	}
