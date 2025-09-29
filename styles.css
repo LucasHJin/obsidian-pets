@@ -101,3 +101,73 @@
   width: 100%;
   height: 100%;
 }
+
+/* Chat Modal Styles */
+.modal:has(.pp-chat-modal-content) { /* Target this specific modal to change width + height */
+	width: 65vw !important;
+	height: 75vh !important;
+	max-width: none !important;
+}
+
+.pp-chat-modal-content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+}
+
+.chat-messages {
+	flex: 1;
+	overflow-y: auto;
+	padding: 8px;
+	display: flex; 
+	flex-direction: column;
+	gap: 6px; 
+}
+
+.chat-message {
+	padding: 8px 12px;
+	border-radius: 6px;
+	max-width: 70%; 
+	word-wrap: break-word;
+	white-space: pre-wrap;
+}
+
+.chat-message.user {
+	background-color: var(--interactive-accent);
+	color: white;
+	align-self: flex-end; 
+}
+
+.chat-message.bot {
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	align-self: flex-start; 
+}
+
+.chat-form {
+	display: flex;
+	align-items: flex-start;
+	width: 100%;
+	padding: 8px;
+	border-top: 1px solid var(--background-modifier-border);
+	gap: 6px;
+	box-sizing: border-box;
+}
+
+.chat-input {
+	flex: 1;
+	resize: none;
+	min-height: 20px; 
+	max-height: 120px;
+	padding: 6px;
+	line-height: 1.3;
+	overflow-y: auto;
+	height: auto;
+}
+
+.chat-send-button {
+	padding: 8px 12px;
+	white-space: nowrap;
+	align-self: flex-start;
+}

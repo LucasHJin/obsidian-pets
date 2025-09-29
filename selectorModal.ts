@@ -7,6 +7,11 @@ export interface SelectorOption {
 	requiresName?: boolean;
 }
 
+export interface ChatMessage {
+	sender: "user" | "bot";
+	text: string;
+}
+
 export class SelectorModal extends Modal {
 	options: SelectorOption[]; // Array of options
 	onSubmit: (value: string, name: string) => Promise<void>; // Expects a function that takes a value and name and returns a promise (callback to chooser function)
@@ -93,6 +98,75 @@ export class SelectorModal extends Modal {
 	}
 
 	// Clean up DOM on modal close
+	onClose() {
+		this.contentEl.empty();
+	}
+}
+
+export class ChatModal extends Modal {
+	messages: ChatMessage[] = [];
+	onMessage: (message: string) => Promise<string>;
+
+	constructor(app: App, onMessage: (message: string) => Promise<string>) {
+		super(app);
+		this.onMessage = onMessage;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+
+		contentEl.addClass("pp-chat-modal-content");
+
+		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
+
+		const form = contentEl.createEl("form", { cls: "chat-form" });
+
+		const textarea = form.createEl("textarea", {
+			placeholder: "Type your message...",
+			cls: "chat-input",
+		});
+		textarea.rows = 1;
+		textarea.focus();
+
+		form.createEl("button", {
+			type: "submit",
+			text: "Send",
+			cls: "chat-send-button",
+		});
+
+		// Handle message being sent
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const text = textarea.value.trim();
+			if (!text) {
+				return;
+			}
+
+			this.addMessage("user", text, chatContainer);
+
+			textarea.value = "";
+
+			const response = await this.onMessage(text);
+			this.addMessage("bot", response, chatContainer); // Wait for response from the bot
+
+			// Scroll to bottom
+			setTimeout(() => {
+				chatContainer.scrollTop = chatContainer.scrollHeight;
+			}, 0);
+		});
+	}
+
+	private addMessage(sender: "user" | "bot", text: string, container: HTMLElement) {
+		this.messages.push({ sender, text });
+
+		const messageBox = container.createDiv({
+			cls: `chat-message ${sender}`,
+		});
+		messageBox.setText(text);
+
+		messageBox.scrollIntoView({ behavior: "smooth" });
+	}
+
 	onClose() {
 		this.contentEl.empty();
 	}

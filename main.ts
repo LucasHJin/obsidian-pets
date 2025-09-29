@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
-import { SelectorModal, SelectorOption } from "selectorModal";
+import { SelectorModal, SelectorOption, ChatModal } from "selectorModal";
 
 export interface PetInstance {
 	id: string; // Unique id
@@ -229,8 +229,21 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "chat-with-pets",
+			name: "Chat with your pets",
+			callback: () => {
+				new ChatModal(this.app, (msg) => this.chatWithPet(msg)).open();
+			}
+		});
+
 		// Add settings for changing background
 		this.addSettingTab(new PetSettingTab(this.app, this));
+	}
+
+	// Function to handle chat messages
+	async chatWithPet(message: string): Promise<string> {
+		return `Your pet says: "${message}"`;
 	}
 
 	// Function to get a clean id label
