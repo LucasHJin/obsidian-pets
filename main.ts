@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
-import { SelectorModal, SelectorOption, ChatModal } from "selectorModal";
+import { SelectorModal, SelectorOption, ChatModal } from "modals";
 import { testModel } from "chatmodels";
 import { GoogleGenAI } from "@google/genai";
 
