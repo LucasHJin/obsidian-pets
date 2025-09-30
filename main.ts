@@ -3,6 +3,7 @@ import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption, ChatModal } from "selectorModal";
 import { testModel } from "chatmodels";
+import { GoogleGenAI } from "@google/genai";
 
 export interface PetInstance {
 	id: string; // Unique id
@@ -16,6 +17,7 @@ interface PetPluginData {
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 	animatedBackground: boolean; // Whether background animations are on or off
+	apiKey: string; // Gemini API key for chat feature
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -26,11 +28,18 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
+	private chatmodel: GoogleGenAI | null = null;
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
+			// NEED TO HANDLE ERROR BETTER IF NO API KEY
+			if (this.instanceData.apiKey) {
+                this.chatmodel = new GoogleGenAI({
+                    apiKey: this.instanceData.apiKey,
+                });
+            }
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
 		}
@@ -238,15 +247,25 @@ export default class PetPlugin extends Plugin {
 			}
 		});
 
-		// Add settings for changing background
+		// Add settings
 		this.addSettingTab(new PetSettingTab(this.app, this));
 	}
 
 	// Function to handle chat messages
 	async chatWithPet(message: string): Promise<string> {
-		const returnMessage = await testModel(message);
+		if (!this.chatmodel) {
+            return "Please set your API key in settings first.";
+        }
+		const returnMessage = await testModel(message, this.chatmodel);
 		return `${returnMessage}`;
 	}
+
+	// Function to update API key from settings
+	public updateApiKey(apiKey: string): void {
+        this.instanceData.apiKey = apiKey;
+        this.chatmodel = new GoogleGenAI({ apiKey });
+        this.saveData(this.instanceData);
+    }
 
 	// Function to get a clean id label
 	getCleanLabel(id: string): string {

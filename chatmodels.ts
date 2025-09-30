@@ -1,10 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
-const model = new GoogleGenAI({
-  apiKey: "API KEY HERE", 
-});
 
-export async function askModel(details: string, question: string) {
+export async function askModel(details: string, question: string, model: GoogleGenAI) {
   const response = await model.models.generateContent({
     model: "gemini-2.5-flash",
     contents: `Here are details from an Obsidian vault regarding a user's notes:
@@ -17,7 +14,7 @@ export async function askModel(details: string, question: string) {
   return response.text;
 }
 
-export async function testModel(value: string) {
+export async function testModel(value: string, model: GoogleGenAI) {
   const response = await model.models.generateContent({
     model: "gemini-2.5-flash",
     contents: `Write a random response to the following value: ${value}`,  

@@ -47,5 +47,15 @@ export class PetSettingTab extends PluginSettingTab {
 						await this.plugin.toggleBackgroundAnimation(value);
 					});
 			});
+
+		new Setting(containerEl)
+			.setName("Model API Key").setHeading()
+			.setDesc("Enter your Gemini API key to use the plugin's chat feature.")
+			.addText((text) => {
+				text.setValue(this.plugin.instanceData.apiKey)
+					.onChange(async (value) => {
+						this.plugin.updateApiKey(value);
+					});
+			});
 	}
 }
