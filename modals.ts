@@ -158,7 +158,11 @@ Cat (chat) with me anything about~
 
 			textarea.value = "";
 
+			// Typing 
+			const typingAnimation = this.showTypingIndicator(chatContainer);
 			const response = await this.onMessage(text);
+			this.removeTypingIndicator(typingAnimation);
+
 			this.addMessage("bot", response, chatContainer); // Wait for response from the bot
 
 			// Scroll to bottom
@@ -184,6 +188,32 @@ Cat (chat) with me anything about~
 		}
 
 		messageBox.scrollIntoView({ behavior: "smooth" });
+	}
+
+	// Function to show typing indicator while waiting for bot response
+	private showTypingIndicator(container: HTMLElement): HTMLElement {
+		const typingBox = container.createDiv({
+			cls: "chat-message bot",
+		});
+
+		const span = typingBox.createSpan();
+		let dots = 0;
+		const interval = setInterval(() => {
+			dots = (dots + 1) % 3;
+			span.setText("meow." + ".".repeat(dots));
+		}, 400);
+
+		// Attach interval reference so we can stop it later (use any to avoid TS error)
+		(typingBox as any)._typingInterval = interval;
+		return typingBox;
+	}
+
+	private removeTypingIndicator(typingBox: HTMLElement) {
+		const interval = (typingBox as any)._typingInterval;
+		if (interval) {
+			clearInterval(interval); // Clean up the interval animation
+		}
+		typingBox.remove();
 	}
 
 	onClose() {
