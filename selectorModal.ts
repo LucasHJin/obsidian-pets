@@ -176,8 +176,8 @@ Cat (chat) with me anything about~
 		});
 
 		// Different font styling for bot
-		if (sender === "bot") {
-			const pre = messageBox.createEl("pre");
+		if (sender === "bot" && text.includes(">^.^<")) {
+			const pre = messageBox.createEl("pre"); // So that line width isn't affected afterwards
 			pre.setText(text);
 		} else {
 			messageBox.setText(text);

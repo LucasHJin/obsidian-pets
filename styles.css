@@ -177,3 +177,7 @@
 	padding: 0;
 	white-space: pre; 
 }
+
+.chat-message.bot {
+  font-family: var(--font-monospace); /* ALL bot messages are diff font */
+}

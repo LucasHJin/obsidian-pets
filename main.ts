@@ -2,6 +2,7 @@ import { Plugin } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption, ChatModal } from "selectorModal";
+import { testModel } from "chatmodels";
 
 export interface PetInstance {
 	id: string; // Unique id
@@ -243,7 +244,8 @@ export default class PetPlugin extends Plugin {
 
 	// Function to handle chat messages
 	async chatWithPet(message: string): Promise<string> {
-		return `Your pet says: "${message}"`;
+		const returnMessage = await testModel(message);
+		return `${returnMessage}`;
 	}
 
 	// Function to get a clean id label
