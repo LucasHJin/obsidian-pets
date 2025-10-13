@@ -9,6 +9,8 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
+// Make size changeable
+
 export class Pet {
 	protected container: Element;
 	protected petEl: HTMLElement;

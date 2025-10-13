@@ -17,7 +17,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		// Dropdown for background
 		new Setting(containerEl)
-			.setName("Background").setHeading()
+			.setName("Background")
 			.setDesc("Select a background for the pet view.")
 			.addDropdown((dropdown) => {
 				dropdown
@@ -38,7 +38,7 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Animations").setHeading()
+			.setName("Animations")
 			.setDesc("Toggle the background's animation ON or OFF.")
 			.addToggle((toggle) => {
 				toggle
@@ -49,12 +49,28 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Model API Key").setHeading()
+			.setName("Model API keys").setHeading()
 			.setDesc("Enter your Gemini API key to use the plugin's chat feature.")
+		
+		new Setting(containerEl)
+			.setName("Gemini API key")
 			.addText((text) => {
-				text.setValue(this.plugin.instanceData.apiKey)
+				text
+					.setPlaceholder("GEMINI_API_KEY")
+					.setValue(this.plugin.instanceData.geminiApiKey)
 					.onChange(async (value) => {
-						this.plugin.updateApiKey(value);
+						this.plugin.updateGeminiApiKey(value);
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("OpenAI API key")
+			.addText((text) => {
+				text
+					.setPlaceholder("OPENAI_API_KEY")
+					.setValue(this.plugin.instanceData.openAiApiKey || "")
+					.onChange(async (value) => {
+						this.plugin.updateOpenAiApiKey(value);
 					});
 			});
 	}
