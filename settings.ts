@@ -2,6 +2,7 @@ import { PluginSettingTab, App, Setting } from "obsidian";
 import PetPlugin from "main";
 
 // https://docs.obsidian.md/Plugins/User+interface/Settings
+// ADD ABILITY TO CHANGE BETWEEN GEMINI AND OPENAI
 
 export class PetSettingTab extends PluginSettingTab {
 	plugin: PetPlugin;
