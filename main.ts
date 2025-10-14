@@ -7,6 +7,8 @@ import { GoogleGenAI } from "@google/genai";
 import { VectorDB } from "chat-utils/vector-db";
 import { indexVault } from "chat-utils/indexer";
 import { answerQuery } from "chat-utils/retriever";
+import { initModel } from "chatmodels";
+import OpenAI from "openai";
 
 export interface PetInstance {
 	id: string; // Unique id
@@ -23,6 +25,7 @@ interface PetPluginData {
 	geminiApiKey: string; // Gemini API key for chat feature
 	openAiApiKey: string; // OpenAI API key for RAG
 	indexedFiles?: Record<string, number>; // To track already indexed files in vault
+	selectedModel?: string; // Selected model for chat
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -34,17 +37,29 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
 	ragDb: VectorDB;
-	private chatmodel: GoogleGenAI | null = null;
+	private chatmodel: GoogleGenAI | OpenAI | null = null;
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
 			// NEED TO HANDLE ERROR BETTER IF NO API KEY
-			if (this.instanceData.geminiApiKey) {
-				this.chatmodel = new GoogleGenAI({
-					apiKey: this.instanceData.geminiApiKey,
-				});
+			if (
+				this.instanceData.selectedModel &&
+				this.instanceData.selectedModel !== "none"
+			) {
+				try {
+					this.chatmodel = initModel(
+						this.instanceData.selectedModel,
+						this.instanceData.geminiApiKey,
+						this.instanceData.openAiApiKey
+					);
+				} catch (e) {
+					console.warn("Failed to initialize chat model:", e);
+					new Notice(
+						"Could not initialize AI model. Check API keys and model selection in settings."
+					);
+				}
 			}
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
@@ -273,7 +288,7 @@ export default class PetPlugin extends Plugin {
 			name: "Index Vault for RAG",
 			callback: async () => {
 				if (!this.instanceData.openAiApiKey) {
-					new Notice("Set your OpenAI API key first!");
+					new Notice("Set your OpenAI API key first.");
 					return;
 				}
 
@@ -284,7 +299,7 @@ export default class PetPlugin extends Plugin {
 					this.instanceData.indexedFiles
 				);
 				await this.saveData(this.instanceData);
-				new Notice("Vault indexed successfully!");
+				new Notice("Vault indexed successfully.");
 			},
 		});
 
@@ -337,25 +352,59 @@ export default class PetPlugin extends Plugin {
 			return await askModel(
 				context || "No context available.",
 				question,
-				this.chatmodel
+				this.chatmodel,
+				this.instanceData.selectedModel || "none"
 			);
 		} catch (e) {
-			console.error("Gemini error:", e);
-			return "Sorry, I couldn't process your request. Please check your Gemini API key.";
+			console.error("Chat model error:", e);
+			return "Sorry, I couldn't process your request. Please check your selected model and API key.";
 		}
 	}
 
-	// Function to update Gemini API key from settings
 	public updateGeminiApiKey(geminiApiKey: string): void {
 		this.instanceData.geminiApiKey = geminiApiKey;
-		this.chatmodel = new GoogleGenAI({ apiKey: geminiApiKey });
 		this.saveData(this.instanceData);
 	}
 
-	// Function to update OpenAI API key from settings
 	public updateOpenAiApiKey(openAiApiKey: string): void {
 		this.instanceData.openAiApiKey = openAiApiKey;
 		this.saveData(this.instanceData);
+	}
+
+	public updateChosenModel(selectedModel: string): void {
+		this.instanceData.selectedModel = selectedModel;
+		this.saveData(this.instanceData);
+
+		try {
+			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
+				new Notice("Set your Gemini API key first.");
+				this.chatmodel = null;
+				return;
+			}
+			if (selectedModel === "openai" && !this.instanceData.openAiApiKey) {
+				new Notice("Set your OpenAI API key first.");
+				this.chatmodel = null;
+				return;
+			}
+
+			this.chatmodel = initModel(
+				selectedModel,
+				this.instanceData.geminiApiKey,
+				this.instanceData.openAiApiKey
+			);
+
+			if (selectedModel === "gemini") {
+				new Notice(`Model set to Gemini.`);
+			} else if (selectedModel === "openai") {
+				new Notice(`Model set to OpenAI.`);
+			} else {
+				new Notice("No model selected.");
+			}
+		} catch (e) {
+			console.error("Failed to initialize model after selection:", e);
+			new Notice("Could not initialize model. Check API keys.");
+			this.chatmodel = null;
+		}
 	}
 
 	// Function to get a clean id label

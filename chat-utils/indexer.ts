@@ -20,7 +20,7 @@ export async function indexVault(
       // If file has been previously indexed but is now deleted -> remove its chunks from the DB
       await db.removeByNotePath(trackedPath);
       delete indexedFiles[trackedPath];
-      new Notice(`Removed deleted file: ${trackedPath}`);
+      new Notice(`Removed deleted file: ${trackedPath}.`);
     }
   }
 
@@ -60,7 +60,7 @@ export async function indexVault(
 			} catch (e) {
         // Just log and then continue with next chunking if one error
 				console.error(`Failed to index ${file.path}::${i}:`, e);
-				new Notice(`Error indexing ${file.path}`);
+				new Notice(`Error indexing ${file.path}.`);
 			}
 		}
 

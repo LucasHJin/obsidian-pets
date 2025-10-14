@@ -2,7 +2,6 @@ import { PluginSettingTab, App, Setting } from "obsidian";
 import PetPlugin from "main";
 
 // https://docs.obsidian.md/Plugins/User+interface/Settings
-// ADD ABILITY TO CHANGE BETWEEN GEMINI AND OPENAI
 
 export class PetSettingTab extends PluginSettingTab {
 	plugin: PetPlugin;
@@ -50,28 +49,48 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Model API keys").setHeading()
-			.setDesc("Enter your Gemini API key to use the plugin's chat feature.")
-		
-		new Setting(containerEl)
-			.setName("Gemini API key")
-			.addText((text) => {
-				text
-					.setPlaceholder("GEMINI_API_KEY")
-					.setValue(this.plugin.instanceData.geminiApiKey)
-					.onChange(async (value) => {
-						this.plugin.updateGeminiApiKey(value);
-					});
-			});
+			.setName("Model API keys")
+			.setHeading()
 
 		new Setting(containerEl)
-			.setName("OpenAI API key")
-			.addText((text) => {
-				text
-					.setPlaceholder("OPENAI_API_KEY")
-					.setValue(this.plugin.instanceData.openAiApiKey || "")
+		.setName("Gemini API key")
+		.setDesc("Enter your Gemini API key to use the plugin's chat feature.")
+		.addText((text) => {
+			text.setValue(this.plugin.instanceData.geminiApiKey)
+				.onChange(async (value) => {
+					this.plugin.updateGeminiApiKey(value);
+				});
+		});
+
+		new Setting(containerEl)
+		.setName("OpenAI API key")
+		.setDesc("Enter your OpenAI API key to use the plugin's chat feature.")
+		.addText((text) => {
+			text.setValue(this.plugin.instanceData.openAiApiKey || "")
+				.onChange(async (value) => {
+					this.plugin.updateOpenAiApiKey(value);
+				});
+		});
+
+		// Conditionally show model selector
+		const hasGemini = !!this.plugin.instanceData.geminiApiKey?.trim();
+		const hasOpenAI = !!this.plugin.instanceData.openAiApiKey?.trim();
+		new Setting(containerEl)
+			.setName("Active AI Model")
+			.setDesc("Choose which model to use for chat interactions.")
+			.addDropdown((dropdown) => {
+				dropdown.addOption("none", "");
+				if (hasGemini) {
+					dropdown.addOption("gemini", "Gemini");
+				}
+				if (hasOpenAI) {
+					dropdown.addOption("openai", "OpenAI");
+				}
+
+				dropdown
+					.setValue(this.plugin.instanceData.selectedModel || "none")
 					.onChange(async (value) => {
-						this.plugin.updateOpenAiApiKey(value);
+						this.plugin.updateChosenModel(value);
 					});
 			});
 	}

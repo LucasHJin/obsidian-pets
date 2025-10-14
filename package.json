@@ -24,6 +24,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
-		"@google/genai": "^1.21.0"
+		"@google/genai": "^1.21.0",
+		"openai": "^6.3.0"
 	}
 }
