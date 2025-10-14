@@ -54,7 +54,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName("Gemini API key")
-		.setDesc("Enter your Gemini API key to use the plugin's chat feature.")
+		.setDesc("Enter your Gemini API key to use the plugin's chat feature. (This is optional given the OpenAI key.)")
 		.addText((text) => {
 			text.setValue(this.plugin.instanceData.geminiApiKey)
 				.onChange(async (value) => {
@@ -64,7 +64,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName("OpenAI API key")
-		.setDesc("Enter your OpenAI API key to use the plugin's chat feature.")
+		.setDesc("Enter your OpenAI API key to use the plugin's chat feature. (This is mandatory.)")
 		.addText((text) => {
 			text.setValue(this.plugin.instanceData.openAiApiKey || "")
 				.onChange(async (value) => {
