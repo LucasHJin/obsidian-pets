@@ -32,7 +32,7 @@
 	height: var(--pet-size);
 	left: var(--left);
 	top: var(--top);
-	transform: translate(-50%, -50%) scaleX(var(--scale-x, 1));
+	transform: translate(-50%, -50%) scale(var(--scale, 1)) scaleX(var(--scale-x, 1));
 	background-repeat: no-repeat;
 	background-position: 0 0;
 	background-image: var(--sprite-url);
@@ -90,7 +90,7 @@
 
 .ball {
   position: absolute;
-  transform: translate(var(--x, 0), var(--y, 0));
+  transform: translate(var(--x, 0), var(--y, 0)) scale(var(--scale, 1));
   width: var(--ballwidth);
   height: var(--ballheight);
   z-index: 200;

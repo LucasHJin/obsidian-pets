@@ -49,12 +49,24 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Model API keys")
+			.setName("Pet size")
+			.setDesc("Adjust the size of the pet (1X to 2X).")
+			.addSlider((slider) => {
+				slider
+					.setLimits(1, 2, 0.1)
+					.setValue(this.plugin.instanceData.petSize)
+					.onChange(async (value) => {
+						this.plugin.updatePetSize(value);
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Chatbot API keys")
 			.setHeading()
 
 		new Setting(containerEl)
 		.setName("Gemini API key")
-		.setDesc("Enter your Gemini API key to use the plugin's chat feature. (This is optional given the OpenAI key.)")
+		.setDesc("Enter your Gemini API key to use the plugin's chat feature (this is optional given the OpenAI key).")
 		.addText((text) => {
 			text.setValue(this.plugin.instanceData.geminiApiKey)
 				.onChange(async (value) => {
@@ -65,7 +77,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName("OpenAI API key")
-		.setDesc("Enter your OpenAI API key to use the plugin's chat feature. (This is mandatory.)")
+		.setDesc("Enter your OpenAI API key to use the plugin's chat feature (this is mandatory).")
 		.addText((text) => {
 			text.setValue(this.plugin.instanceData.openAiApiKey || "")
 				.onChange(async (value) => {

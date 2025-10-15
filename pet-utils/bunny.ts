@@ -6,9 +6,10 @@ export class Bunny extends Pet {
         animations: Record<string, AnimationConfig>,
         moveDist: number,
         backgroundName: string,
-        petId: string
+        petId: string,
+		scale: number
     ) {
-        super(container, animations, moveDist, backgroundName, petId);
+        super(container, animations, moveDist, backgroundName, petId, scale);
     }
     protected setupActions() {
 		for (const key in this.animations) {

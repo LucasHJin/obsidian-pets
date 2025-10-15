@@ -7,14 +7,16 @@ export class Ghost extends Pet {
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
-		petId: string
+		petId: string,
+		scale: number
 	) {
 		super(
 			container,
 			animations,
 			moveDist,
 			backgroundName,
-			petId
+			petId,
+			scale
 		);
 	}
 

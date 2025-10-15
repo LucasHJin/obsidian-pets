@@ -22,6 +22,7 @@ interface PetPluginData {
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 	animatedBackground: boolean; // Whether background animations are on or off
+	petSize: number; // Overall size of pets (1 = normal size)
 	geminiApiKey: string; // Gemini API key for chat feature
 	openAiApiKey: string; // OpenAI API key for RAG
 	indexedFiles?: Record<string, number>; // To track already indexed files in vault
@@ -497,6 +498,21 @@ export default class PetPlugin extends Plugin {
 			// if is a PetView
 			if (view instanceof PetView) {
 				view.updateView();
+			}
+		}
+	}
+
+	public updatePetSize(value: number): void {
+		this.instanceData.petSize = value;
+		this.saveData(this.instanceData);
+
+		// Update all open PetViews
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			// if is a PetView
+			if (view instanceof PetView) {
+				view.updatePetSize();
 			}
 		}
 	}
