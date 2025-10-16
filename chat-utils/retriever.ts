@@ -6,7 +6,7 @@ export async function answerQuery(
 	apiKey: string,
 	db: VectorDB,
 	topK = 8, // Number of chunks to retrieve (to be refined)
-	minScore = 0.7 // Minimum similarity score
+	minScore = 0.3 // Minimum similarity score
 ): Promise<string> {
 	// Embed query
 	const queryVector = await fetchEmbedding(apiKey, query);
