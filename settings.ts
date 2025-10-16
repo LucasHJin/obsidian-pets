@@ -50,7 +50,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Pet size")
-			.setDesc("Adjust the size of the pet (1X to 2X).")
+			.setDesc("Adjust the size of the pet.")
 			.addSlider((slider) => {
 				slider
 					.setLimits(1, 2, 0.1)

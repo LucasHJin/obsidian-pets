@@ -109,6 +109,7 @@ export class ChatModal extends Modal {
 	messages: ChatMessage[] = [];
 	plugin: any;
 	private conversationHistory: ConversationMessage[] = []; 
+	private activeTypingInterval: ReturnType<typeof setInterval> | null = null;
 	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
 
 	constructor(app: App, plugin: any, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
@@ -237,6 +238,7 @@ Cat (chat) with me anything about~
 
 		// Attach interval reference so we can stop it later (use any to avoid TS error)
 		(typingBox as any)._typingInterval = interval;
+		this.activeTypingInterval = interval;
 		return typingBox;
 	}
 
@@ -245,10 +247,16 @@ Cat (chat) with me anything about~
 		if (interval) {
 			clearInterval(interval); // Clean up the interval animation
 		}
+		this.activeTypingInterval = null;
 		typingBox.remove();
 	}
 
 	onClose() {
+		if (this.activeTypingInterval) {
+			clearInterval(this.activeTypingInterval);
+			this.activeTypingInterval = null;
+		}
+
 		this.contentEl.empty();
 	}
 }
