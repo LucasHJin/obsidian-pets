@@ -1,6 +1,6 @@
 export class Ball {
 	private container: Element;
-	private ballEl: HTMLElement;
+	public ballEl: HTMLElement;
 	private ballId: string;
 	private backgroundName: string;
 	private backgroundHeights: Record<string, string> = {
@@ -27,13 +27,15 @@ export class Ball {
 	private damping = 0.99; // Bounce energy retention (1 = all)
 	private airRes = 0.99; // Air resistance (1 = none)
 	private frameId: number | null = null;
+	public scale: number; // For different ball sizes
 
 	public onDestroy?: () => void; // Callback to tie cat to ball being deleted
 
-	constructor(container: Element, spriteUrl: string, ballId: string, backgroundImage: string) {
+	constructor(container: Element, spriteUrl: string, ballId: string, backgroundImage: string, scale: number) {
 		this.container = container;
 		this.ballId = ballId;
 		this.backgroundName = backgroundImage;
+		this.scale = scale;
 
 		// Create ball element
 		this.ballEl = this.createBallElement(spriteUrl);
@@ -65,6 +67,7 @@ export class Ball {
 		el.setCssProps({
 			"--ballwidth": `${Math.round(BALL_SIZE)}px`,
 			"--ballheight": `${Math.round(BALL_SIZE)}px`,
+			"--scale": `${this.scale}`,
 		});
 		el.appendChild(img);
 

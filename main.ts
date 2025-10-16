@@ -1,7 +1,14 @@
-import { Plugin } from "obsidian";
+import { Plugin, Notice } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
-import { SelectorModal, SelectorOption } from "selectorModal";
+import { SelectorModal, SelectorOption, ChatModal } from "modals";
+import { askModel, reformulateQuery } from "chatmodels";
+import { GoogleGenAI } from "@google/genai";
+import { VectorDB } from "chat-utils/vector-db";
+import { indexVault } from "chat-utils/indexer";
+import { answerQuery } from "chat-utils/retriever";
+import { initModel } from "chatmodels";
+import OpenAI from "openai";
 
 export interface PetInstance {
 	id: string; // Unique id
@@ -15,6 +22,11 @@ interface PetPluginData {
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 	animatedBackground: boolean; // Whether background animations are on or off
+	petSize: number; // Overall size of pets (1 = normal size)
+	geminiApiKey: string; // Gemini API key for chat feature
+	openAiApiKey: string; // OpenAI API key for RAG
+	indexedFiles?: Record<string, number>; // To track already indexed files in vault
+	selectedModel?: string; // Selected model for chat
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -23,23 +35,53 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	nextPetIdCounters: {},
 };
 
+export interface ConversationMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: number;
+}
+
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
+	ragDb: VectorDB;
+	private chatmodel: GoogleGenAI | OpenAI | null = null;
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
+			// NEED TO HANDLE ERROR BETTER IF NO API KEY
+			if (
+				this.instanceData.selectedModel &&
+				this.instanceData.selectedModel !== "none"
+			) {
+				try {
+					this.chatmodel = initModel(
+						this.instanceData.selectedModel,
+						this.instanceData.geminiApiKey,
+						this.instanceData.openAiApiKey
+					);
+				} catch (e) {
+					console.warn("Failed to initialize chat model:", e);
+					new Notice(
+						"Could not initialize AI model. Check API keys and model selection in settings."
+					);
+				}
+			}
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
 		}
+
+		// Initialize the vector database
+		this.ragDb = new VectorDB();
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
 
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
-			const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+			const isOpen =
+				this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 			if (!isOpen) {
 				await this.openView();
 			}
@@ -47,7 +89,8 @@ export default class PetPlugin extends Plugin {
 
 		// Adds icon on the ribbon (side panel) to open view
 		this.addRibbonIcon("cat", "Toggle pet view", async () => {
-			const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+			const isOpen =
+				this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 			if (isOpen) {
 				await this.closeView();
 			} else {
@@ -132,7 +175,11 @@ export default class PetPlugin extends Plugin {
 				requiresName: true,
 			},
 			{ value: "pets/ghost", label: "Ghost", requiresName: true },
-			{ value: "pets/grey-bunny", label: "Grey bunny", requiresName: true },
+			{
+				value: "pets/grey-bunny",
+				label: "Grey bunny",
+				requiresName: true,
+			},
 			{
 				value: "pets/pirate-cat",
 				label: "Pirate cat",
@@ -159,7 +206,11 @@ export default class PetPlugin extends Plugin {
 				requiresName: true,
 			},
 			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
-			{ value: "pets/vampire-cat", label: "Vampire cat", requiresName: true },
+			{
+				value: "pets/vampire-cat",
+				label: "Vampire cat",
+				requiresName: true,
+			},
 			{ value: "pets/white-cat", label: "White cat", requiresName: true },
 			{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
 		];
@@ -177,7 +228,7 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		// Command to add a ball 
+		// Command to add a ball
 		const BALLS: string[] = [
 			"toys/blue-ball",
 			"toys/cyan-ball",
@@ -193,7 +244,8 @@ export default class PetPlugin extends Plugin {
 			name: "Add a ball",
 			callback: async () => {
 				// Random ball color
-				const randomBall = BALLS[Math.floor(Math.random() * BALLS.length)];
+				const randomBall =
+					BALLS[Math.floor(Math.random() * BALLS.length)];
 				await this.addBall(randomBall);
 			},
 		});
@@ -229,8 +281,159 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		// Add settings for changing background
+		this.addCommand({
+			id: "chat-with-pets",
+			name: "Chat with your pets",
+			callback: () => {
+				if (!this.instanceData.selectedModel || this.instanceData.selectedModel === "none") {
+					new Notice("Please select a chat model in settings first.");
+					return;
+				}
+				if (!this.chatmodel) {
+					new Notice("Please set your API key(s) in settings first.");
+					return;
+				}
+
+				new ChatModal(this.app, this, (msg, history) => this.chatWithPet(msg, history)).open(); // Pass reference to this plugin to use the markdown
+			},
+		});
+
+		// Add command to manually index vault (also do this onload if not indexed yet)
+		this.addCommand({
+			id: "manual-index-vault",
+			name: "Index Vault for RAG",
+			callback: async () => {
+				if (!this.instanceData.openAiApiKey) {
+					new Notice("Set your OpenAI API key first.");
+					return;
+				}
+
+				await indexVault(
+					this.app,
+					this.ragDb,
+					this.instanceData.openAiApiKey,
+					this.instanceData.indexedFiles
+				);
+				await this.saveData(this.instanceData);
+				new Notice("Vault indexed successfully.");
+			},
+		});
+
+		// Add settings
 		this.addSettingTab(new PetSettingTab(this.app, this));
+
+		// Add initial indexing if vault not indexed yet
+		if (this.instanceData.openAiApiKey && this.ragDb) {
+			if (
+				!this.instanceData.indexedFiles ||
+				Object.keys(this.instanceData.indexedFiles).length === 0
+			) {
+				// console.log("Indexing all vault files for the first time...");
+				await indexVault(
+					this.app,
+					this.ragDb,
+					this.instanceData.openAiApiKey,
+					this.instanceData.indexedFiles
+				);
+				await this.saveData(this.instanceData);
+			}
+		}
+	}
+
+	// Function to handle chat messages
+	async chatWithPet(question: string, conversationHistory: ConversationMessage[] = []): Promise<string> {
+		// Need a chat model to exist
+		if (!this.chatmodel) {
+			return "Please set your API key(s) in settings first.";
+		}
+
+		let searchQuery = question;
+
+		// Reformulate follow up questions with context from previous questions (so that semantic searching works better)
+		if (conversationHistory.length > 0) {
+			const recentContext = conversationHistory
+				.slice(-6)
+				.map(msg => `${msg.role}: ${msg.content}`)
+				.join("\n");
+			
+			searchQuery = await reformulateQuery(question, recentContext, this.chatmodel, this.instanceData.selectedModel || "none");
+		}
+
+		// If OpenAI key exists -> fetch context (retrieval)
+		let context = "";
+		if (this.instanceData.openAiApiKey && this.ragDb) {
+			try {
+				context = await answerQuery(
+					searchQuery,
+					this.instanceData.openAiApiKey,
+					this.ragDb
+				);
+			} catch (e) {
+				console.error("RAG error:", e);
+				new Notice("Failed to retrieve context from vault");
+				// Continue without context
+			}
+		}
+
+		// Try to get response from Model
+		try {
+			return await askModel(
+				context || "No context available.",
+				question,
+				this.chatmodel,
+				this.instanceData.selectedModel || "none",
+				conversationHistory
+			);
+		} catch (e) {
+			console.error("Chat model error:", e);
+			return "Sorry, I couldn't process your request. Please check your selected model and API key.";
+		}
+	}
+
+	public updateGeminiApiKey(geminiApiKey: string): void {
+		this.instanceData.geminiApiKey = geminiApiKey;
+		this.saveData(this.instanceData);
+	}
+
+	public updateOpenAiApiKey(openAiApiKey: string): void {
+		this.instanceData.openAiApiKey = openAiApiKey;
+		this.saveData(this.instanceData);
+	}
+
+	public updateChosenModel(selectedModel: string): void {
+		this.instanceData.selectedModel = selectedModel;
+		this.saveData(this.instanceData);
+
+		try {
+			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
+				new Notice("Set your Gemini API key first.");
+				this.chatmodel = null;
+				return;
+			}
+			if (selectedModel === "openai" && !this.instanceData.openAiApiKey) {
+				new Notice("Set your OpenAI API key first.");
+				this.chatmodel = null;
+				return;
+			}
+
+			this.chatmodel = initModel(
+				selectedModel,
+				this.instanceData.geminiApiKey,
+				this.instanceData.openAiApiKey
+			);
+
+			if (selectedModel === "gemini") {
+				new Notice(`Model set to Gemini.`);
+			} else if (selectedModel === "openai") {
+				new Notice(`Model set to OpenAI.`);
+			} else {
+				new Notice("No model selected.");
+			}
+		} catch (e) {
+			console.error("Failed to initialize model after selection:", e);
+			new Notice("Could not initialize model. Check API keys.");
+			this.chatmodel = null;
+		}
 	}
 
 	// Function to get a clean id label
@@ -273,6 +476,11 @@ export default class PetPlugin extends Plugin {
 		if (!this.instanceData.nextPetIdCounters) {
 			this.instanceData.nextPetIdCounters = {};
 		}
+
+		// Make sure indexedFiles exists
+		if (!this.instanceData.indexedFiles) {
+			this.instanceData.indexedFiles = {};
+		}
 	}
 
 	public async chooseBackground(backgroundFile: string): Promise<void> {
@@ -310,7 +518,7 @@ export default class PetPlugin extends Plugin {
 	public toggleBackgroundAnimation(value: boolean): void {
 		this.instanceData.animatedBackground = value;
 		this.saveData(this.instanceData);
-		
+
 		// Update all open PetViews
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		for (const leaf of leaves) {
@@ -318,6 +526,21 @@ export default class PetPlugin extends Plugin {
 			// if is a PetView
 			if (view instanceof PetView) {
 				view.updateView();
+			}
+		}
+	}
+
+	public updatePetSize(value: number): void {
+		this.instanceData.petSize = value;
+		this.saveData(this.instanceData);
+
+		// Update all open PetViews
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			// if is a PetView
+			if (view instanceof PetView) {
+				view.updatePetSize();
 			}
 		}
 	}

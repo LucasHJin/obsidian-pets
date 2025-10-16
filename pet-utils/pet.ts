@@ -9,9 +9,11 @@ export type AnimationConfig = {
 	action?: (multiples?: number) => void; // Function that gets added in
 };
 
+// Make size changeable
+
 export class Pet {
 	protected container: Element;
-	protected petEl: HTMLElement;
+	public petEl: HTMLElement;
 	protected currentX: number;
 	protected direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
@@ -33,19 +35,22 @@ export class Pet {
 		"backgrounds/castlebg-2.png": "74%",
 	};
 	protected petId: string; // For unique keyframes
+	public scale: number; // For different pet sizes
 
 	constructor(
 		container: Element,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
-		petId: string
+		petId: string,
+		scale: number,
 	) {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
 		this.backgroundName = backgroundName;
 		this.petId = petId;
+		this.scale = scale;
 
 		this.setupActions();
 
@@ -80,6 +85,7 @@ export class Pet {
 			"--top": topPercent,
 			"--pet-size": `${this.animations["idle"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
+			"--scale": `${this.scale}`,
 		});
 		return el;
 	}

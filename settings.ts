@@ -17,7 +17,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 		// Dropdown for background
 		new Setting(containerEl)
-			.setName("Background").setHeading()
+			.setName("Background")
 			.setDesc("Select a background for the pet view.")
 			.addDropdown((dropdown) => {
 				dropdown
@@ -38,13 +38,79 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Animations").setHeading()
+			.setName("Animations")
 			.setDesc("Toggle the background's animation ON or OFF.")
 			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.instanceData.animatedBackground)
 					.onChange(async (value) => {
 						await this.plugin.toggleBackgroundAnimation(value);
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Pet size")
+			.setDesc("Adjust the size of the pet.")
+			.addSlider((slider) => {
+				slider
+					.setLimits(1, 2, 0.1)
+					.setValue(this.plugin.instanceData.petSize)
+					.onChange(async (value) => {
+						this.plugin.updatePetSize(value);
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Chatbot API keys")
+			.setHeading()
+
+		new Setting(containerEl)
+		.setName("Gemini API key")
+		.setDesc("Enter your Gemini API key to use the plugin's chat feature (this is optional given the OpenAI key).")
+		.addText((text) => {
+			text.setValue(this.plugin.instanceData.geminiApiKey)
+				.onChange(async (value) => {
+					this.plugin.updateGeminiApiKey(value);
+					if (!value.trim() && this.plugin.instanceData.selectedModel === "gemini") {
+						this.plugin.updateChosenModel("none");
+					}
+					this.display(); // Refresh to update available models
+				});
+		});
+
+		new Setting(containerEl)
+		.setName("OpenAI API key")
+		.setDesc("Enter your OpenAI API key to use the plugin's chat feature (this is mandatory).")
+		.addText((text) => {
+			text.setValue(this.plugin.instanceData.openAiApiKey || "")
+				.onChange(async (value) => {
+					this.plugin.updateOpenAiApiKey(value);
+					if (!value.trim() && this.plugin.instanceData.selectedModel === "openai") {
+						this.plugin.updateChosenModel("none");
+					}
+					this.display(); // Refresh to update available models
+				});
+		});
+
+		// Conditionally show model selector
+		const hasGemini = !!this.plugin.instanceData.geminiApiKey?.trim();
+		const hasOpenAI = !!this.plugin.instanceData.openAiApiKey?.trim();
+		new Setting(containerEl)
+			.setName("Active AI Model")
+			.setDesc("Choose which model to use for chat interactions.")
+			.addDropdown((dropdown) => {
+				dropdown.addOption("none", "");
+				if (hasGemini) {
+					dropdown.addOption("gemini", "Gemini");
+				}
+				if (hasOpenAI) {
+					dropdown.addOption("openai", "OpenAI");
+				}
+
+				dropdown
+					.setValue(this.plugin.instanceData.selectedModel || "none")
+					.onChange(async (value) => {
+						this.plugin.updateChosenModel(value);
 					});
 			});
 	}

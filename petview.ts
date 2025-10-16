@@ -124,6 +124,28 @@ export class PetView extends ItemView {
 		this.updateAllCatVerticalPositions(background);
 	}
 
+	updatePetSize() {
+		for (const { pet } of this.pets) {
+			// Update the internal scale property
+			pet.scale = this.plugin.instanceData.petSize;
+
+			// Immediately reflect change in CSS
+			pet.petEl?.setCssProps({
+				"--scale": `${this.plugin.instanceData.petSize}`,
+			});
+		}
+
+		// Also update balls if you want them scaled too (optional)
+		for (const { ball } of this.balls) {
+			if (ball.ballEl) {
+				ball.scale = this.plugin.instanceData.petSize;
+				ball.ballEl.setCssProps({
+					"--scale": `${this.plugin.instanceData.petSize}`,
+				});
+			}
+		}
+	}
+
 	addPetToView(wrapper: Element, singlePet: PetInstance) {
 		try {	
 			const background = this.plugin.getSelectedBackground();
@@ -132,17 +154,17 @@ export class PetView extends ItemView {
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, singlePet.type.includes("witch"));
+				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.type.includes("witch"));
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
-				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId);
+				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			} else if (singlePet.type.includes("ghost")) {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
-				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId);
+				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
 		} catch (error) {
@@ -183,7 +205,7 @@ export class PetView extends ItemView {
 
 			// Add the ball to the view
 			const ballAnimation = getBallAnimations(cleanBallId);
-			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background);
+			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background, this.plugin.instanceData.petSize);
 			this.balls.push({ id: cleanBallId, ball });
 
 			// Choose a random cat to chase after the ball
