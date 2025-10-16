@@ -1,5 +1,6 @@
 import { Modal, App } from "obsidian";
 import { MarkdownRenderer } from "obsidian"; // For rendering markdown in chat messages
+import { ConversationMessage } from "main";
 
 // Type for selectable option
 export interface SelectorOption {
@@ -107,9 +108,10 @@ export class SelectorModal extends Modal {
 export class ChatModal extends Modal {
 	messages: ChatMessage[] = [];
 	plugin: any;
-	onMessage: (message: string) => Promise<string>;
+	private conversationHistory: ConversationMessage[] = []; 
+	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
 
-	constructor(app: App, plugin: any, onMessage: (message: string) => Promise<string>) {
+	constructor(app: App, plugin: any, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
 		super(app);
 		this.plugin = plugin;
 		this.onMessage = onMessage;
@@ -117,6 +119,8 @@ export class ChatModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
+		contentEl.empty();
+        this.conversationHistory = [];
 
 		contentEl.addClass("pp-chat-modal-content");
 
@@ -163,8 +167,25 @@ Cat (chat) with me anything about~
 
 			// Typing 
 			const typingAnimation = this.showTypingIndicator(chatContainer);
-			const response = await this.onMessage(text);
+			const response = await this.onMessage(text, this.conversationHistory);
 			this.removeTypingIndicator(typingAnimation);
+
+			// Context of the conversation
+			this.conversationHistory.push({
+				role: "user",
+				content: text,
+				timestamp: Date.now()
+			});
+			this.conversationHistory.push({
+				role: "assistant",
+				content: response,
+				timestamp: Date.now()
+			});
+
+			// Keep recent 5 messages max (avoid overflow context window)
+			if (this.conversationHistory.length > 5) {
+				this.conversationHistory = this.conversationHistory.slice(-5);
+			}
 
 			await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
 

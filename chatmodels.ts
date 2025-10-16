@@ -1,8 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
+import { ConversationMessage } from "main";
 
 // Note -> File links cannot be clicked
-// ADD CONTEXT OF PREVIOUS MESSAGES
+// ADD CONTEXT OF PREVIOUS MESSAGES -> need to do this before searching for context?
 
 export function initModel(selectedModel: string, geminiKey: string, openAiKey: string) {
 	if (selectedModel === "gemini") {
@@ -19,10 +20,16 @@ export async function askModel(
 	question: string,
 	model: GoogleGenAI | OpenAI,
 	selectedModel: string,
+	conversationHistory: ConversationMessage[]
 ) {
 	const prompt = `You are a helpful AI assistant with access to the user's Obsidian vault.
 **Context from vault** (relevant notes retrieved via semantic search):
 ${context}
+---
+
+**Conversation History**: 
+${conversationHistory.map(msg => `\n- ${msg.role}: \n  - ${msg.content}`).join("")}
+---
 
 **User's question**: ${question}
 ---
@@ -43,6 +50,8 @@ ${context}
    - Prioritize information from the vault when available
 
 **Remember**: The user wants to learn, so explain concepts clearly as if teaching a smart beginner!`;
+
+	console.log("Prompt to model:", prompt);
 
 	if (selectedModel === "gemini") {
 		const response = await (model as GoogleGenAI).models.generateContent({

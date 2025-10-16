@@ -35,6 +35,12 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	nextPetIdCounters: {},
 };
 
+export interface ConversationMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: number;
+}
+
 export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
 	ragDb: VectorDB;
@@ -279,7 +285,7 @@ export default class PetPlugin extends Plugin {
 			id: "chat-with-pets",
 			name: "Chat with your pets",
 			callback: () => {
-				new ChatModal(this.app, this, (msg) => this.chatWithPet(msg)).open(); // Pass reference to this plugin to use the markdown
+				new ChatModal(this.app, this, (msg, history) => this.chatWithPet(msg, history)).open(); // Pass reference to this plugin to use the markdown
 			},
 		});
 
@@ -326,7 +332,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	// Function to handle chat messages
-	async chatWithPet(question: string): Promise<string> {
+	async chatWithPet(question: string, conversationHistory: ConversationMessage[] = []): Promise<string> {
 		// Need a chat model to exist
 		if (!this.chatmodel) {
 			return "Please set your API key(s) in settings first.";
@@ -354,7 +360,8 @@ export default class PetPlugin extends Plugin {
 				context || "No context available.",
 				question,
 				this.chatmodel,
-				this.instanceData.selectedModel || "none"
+				this.instanceData.selectedModel || "none",
+				conversationHistory
 			);
 		} catch (e) {
 			console.error("Chat model error:", e);
