@@ -279,7 +279,7 @@ export default class PetPlugin extends Plugin {
 			id: "chat-with-pets",
 			name: "Chat with your pets",
 			callback: () => {
-				new ChatModal(this.app, (msg) => this.chatWithPet(msg)).open();
+				new ChatModal(this.app, this, (msg) => this.chatWithPet(msg)).open(); // Pass reference to this plugin to use the markdown
 			},
 		});
 

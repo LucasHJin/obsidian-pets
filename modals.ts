@@ -1,4 +1,5 @@
 import { Modal, App } from "obsidian";
+import { MarkdownRenderer } from "obsidian"; // For rendering markdown in chat messages
 
 // Type for selectable option
 export interface SelectorOption {
@@ -105,10 +106,12 @@ export class SelectorModal extends Modal {
 
 export class ChatModal extends Modal {
 	messages: ChatMessage[] = [];
+	plugin: any;
 	onMessage: (message: string) => Promise<string>;
 
-	constructor(app: App, onMessage: (message: string) => Promise<string>) {
+	constructor(app: App, plugin: any, onMessage: (message: string) => Promise<string>) {
 		super(app);
+		this.plugin = plugin;
 		this.onMessage = onMessage;
 	}
 
@@ -154,7 +157,7 @@ Cat (chat) with me anything about~
 				return;
 			}
 
-			this.addMessage("user", text, chatContainer);
+			await this.addMessage("user", text, chatContainer);
 
 			textarea.value = "";
 
@@ -163,7 +166,7 @@ Cat (chat) with me anything about~
 			const response = await this.onMessage(text);
 			this.removeTypingIndicator(typingAnimation);
 
-			this.addMessage("bot", response, chatContainer); // Wait for response from the bot
+			await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
 
 			// Scroll to bottom
 			setTimeout(() => {
@@ -172,7 +175,7 @@ Cat (chat) with me anything about~
 		});
 	}
 
-	private addMessage(sender: "user" | "bot", text: string, container: HTMLElement) {
+	private async addMessage(sender: "user" | "bot", text: string, container: HTMLElement) {
 		this.messages.push({ sender, text });
 
 		const messageBox = container.createDiv({
@@ -183,6 +186,14 @@ Cat (chat) with me anything about~
 		if (sender === "bot" && text.includes(">^.^<")) {
 			const pre = messageBox.createEl("pre"); // So that line width isn't affected afterwards
 			pre.setText(text);
+		} else if (sender === "bot" && !text.includes(">^.^<")){
+			await MarkdownRenderer.render(
+				this.app,
+				text,
+				messageBox,
+				"", 
+				this.plugin 
+			);
 		} else {
 			messageBox.setText(text);
 		}

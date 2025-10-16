@@ -126,7 +126,7 @@
 }
 
 .chat-message {
-	padding: 10px 15px;
+	padding: 10px 20px;
 	border-radius: 6px;
 	max-width: 70%; 
 	word-wrap: break-word;
@@ -143,6 +143,47 @@
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
 	align-self: flex-start; 
+}
+
+/* Reset margins and paddings for all elements inside bot messages (TIGHTER) */
+.chat-message.bot * {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.chat-message.bot ul,
+.chat-message.bot ol {
+    padding-left: 1.5em !important;
+    margin: -1em 0 !important; 
+}
+
+.chat-message.bot li {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.3 !important;
+}
+
+.chat-message.bot li > p {
+    display: inline !important; 
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.chat-message.bot p {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.chat-message.bot li {
+    margin-top: 0 !important;
+}
+
+.chat-message.bot *:first-child {
+    margin-top: 0 !important;
+}
+
+.chat-message.bot *:last-child {
+    margin-bottom: 0 !important;
 }
 
 .chat-form {
