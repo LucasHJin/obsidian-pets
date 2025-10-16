@@ -1,8 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
 
-// IMPLEMENT LATEX + MARKDOWN + FILE LINKS
-// TUNE PROMPT
+// Note -> File links cannot be clicked
 // ADD CONTEXT OF PREVIOUS MESSAGES
 
 export function initModel(selectedModel: string, geminiKey: string, openAiKey: string) {
@@ -19,21 +18,31 @@ export async function askModel(
 	context: string,
 	question: string,
 	model: GoogleGenAI | OpenAI,
-	selectedModel: string
+	selectedModel: string,
 ) {
-	const prompt = `Here are details from an Obsidian vault regarding a user's notes:
+	const prompt = `You are a helpful AI assistant with access to the user's Obsidian vault.
+**Context from vault** (relevant notes retrieved via semantic search):
 ${context}
 
-Analyze them and provide an answer to the user's question below:
-${question}
+**User's question**: ${question}
+---
 
-Keep these guidelines in mind while answering:
-- Respond using Markdown and LaTeX where appropriate.
-- Include file references in [[wikilink]] format if you reference a note.
-- Keep the answer structured.
-- Put text on separate lines, but do not add extra spacing or blank lines between lines.
-- IF AND ONLY IF the context doesn't provide enough information, you can use your own knowledge to fill in the gaps.
-`;
+**Instructions**:
+1. **Answer the question** using the context provided above
+2. **Reference sources** using *italics* instead of wikilinks (e.g., *Note Title* or *Folder/Note Title*)
+3. **Formatting**:
+   - Use Markdown formatting
+   - Use LaTeX for math (e.g., $x^2$ or $$\\int x dx$$)
+   - Keep responses well-structured with headers where appropriate
+   - No extra blank lines between regular paragraphs
+4. **Tone**: Be helpful and clear, with a playful catlike personality
+   - Use puns and cute expressions where fitting
+   - Keep it fun but informative!
+5. **If context is insufficient**: You can supplement with your own knowledge, but:
+   - Clearly distinguish between vault content and your general knowledge
+   - Prioritize information from the vault when available
+
+**Remember**: The user wants to learn, so explain concepts clearly as if teaching a smart beginner!`;
 
 	if (selectedModel === "gemini") {
 		const response = await (model as GoogleGenAI).models.generateContent({
