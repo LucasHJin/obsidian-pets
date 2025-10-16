@@ -9,6 +9,7 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
 - 🖼️ 10 different backgrounds for your pets to play in
 - 🎾 Pet interactivity - you can play fetch and throw balls for your pets to retrieve
 - ➡️ Movable view to allow for personal customization
+- 🤖 *Catbot* (chatbot) that can answer questions with context from your vault
 
 ## Getting Started
 ### Installation
@@ -55,6 +56,11 @@ You can click and drag on the highlighted icon above the view to drag it into ot
     - `Add a ball`: Chooses a random ball and launches it in the view for a pet to chase after.
 - Background
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
+- Chatting with pets
+    - `Chat with your pets`: Opens up a chat modal for you to ask your pet questions.
+        - **NOTE:** You must first set API keys for OpenAI (and optionally Gemini) to access this feature. 
+            - Further instructions can be found here -> [OpenAI](https://platform.openai.com/api-keys), [Gemini](https://aistudio.google.com/)
+        - *Usecases include*: Chatting for fun, studying/reviewing your notes, and learning new concepts.
 
 ## Contacts
 If you have any kind of feedback or questions, feel free to reach out via GitHub issues or @hi.bye_2025 on the [Obsidian Discord server](https://discord.gg/obsidianmd).
