@@ -285,6 +285,15 @@ export default class PetPlugin extends Plugin {
 			id: "chat-with-pets",
 			name: "Chat with your pets",
 			callback: () => {
+				if (!this.instanceData.selectedModel || this.instanceData.selectedModel === "none") {
+					new Notice("Please select a chat model in settings first.");
+					return;
+				}
+				if (!this.chatmodel) {
+					new Notice("Please set your API key(s) in settings first.");
+					return;
+				}
+
 				new ChatModal(this.app, this, (msg, history) => this.chatWithPet(msg, history)).open(); // Pass reference to this plugin to use the markdown
 			},
 		});

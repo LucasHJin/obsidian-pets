@@ -71,6 +71,9 @@ export class PetSettingTab extends PluginSettingTab {
 			text.setValue(this.plugin.instanceData.geminiApiKey)
 				.onChange(async (value) => {
 					this.plugin.updateGeminiApiKey(value);
+					if (!value.trim() && this.plugin.instanceData.selectedModel === "gemini") {
+						this.plugin.updateChosenModel("none");
+					}
 					this.display(); // Refresh to update available models
 				});
 		});
@@ -82,6 +85,9 @@ export class PetSettingTab extends PluginSettingTab {
 			text.setValue(this.plugin.instanceData.openAiApiKey || "")
 				.onChange(async (value) => {
 					this.plugin.updateOpenAiApiKey(value);
+					if (!value.trim() && this.plugin.instanceData.selectedModel === "openai") {
+						this.plugin.updateChosenModel("none");
+					}
 					this.display(); // Refresh to update available models
 				});
 		});
