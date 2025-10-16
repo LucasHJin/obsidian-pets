@@ -182,9 +182,9 @@ Cat (chat) with me anything about~
 				timestamp: Date.now()
 			});
 
-			// Keep recent 5 messages max (avoid overflow context window)
-			if (this.conversationHistory.length > 5) {
-				this.conversationHistory = this.conversationHistory.slice(-5);
+			// Keep recent 8 messages max (avoid overflow context window)
+			if (this.conversationHistory.length > 8) {
+				this.conversationHistory = this.conversationHistory.slice(-8);
 			}
 
 			await this.addMessage("bot", response, chatContainer); // Wait for response from the bot

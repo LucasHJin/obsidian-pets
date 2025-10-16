@@ -2,7 +2,7 @@ import { Plugin, Notice } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption, ChatModal } from "modals";
-import { askModel } from "chatmodels";
+import { askModel, reformulateQuery } from "chatmodels";
 import { GoogleGenAI } from "@google/genai";
 import { VectorDB } from "chat-utils/vector-db";
 import { indexVault } from "chat-utils/indexer";
@@ -338,12 +338,24 @@ export default class PetPlugin extends Plugin {
 			return "Please set your API key(s) in settings first.";
 		}
 
+		let searchQuery = question;
+
+		// Reformulate follow up questions with context from previous questions (so that semantic searching works better)
+		if (conversationHistory.length > 0) {
+			const recentContext = conversationHistory
+				.slice(-6)
+				.map(msg => `${msg.role}: ${msg.content}`)
+				.join("\n");
+			
+			searchQuery = await reformulateQuery(question, recentContext, this.chatmodel, this.instanceData.selectedModel || "none");
+		}
+
 		// If OpenAI key exists -> fetch context (retrieval)
 		let context = "";
 		if (this.instanceData.openAiApiKey && this.ragDb) {
 			try {
 				context = await answerQuery(
-					question,
+					searchQuery,
 					this.instanceData.openAiApiKey,
 					this.ragDb
 				);
