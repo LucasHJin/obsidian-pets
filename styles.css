@@ -243,3 +243,56 @@
 .chat-message.bot {
   font-family: var(--font-monospace); /* ALL bot messages are diff font */
 }
+
+
+/* Make Pet View action buttons always visible */
+.workspace-leaf:has(.pet-view-wrapper) {
+    display: flex !important;
+    flex-direction: column-reverse !important; 
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-header {
+    display: flex !important;
+    min-height: 36px !important;
+    width: 100% !important;
+    order: 2 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-content {
+    order: 1 !important;
+    flex: 1 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-header-title {
+    display: flex !important;
+    order: -1 !important;
+    margin-right: auto !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-actions {
+    display: flex !important;
+    width: auto !important;
+    height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-action {
+    display: flex !important;
+    width: 32px !important;
+    height: 32px !important;
+    opacity: 1 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-content {
+    padding: 8px !important;
+}
+
+/* Hide everything in the header except custom buttons */
+.workspace-leaf:has(.pet-view-wrapper) .view-header-nav-buttons,
+.workspace-leaf:has(.pet-view-wrapper) .view-header-icon,
+.workspace-leaf:has(.pet-view-wrapper) .view-action.mod-bookmark,
+.workspace-leaf:has(.pet-view-wrapper) .view-actions > .clickable-icon:last-child {
+    display: none !important;
+}
+

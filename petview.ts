@@ -32,7 +32,8 @@ export class PetView extends ItemView {
 
 	// Returns human friendly name for view (shown when hovered)
 	getDisplayText() {
-		return "Pet view";
+		const displayName = this.app.vault.getName();
+		return `${displayName} Pets`;
 	}
 
 	// Decides icon for view
@@ -43,6 +44,23 @@ export class PetView extends ItemView {
 	// Builds content of view when it is opened
 	async onOpen() {
 		this.updateView();
+	}
+
+	// On load -> add buttons for quick select
+	async onload()  {
+		this.addAction("minus", "Remove all pets", () => {
+			this.plugin.clearAllPets();
+		});
+		
+		this.addAction("circle-dashed", "Throw a ball", () => {
+			this.plugin.throwBallCommand();
+		});
+
+		this.addAction("plus", "Add a pet", () => {
+			this.plugin.showAddPetCommand();
+		});
+
+		console.log("Calling updateView");
 	}
 
 	updateView() {

@@ -45,6 +45,104 @@ export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
 	ragDb: VectorDB;
 	private chatmodel: GoogleGenAI | OpenAI | null = null;
+	protected BALLS: string[] = [
+		"toys/blue-ball",
+		"toys/cyan-ball",
+		"toys/green-ball",
+		"toys/orange-ball",
+		"toys/pink-ball",
+		"toys/purple-ball",
+		"toys/red-ball",
+		"toys/yellow-ball",
+	];
+	protected PETS: SelectorOption[] = [
+		{
+			value: "pets/batman-black-cat",
+			label: "Black batman cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/batman-blue-cat",
+			label: "Blue batman cat",
+			requiresName: true,
+		},
+		{ value: "pets/black-cat", label: "Black cat", requiresName: true },
+		{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
+		{
+			value: "pets/xmas-cat",
+			label: "Christmas cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/xmas-v2-cat",
+			label: "Christmas cat v2",
+			requiresName: true,
+		},
+		{
+			value: "pets/xmas-v3-cat",
+			label: "Christmas cat v3",
+			requiresName: true,
+		},
+		{
+			value: "pets/classic-cat",
+			label: "Classic cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/deer-cat",
+			label: "Deer cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/demon-cat",
+			label: "Demonic cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/egypt-cat",
+			label: "Egyptian cat",
+			requiresName: true,
+		},
+		{ value: "pets/ghost", label: "Ghost", requiresName: true },
+		{
+			value: "pets/grey-bunny",
+			label: "Grey bunny",
+			requiresName: true,
+		},
+		{
+			value: "pets/pirate-cat",
+			label: "Pirate cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/pirate-v2-cat",
+			label: "Pirate cat v2",
+			requiresName: true,
+		},
+		{
+			value: "pets/pirate-v3-cat",
+			label: "Pirate cat v3",
+			requiresName: true,
+		},
+		{
+			value: "pets/siamese-cat",
+			label: "Siamese cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/three-cat",
+			label: "Tri-colored cat",
+			requiresName: true,
+		},
+		{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
+		{
+			value: "pets/vampire-cat",
+			label: "Vampire cat",
+			requiresName: true,
+		},
+		{ value: "pets/white-cat", label: "White cat", requiresName: true },
+		{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
+	];
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
@@ -126,128 +224,17 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to add a pet
-		const PETS: SelectorOption[] = [
-			{
-				value: "pets/batman-black-cat",
-				label: "Black batman cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/batman-blue-cat",
-				label: "Blue batman cat",
-				requiresName: true,
-			},
-			{ value: "pets/black-cat", label: "Black cat", requiresName: true },
-			{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
-			{
-				value: "pets/xmas-cat",
-				label: "Christmas cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/xmas-v2-cat",
-				label: "Christmas cat v2",
-				requiresName: true,
-			},
-			{
-				value: "pets/xmas-v3-cat",
-				label: "Christmas cat v3",
-				requiresName: true,
-			},
-			{
-				value: "pets/classic-cat",
-				label: "Classic cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/deer-cat",
-				label: "Deer cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/demon-cat",
-				label: "Demonic cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/egypt-cat",
-				label: "Egyptian cat",
-				requiresName: true,
-			},
-			{ value: "pets/ghost", label: "Ghost", requiresName: true },
-			{
-				value: "pets/grey-bunny",
-				label: "Grey bunny",
-				requiresName: true,
-			},
-			{
-				value: "pets/pirate-cat",
-				label: "Pirate cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/pirate-v2-cat",
-				label: "Pirate cat v2",
-				requiresName: true,
-			},
-			{
-				value: "pets/pirate-v3-cat",
-				label: "Pirate cat v3",
-				requiresName: true,
-			},
-			{
-				value: "pets/siamese-cat",
-				label: "Siamese cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/three-cat",
-				label: "Tri-colored cat",
-				requiresName: true,
-			},
-			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
-			{
-				value: "pets/vampire-cat",
-				label: "Vampire cat",
-				requiresName: true,
-			},
-			{ value: "pets/white-cat", label: "White cat", requiresName: true },
-			{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
-		];
 		this.addCommand({
 			id: "add-pet-dropdown",
 			name: "Add a pet",
-			callback: () => {
-				new SelectorModal(
-					this.app,
-					PETS,
-					async (value: string, name: string) => {
-						await this.addPet(value, name);
-					}
-				).open();
-			},
+			callback: () => this.showAddPetCommand(),
 		});
 
 		// Command to add a ball
-		const BALLS: string[] = [
-			"toys/blue-ball",
-			"toys/cyan-ball",
-			"toys/green-ball",
-			"toys/orange-ball",
-			"toys/pink-ball",
-			"toys/purple-ball",
-			"toys/red-ball",
-			"toys/yellow-ball",
-		];
 		this.addCommand({
 			id: "add-ball-dropdown",
 			name: "Add a ball",
-			callback: async () => {
-				// Random ball color
-				const randomBall =
-					BALLS[Math.floor(Math.random() * BALLS.length)];
-				await this.addBall(randomBall);
-			},
+			callback: async () => this.throwBallCommand(),
 		});
 
 		// Command to remove all pets
@@ -381,12 +368,32 @@ export default class PetPlugin extends Plugin {
 			"Write on, hooman! ✍️",
 		];
 
-		this.registerEvent(
-			this.app.vault.on("create", (file) => {
-				const randomMessage = NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)]
-				new Notice(randomMessage)
-			})
-		)
+		this.app.workspace.onLayoutReady(() => {
+			// Small delay to let initial file loading finish (so that not all files are processed in refresh)
+			setTimeout(() => {
+				this.registerEvent(
+					this.app.vault.on("create", (file) => {
+						const randomMessage = NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
+						new Notice(randomMessage);
+					})
+				);
+			}, 1000); // Wait 1 second after layout is ready
+		});
+	}
+
+	public showAddPetCommand() {
+		new SelectorModal(
+			this.app,
+			this.PETS,
+			async (value: string, name: string) => {
+				await this.addPet(value, name);
+			}
+		).open();
+	}
+
+	public throwBallCommand() {
+		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
+		this.addBall(randomBall);
 	}
 
 	// Function to handle chat messages
