@@ -14,9 +14,10 @@ export class Cat extends Pet {
         backgroundName: string,
         petId: string,
         scale: number,
+        petName: string,
         canFly = false,
     ) {
-        super(container, animations, moveDist, backgroundName, petId, scale);
+        super(container, animations, moveDist, backgroundName, petId, scale, petName);
         this.canFly = canFly;
     }
 

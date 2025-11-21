@@ -42,6 +42,27 @@
 	z-index: 100;
 }
 
+.pet-name-tooltip {
+	position: absolute;
+	bottom: 100%; 
+	left: 50%;
+	transform: translateX(-50%) translateY(-2px) scaleX(var(--scale-x, 1));
+	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
+	color: var(--text-normal);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.8em;
+	white-space: nowrap;
+	pointer-events: none; 
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	z-index: 1000;
+}
+
+.pet:hover .pet-name-tooltip {
+	opacity: 1;
+}
+
 .selector-button {
 	all: unset;
 	cursor: pointer;

@@ -8,7 +8,8 @@ export class Ghost extends Pet {
 		moveDist: number,
 		backgroundName: string,
 		petId: string,
-		scale: number
+		scale: number,
+		petName: string
 	) {
 		super(
 			container,
@@ -16,7 +17,8 @@ export class Ghost extends Pet {
 			moveDist,
 			backgroundName,
 			petId,
-			scale
+			scale,
+			petName
 		);
 	}
 

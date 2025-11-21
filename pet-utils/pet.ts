@@ -36,6 +36,7 @@ export class Pet {
 	};
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
+	protected petName: string;
 
 	constructor(
 		container: Element,
@@ -44,6 +45,7 @@ export class Pet {
 		backgroundName: string,
 		petId: string,
 		scale: number,
+		petName: string,
 	) {
 		this.container = container;
 		this.animations = animations;
@@ -51,6 +53,7 @@ export class Pet {
 		this.backgroundName = backgroundName;
 		this.petId = petId;
 		this.scale = scale;
+		this.petName = petName;
 
 		this.setupActions();
 
@@ -87,6 +90,10 @@ export class Pet {
 			"--scale-x": `${this.direction}`,
 			"--scale": `${this.scale}`,
 		});
+
+		const tooltip = el.createDiv({ cls: "pet-name-tooltip" });
+		tooltip.textContent = this.petName;
+		
 		return el;
 	}
 
