@@ -144,6 +144,19 @@ export default class PetPlugin extends Plugin {
 		{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
 	];
 
+	protected BACKGROUNDS: SelectorOption[] = [
+		{ value: "none", label: "None" },
+		{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
+		{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
+		{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
+		{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
+		{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
+		{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
+		{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
+		{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
+		{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
+	];
+
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
@@ -197,30 +210,10 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to choose the background
-		const BACKGROUNDS: SelectorOption[] = [
-			{ value: "none", label: "None" },
-			{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
-			{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
-			{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
-			{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
-			{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
-			{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
-			{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
-			{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
-			{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
-		];
 		this.addCommand({
 			id: "choose-background-dropdown",
 			name: "Choose pet view background",
-			callback: () => {
-				new SelectorModal(
-					this.app,
-					BACKGROUNDS,
-					async (value: string, name: string) => {
-						await this.chooseBackground(value); // Pass chooseBackground() function to modal
-					}
-				).open();
-			},
+			callback: () => this.showChooseBackgroundCommand(),
 		});
 
 		// Command to add a pet
@@ -394,6 +387,16 @@ export default class PetPlugin extends Plugin {
 	public throwBallCommand() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
 		this.addBall(randomBall);
+	}
+
+	public showChooseBackgroundCommand() {
+		new SelectorModal(
+			this.app,
+			this.BACKGROUNDS,
+			async (value: string, name: string) => {
+				await this.chooseBackground(value); // Pass chooseBackground() function to modal
+			}
+		).open();
 	}
 
 	// Function to handle chat messages

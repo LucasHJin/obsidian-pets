@@ -48,6 +48,10 @@ export class PetView extends ItemView {
 
 	// On load -> add buttons for quick select
 	async onload()  {
+		this.addAction("image", "Choose a background", () => {
+			this.plugin.showChooseBackgroundCommand();
+		})
+
 		this.addAction("minus", "Remove all pets", () => {
 			this.plugin.clearAllPets();
 		});
