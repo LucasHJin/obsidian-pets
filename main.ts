@@ -338,6 +338,13 @@ export default class PetPlugin extends Plugin {
 				await this.saveData(this.instanceData);
 			}
 		}
+
+
+		this.registerEvent(
+			this.app.vault.on("create", (file) => {
+				new Notice(file.path)
+			})
+		)
 	}
 
 	// Function to handle chat messages
