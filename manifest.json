@@ -1,7 +1,7 @@
 {
 	"id": "pixel-pets",
 	"name": "Pixel Pets",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"minAppVersion": "1.8.10",
 	"description": "Adds cute and interactive pixel pets.",
 	"author": "Lucas Jin",
