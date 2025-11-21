@@ -123,6 +123,40 @@
   height: 100%;
 }
 
+.pet-heart {
+	position: absolute;
+	width: 13px;
+	height: 12px;
+	left: var(--heart-random-x);
+	top: -10px; 
+	transform: translateX(-50%) scaleX(var(--scale-x, 1));
+	background-image: var(--heart-url);
+	background-size: cover;
+	image-rendering: pixelated;
+	opacity: 0;
+	pointer-events: none;
+	z-index: 1001;
+	animation: heart-float 1s ease-out forwards;
+}
+
+@keyframes heart-float {
+	0% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(0) scale(0.5);
+	}
+	50% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(-15px) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(-30px) scale(0.8);
+	}
+}
+
+
+
+
 /* Chat Modal Styles */
 .modal:has(.pp-chat-modal-content) { /* Target this specific modal to change width + height */
 	width: 65vw !important;
@@ -295,4 +329,3 @@
 .workspace-leaf:has(.pet-view-wrapper) .view-actions > .clickable-icon:last-child {
     display: none !important;
 }
-

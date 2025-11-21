@@ -1,3 +1,5 @@
+import { heartAsset } from "./pet-assets";
+
 // Defines shape for parameters needed to pass in an animation
 export type AnimationConfig = {
 	name: string;
@@ -94,6 +96,7 @@ export class Pet {
 			"--pet-size": `${this.animations["idle"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
 			"--scale": `${this.scale}`,
+			"--heart-url": `url(${heartAsset})`,
 		});
 
 		const tooltip = el.createDiv({ cls: "pet-name-tooltip" });
@@ -114,6 +117,23 @@ export class Pet {
 			this.isHovered = false;
 			this.actionLoopPaused = false;
 		});
+
+		this.petEl.addEventListener("click", () => {
+			this.showHeart();
+		})
+	}
+
+	protected showHeart() {
+		const heart = this.petEl.createDiv({ cls: "pet-heart" });
+
+		const randomX = 25 + Math.random() * 50;
+		heart.setCssProps({
+			"--heart-random-x": `${randomX}%`
+		});
+	
+		setTimeout(() => {
+			heart.remove();
+		}, 1000);
 	}
 
 	// Leave empty to override in subclasses
