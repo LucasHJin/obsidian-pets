@@ -43,11 +43,6 @@ export class PetView extends ItemView {
 
 	// Builds content of view when it is opened
 	async onOpen() {
-		this.updateView();
-	}
-
-	// On load -> add buttons for quick select
-	async onload()  {
 		this.addAction("image", "Choose a background", () => {
 			this.plugin.showChooseBackgroundCommand();
 		})
@@ -63,8 +58,7 @@ export class PetView extends ItemView {
 		this.addAction("plus", "Add a pet", () => {
 			this.plugin.showAddPetCommand();
 		});
-
-		console.log("Calling updateView");
+		this.updateView();
 	}
 
 	updateView() {
