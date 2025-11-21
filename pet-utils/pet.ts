@@ -1,3 +1,5 @@
+import { heartAsset } from "./pet-assets";
+
 // Defines shape for parameters needed to pass in an animation
 export type AnimationConfig = {
 	name: string;
@@ -36,6 +38,9 @@ export class Pet {
 	};
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
+	protected petName: string;
+	protected isHovered = false; 
+	private actionLoopPaused = false;
 
 	constructor(
 		container: Element,
@@ -44,6 +49,7 @@ export class Pet {
 		backgroundName: string,
 		petId: string,
 		scale: number,
+		petName: string,
 	) {
 		this.container = container;
 		this.animations = animations;
@@ -51,6 +57,7 @@ export class Pet {
 		this.backgroundName = backgroundName;
 		this.petId = petId;
 		this.scale = scale;
+		this.petName = petName;
 
 		this.setupActions();
 
@@ -63,6 +70,9 @@ export class Pet {
 
 			// Create pet HTML element to be shown in view
 			this.petEl = this.createPetElement();
+
+			// Setup the listeners for if the mouse is hovering
+			this.setupHoverListeners();
 
 			// Start the behavior
 			(async () => {
@@ -86,8 +96,44 @@ export class Pet {
 			"--pet-size": `${this.animations["idle"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
 			"--scale": `${this.scale}`,
+			"--heart-url": `url(${heartAsset})`,
 		});
+
+		const tooltip = el.createDiv({ cls: "pet-name-tooltip" });
+		tooltip.textContent = this.petName;
+
 		return el;
+	}
+
+	// Sets up the listeners on the pets
+	protected setupHoverListeners() {
+		this.petEl.addEventListener("mouseenter", () => {
+			this.isHovered = true;
+			this.actionLoopPaused = true;
+			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
+		});
+
+		this.petEl.addEventListener("mouseleave", () => {
+			this.isHovered = false;
+			this.actionLoopPaused = false;
+		});
+
+		this.petEl.addEventListener("click", () => {
+			this.showHeart();
+		})
+	}
+
+	protected showHeart() {
+		const heart = this.petEl.createDiv({ cls: "pet-heart" });
+
+		const randomX = 25 + Math.random() * 50;
+		heart.setCssProps({
+			"--heart-random-x": `${randomX}%`
+		});
+	
+		setTimeout(() => {
+			heart.remove();
+		}, 1000);
 	}
 
 	// Leave empty to override in subclasses
@@ -206,8 +252,27 @@ export class Pet {
 
 		// Return a promise that is being awaited (to prevent moving on until this is finished)
 		return new Promise((res) => {
+			// Interval to constantly check if hovered (if so stop transition)
+			const hoverCheck = setInterval(() => {
+				if (this.actionLoopPaused) {
+					const computedLeft = window.getComputedStyle(this.petEl).left;
+					this.petEl.setCssStyles({ transition: "" });
+					this.petEl.setCssProps({ "--left": computedLeft });
+					
+					// Update current position to where it stopped
+					this.currentX = parseFloat(computedLeft);
+					
+					// Clean up
+					clearInterval(hoverCheck);
+					this.petEl.removeEventListener("transitionend", done);
+					
+					res();
+				}
+			}, 50);
+			
 			// Cleanup function for after transition
 			const done = () => {
+				clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
 				this.petEl.removeEventListener("transitionend", done);
 				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
@@ -243,10 +308,27 @@ export class Pet {
 		);
 
 		while (!this.isDestroyed) {
+			// Check if is hovered
+			while (this.actionLoopPaused && !this.isDestroyed) {
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
+
+			if (this.isDestroyed) {
+				break;
+			}
+
 			// Pick and run a random action
 			const randomAction =
 				ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
 			await this.animations[randomAction].action?.();
+
+			while (this.actionLoopPaused && !this.isDestroyed) {
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
+
+			if (this.isDestroyed) {
+				break;
+			}
 
 			// Go back to the running action
 			const delay = getRandDelay(

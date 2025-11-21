@@ -45,6 +45,117 @@ export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
 	ragDb: VectorDB;
 	private chatmodel: GoogleGenAI | OpenAI | null = null;
+	protected BALLS: string[] = [
+		"toys/blue-ball",
+		"toys/cyan-ball",
+		"toys/green-ball",
+		"toys/orange-ball",
+		"toys/pink-ball",
+		"toys/purple-ball",
+		"toys/red-ball",
+		"toys/yellow-ball",
+	];
+	protected PETS: SelectorOption[] = [
+		{
+			value: "pets/batman-black-cat",
+			label: "Black batman cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/batman-blue-cat",
+			label: "Blue batman cat",
+			requiresName: true,
+		},
+		{ value: "pets/black-cat", label: "Black cat", requiresName: true },
+		{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
+		{
+			value: "pets/xmas-cat",
+			label: "Christmas cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/xmas-v2-cat",
+			label: "Christmas cat v2",
+			requiresName: true,
+		},
+		{
+			value: "pets/xmas-v3-cat",
+			label: "Christmas cat v3",
+			requiresName: true,
+		},
+		{
+			value: "pets/classic-cat",
+			label: "Classic cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/deer-cat",
+			label: "Deer cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/demon-cat",
+			label: "Demonic cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/egypt-cat",
+			label: "Egyptian cat",
+			requiresName: true,
+		},
+		{ value: "pets/ghost", label: "Ghost", requiresName: true },
+		{
+			value: "pets/grey-bunny",
+			label: "Grey bunny",
+			requiresName: true,
+		},
+		{
+			value: "pets/pirate-cat",
+			label: "Pirate cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/pirate-v2-cat",
+			label: "Pirate cat v2",
+			requiresName: true,
+		},
+		{
+			value: "pets/pirate-v3-cat",
+			label: "Pirate cat v3",
+			requiresName: true,
+		},
+		{
+			value: "pets/siamese-cat",
+			label: "Siamese cat",
+			requiresName: true,
+		},
+		{
+			value: "pets/three-cat",
+			label: "Tri-colored cat",
+			requiresName: true,
+		},
+		{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
+		{
+			value: "pets/vampire-cat",
+			label: "Vampire cat",
+			requiresName: true,
+		},
+		{ value: "pets/white-cat", label: "White cat", requiresName: true },
+		{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
+	];
+
+	protected BACKGROUNDS: SelectorOption[] = [
+		{ value: "none", label: "None" },
+		{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
+		{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
+		{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
+		{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
+		{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
+		{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
+		{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
+		{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
+		{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
+	];
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
@@ -99,155 +210,24 @@ export default class PetPlugin extends Plugin {
 		});
 
 		// Command to choose the background
-		const BACKGROUNDS: SelectorOption[] = [
-			{ value: "none", label: "None" },
-			{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
-			{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
-			{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
-			{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
-			{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
-			{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
-			{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
-			{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
-			{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
-		];
 		this.addCommand({
 			id: "choose-background-dropdown",
 			name: "Choose pet view background",
-			callback: () => {
-				new SelectorModal(
-					this.app,
-					BACKGROUNDS,
-					async (value: string, name: string) => {
-						await this.chooseBackground(value); // Pass chooseBackground() function to modal
-					}
-				).open();
-			},
+			callback: () => this.showChooseBackgroundCommand(),
 		});
 
 		// Command to add a pet
-		const PETS: SelectorOption[] = [
-			{
-				value: "pets/batman-black-cat",
-				label: "Black batman cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/batman-blue-cat",
-				label: "Blue batman cat",
-				requiresName: true,
-			},
-			{ value: "pets/black-cat", label: "Black cat", requiresName: true },
-			{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
-			{
-				value: "pets/xmas-cat",
-				label: "Christmas cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/xmas-v2-cat",
-				label: "Christmas cat v2",
-				requiresName: true,
-			},
-			{
-				value: "pets/xmas-v3-cat",
-				label: "Christmas cat v3",
-				requiresName: true,
-			},
-			{
-				value: "pets/classic-cat",
-				label: "Classic cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/deer-cat",
-				label: "Deer cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/demon-cat",
-				label: "Demonic cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/egypt-cat",
-				label: "Egyptian cat",
-				requiresName: true,
-			},
-			{ value: "pets/ghost", label: "Ghost", requiresName: true },
-			{
-				value: "pets/grey-bunny",
-				label: "Grey bunny",
-				requiresName: true,
-			},
-			{
-				value: "pets/pirate-cat",
-				label: "Pirate cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/pirate-v2-cat",
-				label: "Pirate cat v2",
-				requiresName: true,
-			},
-			{
-				value: "pets/pirate-v3-cat",
-				label: "Pirate cat v3",
-				requiresName: true,
-			},
-			{
-				value: "pets/siamese-cat",
-				label: "Siamese cat",
-				requiresName: true,
-			},
-			{
-				value: "pets/three-cat",
-				label: "Tri-colored cat",
-				requiresName: true,
-			},
-			{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
-			{
-				value: "pets/vampire-cat",
-				label: "Vampire cat",
-				requiresName: true,
-			},
-			{ value: "pets/white-cat", label: "White cat", requiresName: true },
-			{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
-		];
 		this.addCommand({
 			id: "add-pet-dropdown",
 			name: "Add a pet",
-			callback: () => {
-				new SelectorModal(
-					this.app,
-					PETS,
-					async (value: string, name: string) => {
-						await this.addPet(value, name);
-					}
-				).open();
-			},
+			callback: () => this.showAddPetCommand(),
 		});
 
 		// Command to add a ball
-		const BALLS: string[] = [
-			"toys/blue-ball",
-			"toys/cyan-ball",
-			"toys/green-ball",
-			"toys/orange-ball",
-			"toys/pink-ball",
-			"toys/purple-ball",
-			"toys/red-ball",
-			"toys/yellow-ball",
-		];
 		this.addCommand({
 			id: "add-ball-dropdown",
 			name: "Add a ball",
-			callback: async () => {
-				// Random ball color
-				const randomBall =
-					BALLS[Math.floor(Math.random() * BALLS.length)];
-				await this.addBall(randomBall);
-			},
+			callback: async () => this.throwBallCommand(),
 		});
 
 		// Command to remove all pets
@@ -338,6 +318,85 @@ export default class PetPlugin extends Plugin {
 				await this.saveData(this.instanceData);
 			}
 		}
+
+		const NEW_NOTE_MESSAGES = [
+			"Meow! A new note! 😸",
+			"Purr-fect time to write! 🐱",
+			"I'm feline creative! 😻",
+			"Note-hing can stop you now!",
+			"Paws and write! 🐾",
+			"Cat-ch those ideas!",
+			"Whisker up some brilliance! 🐈",
+			"You've cat to be kitten - another note?",
+			"Fur real, you're productive!",
+			"Meow-velous note-taking!",
+			"Meow meow! 😺",
+			"*purrs contentedly* 🐱",
+			"Mew mew!",
+					
+			"Woof! New note detected! 🐕",
+			"Bark bark! Time to write! 🐶",
+			"Paws-itively productive!",
+			"Fetching new ideas! 🎾",
+			"Note-worthy work!",
+			"Ruff draft started!",
+			"Pup-tastic productivity!",
+			"Tail-wagging good writing!",
+			"Who's a good writer? You are!",
+			"Bone-us note unlocked! 🦴",
+			"Arf arf! 🐕",
+			"Woof woof! 🐶",
+			"*excited bork*",
+			"*tail wagging intensifies*",
+			
+			"Hop into a new note! 🐰",
+			"Some-bunny's productive!",
+			"Lettuce write! 🥬",
+			"Hare-brained ideas welcome!",
+			"Note-hopping along nicely!",
+			"Carrot-ch all your thoughts! 🥕",
+			"Hop-timistic about this note!",
+			"Bunny-lievable productivity!",
+
+			"Write on, hooman! ✍️",
+		];
+
+		this.app.workspace.onLayoutReady(() => {
+			// Small delay to let initial file loading finish (so that not all files are processed in refresh)
+			setTimeout(() => {
+				this.registerEvent(
+					this.app.vault.on("create", (file) => {
+						const randomMessage = NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
+						new Notice(randomMessage);
+					})
+				);
+			}, 1000); // Wait 1 second after layout is ready
+		});
+	}
+
+	public showAddPetCommand() {
+		new SelectorModal(
+			this.app,
+			this.PETS,
+			async (value: string, name: string) => {
+				await this.addPet(value, name);
+			}
+		).open();
+	}
+
+	public throwBallCommand() {
+		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
+		this.addBall(randomBall);
+	}
+
+	public showChooseBackgroundCommand() {
+		new SelectorModal(
+			this.app,
+			this.BACKGROUNDS,
+			async (value: string, name: string) => {
+				await this.chooseBackground(value); // Pass chooseBackground() function to modal
+			}
+		).open();
 	}
 
 	// Function to handle chat messages

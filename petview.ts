@@ -32,7 +32,8 @@ export class PetView extends ItemView {
 
 	// Returns human friendly name for view (shown when hovered)
 	getDisplayText() {
-		return "Pet view";
+		const displayName = this.app.vault.getName();
+		return `${displayName} Pets`;
 	}
 
 	// Decides icon for view
@@ -42,6 +43,21 @@ export class PetView extends ItemView {
 
 	// Builds content of view when it is opened
 	async onOpen() {
+		this.addAction("image", "Choose a background", () => {
+			this.plugin.showChooseBackgroundCommand();
+		})
+
+		this.addAction("minus", "Remove all pets", () => {
+			this.plugin.clearAllPets();
+		});
+		
+		this.addAction("circle-dashed", "Throw a ball", () => {
+			this.plugin.throwBallCommand();
+		});
+
+		this.addAction("plus", "Add a pet", () => {
+			this.plugin.showAddPetCommand();
+		});
 		this.updateView();
 	}
 
@@ -154,17 +170,17 @@ export class PetView extends ItemView {
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.type.includes("witch"));
+				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize,singlePet.name, singlePet.type.includes("witch"));
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
-				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize);
+				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			} else if (singlePet.type.includes("ghost")) {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
-				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize);
+				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
 		} catch (error) {

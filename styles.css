@@ -42,6 +42,27 @@
 	z-index: 100;
 }
 
+.pet-name-tooltip {
+	position: absolute;
+	bottom: 100%; 
+	left: 50%;
+	transform: translateX(-50%) translateY(-2px) scaleX(var(--scale-x, 1));
+	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
+	color: var(--text-normal);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.8em;
+	white-space: nowrap;
+	pointer-events: none; 
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	z-index: 1000;
+}
+
+.pet:hover .pet-name-tooltip {
+	opacity: 1;
+}
+
 .selector-button {
 	all: unset;
 	cursor: pointer;
@@ -101,6 +122,40 @@
   width: 100%;
   height: 100%;
 }
+
+.pet-heart {
+	position: absolute;
+	width: 13px;
+	height: 12px;
+	left: var(--heart-random-x);
+	top: -10px; 
+	transform: translateX(-50%) scaleX(var(--scale-x, 1));
+	background-image: var(--heart-url);
+	background-size: cover;
+	image-rendering: pixelated;
+	opacity: 0;
+	pointer-events: none;
+	z-index: 1001;
+	animation: heart-float 1s ease-out forwards;
+}
+
+@keyframes heart-float {
+	0% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(0) scale(0.5);
+	}
+	50% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(-15px) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(-30px) scale(0.8);
+	}
+}
+
+
+
 
 /* Chat Modal Styles */
 .modal:has(.pp-chat-modal-content) { /* Target this specific modal to change width + height */
@@ -221,4 +276,56 @@
 
 .chat-message.bot {
   font-family: var(--font-monospace); /* ALL bot messages are diff font */
+}
+
+
+/* Make Pet View action buttons always visible */
+.workspace-leaf:has(.pet-view-wrapper) {
+    display: flex !important;
+    flex-direction: column-reverse !important; 
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-header {
+    display: flex !important;
+    min-height: 36px !important;
+    width: 100% !important;
+    order: 2 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-content {
+    order: 1 !important;
+    flex: 1 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-header-title {
+    display: flex !important;
+    order: -1 !important;
+    margin-right: auto !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-actions {
+    display: flex !important;
+    width: auto !important;
+    height: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-action {
+    display: flex !important;
+    width: 32px !important;
+    height: 32px !important;
+    opacity: 1 !important;
+}
+
+.workspace-leaf:has(.pet-view-wrapper) .view-content {
+    padding: 8px !important;
+}
+
+/* Hide everything in the header except custom buttons */
+.workspace-leaf:has(.pet-view-wrapper) .view-header-nav-buttons,
+.workspace-leaf:has(.pet-view-wrapper) .view-header-icon,
+.workspace-leaf:has(.pet-view-wrapper) .view-action.mod-bookmark,
+.workspace-leaf:has(.pet-view-wrapper) .view-actions > .clickable-icon:last-child {
+    display: none !important;
 }

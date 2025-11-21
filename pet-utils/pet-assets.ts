@@ -211,6 +211,8 @@ import purpleBall from '../assets/toys/purple-ball.png';
 import redBall from '../assets/toys/red-ball.png';
 import yellowBall from '../assets/toys/yellow-ball.png';
 
+import heart from '../assets/misc/heart.png'
+
 // Export organized by type
 export const backgrounds = {
   'backgrounds/snowbg-1.png': snow1Background,
@@ -450,6 +452,8 @@ export const toyAssets = {
   'red-ball': redBall,
   'yellow-ball': yellowBall,
 };
+
+export const heartAsset = heart;
 
 // Helper function to get pet asset
 export function getPetAsset(petType: string, assetName: string): string {
