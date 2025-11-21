@@ -133,7 +133,7 @@ export class Cat extends Pet {
 
 	// Function to chase the ball
     private async chaseBall() {
-		if (!this.chasingBall) {
+		if (!this.chasingBall || this.isDestroyed) {
 			return;
 		}
 		// Container boundaries (stay within the leaf)

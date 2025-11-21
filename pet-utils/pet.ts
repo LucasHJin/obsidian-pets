@@ -37,6 +37,8 @@ export class Pet {
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
 	protected petName: string;
+	protected isHovered = false; 
+	private actionLoopPaused = false;
 
 	constructor(
 		container: Element,
@@ -67,6 +69,9 @@ export class Pet {
 			// Create pet HTML element to be shown in view
 			this.petEl = this.createPetElement();
 
+			// Setup the listeners for if the mouse is hovering
+			this.setupHoverListeners();
+
 			// Start the behavior
 			(async () => {
 				await this.animations["idle"].action?.();
@@ -93,8 +98,22 @@ export class Pet {
 
 		const tooltip = el.createDiv({ cls: "pet-name-tooltip" });
 		tooltip.textContent = this.petName;
-		
+
 		return el;
+	}
+
+	// Sets up the listeners on the pets
+	protected setupHoverListeners() {
+		this.petEl.addEventListener("mouseenter", () => {
+			this.isHovered = true;
+			this.actionLoopPaused = true;
+			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
+		});
+
+		this.petEl.addEventListener("mouseleave", () => {
+			this.isHovered = false;
+			this.actionLoopPaused = false;
+		});
 	}
 
 	// Leave empty to override in subclasses
@@ -213,8 +232,27 @@ export class Pet {
 
 		// Return a promise that is being awaited (to prevent moving on until this is finished)
 		return new Promise((res) => {
+			// Interval to constantly check if hovered (if so stop transition)
+			const hoverCheck = setInterval(() => {
+				if (this.actionLoopPaused) {
+					const computedLeft = window.getComputedStyle(this.petEl).left;
+					this.petEl.setCssStyles({ transition: "" });
+					this.petEl.setCssProps({ "--left": computedLeft });
+					
+					// Update current position to where it stopped
+					this.currentX = parseFloat(computedLeft);
+					
+					// Clean up
+					clearInterval(hoverCheck);
+					this.petEl.removeEventListener("transitionend", done);
+					
+					res();
+				}
+			}, 50);
+			
 			// Cleanup function for after transition
 			const done = () => {
+				clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
 				this.petEl.removeEventListener("transitionend", done);
 				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
@@ -250,10 +288,27 @@ export class Pet {
 		);
 
 		while (!this.isDestroyed) {
+			// Check if is hovered
+			while (this.actionLoopPaused && !this.isDestroyed) {
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
+
+			if (this.isDestroyed) {
+				break;
+			}
+
 			// Pick and run a random action
 			const randomAction =
 				ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
 			await this.animations[randomAction].action?.();
+
+			while (this.actionLoopPaused && !this.isDestroyed) {
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
+
+			if (this.isDestroyed) {
+				break;
+			}
 
 			// Go back to the running action
 			const delay = getRandDelay(
