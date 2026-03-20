@@ -166,6 +166,7 @@ export class Cat extends Pet {
 				"--left": `${this.currentX}px`,
 				"--scale-x": `${this.direction}`,
 			});
+			this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 			this.setAnimation("run");
 
 			// Wait a second to make it more smooth (not teleporting)

@@ -39,6 +39,7 @@ export class Pet {
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
 	protected petName: string;
+	protected tooltipEl: HTMLElement;
 	protected isHovered = false; 
 	private actionLoopPaused = false;
 
@@ -99,8 +100,9 @@ export class Pet {
 			"--heart-url": `url(${heartAsset})`,
 		});
 
-		const tooltip = el.createDiv({ cls: "pet-name-tooltip" });
-		tooltip.textContent = this.petName;
+		this.tooltipEl = el.createDiv({ cls: "pet-name-tooltip" });
+		this.tooltipEl.textContent = this.petName;
+		this.tooltipEl.setCssProps({ "--scale-x": `${this.direction}` });
 
 		return el;
 	}
@@ -287,6 +289,7 @@ export class Pet {
 				"--scale-x": `${this.direction}`,
 				"--move-duration": `${duration}ms`,
 			});
+			this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 		});
 	}
 
