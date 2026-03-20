@@ -112,6 +112,7 @@ export class Pet {
 		this.petEl.addEventListener("mouseenter", () => {
 			this.isHovered = true;
 			this.actionLoopPaused = true;
+			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
 		});
 
@@ -218,8 +219,16 @@ export class Pet {
 		}
 	}
 
+	private freezeAtCurrentPosition() {
+		const computedLeft = window.getComputedStyle(this.petEl).left;
+		this.petEl.setCssStyles({ transition: "" });
+		this.petEl.setCssProps({ "--left": computedLeft });
+		this.currentX = parseFloat(computedLeft);
+	}
+
 	// Moves the pet in x direction
 	protected move(duration: number, action?: string): Promise<void> {
+		if (this.actionLoopPaused) return Promise.resolve();
 		const petWidth = this.animations["idle"].frameWidth;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 
