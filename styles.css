@@ -1,3 +1,25 @@
+/* ------------- Overlay Mode Styles ------------- */
+
+/* Full-screen transparent overlay for overlay mode */
+.pet-overlay-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+	z-index: 9999;
+	overflow: hidden;
+}
+
+/* Pets inside the overlay need to capture clicks */
+.pet-overlay-container .pet {
+	pointer-events: auto;
+}
+
+
+/* ------------- Pet View Styles ------------- */
+
 .pet-view-wrapper {
 	position: relative;
 	width: 100%;
@@ -154,8 +176,23 @@
 	}
 }
 
-
-
+.cat-toy-cursor {
+	position: fixed;
+	left: var(--cursor-x);
+	top: var(--cursor-y);
+	width: var(--cat-toy-frame-size);
+	height: var(--cat-toy-frame-size);
+	transform: translate(var(--cat-toy-offset), var(--cat-toy-offset)) scale(var(--cat-toy-scale));
+	transform-origin: top left;
+	background-image: var(--cat-toy-url);
+	background-size: var(--cat-toy-sprite-width);
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	image-rendering: pixelated;
+	pointer-events: none;
+	z-index: 99999;
+	animation: cat-toy-cursor var(--cat-toy-duration) steps(6) infinite;
+}
 
 /* Chat Modal Styles */
 .modal:has(.pp-chat-modal-content) { /* Target this specific modal to change width + height */

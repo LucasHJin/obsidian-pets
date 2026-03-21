@@ -1,15 +1,19 @@
 # Pixel Pets Plugin
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2FHEAD%2Fcommunity-plugin-stats.json&query=%24%5B%22pixel-pets%22%5D.downloads&label=downloads&logo=obsidian&color=7c3aed)
 
 A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
 
 ## Key Features
 - 🐱 22 different cats with 7+ different animations (and more pets on the way!)
-    - Customizable with individual names (interactions coming soon...)
+    - Customizable with individual names
 - 🖼️ 10 different backgrounds for your pets to play in
-- 🎾 Pet interactivity - you can play fetch and throw balls for your pets to retrieve
-- ➡️ Movable view to allow for personal customization
-- 🤖 *Catbot* (chatbot) that can answer questions with context from your vault
+- 🎾 Pet interactivity 
+    - You can play fetch and throw balls for your pets to retrieve
+    - You can pet your pets
+    - You can get them to follow you with a pet toy
+- ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
+- 🤖 *Catbot* (chatbot) that can answer questions with context from your vault / allow you to chat with your pets
 
 ## Getting Started
 ### Installation
@@ -19,7 +23,6 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
 3. Click **Install**, then **Enable** the plugin.
 
 #### Method 2: Manual Installation
-If the plugin isn't available in the community plugin list yet:
 1. Download or clone this repository.
 2. Copy the entire folder into your vault's `.obsidian/plugins/` directory.
 3. In Obsidian, go to **Settings > Community Plugins** and click **Reload plugins**.
@@ -46,6 +49,10 @@ You can click and drag on the highlighted icon above the view to drag it into ot
 ![A second possible layout for the plugin.](images/full-preview-2.png)
 ![A third possible layout for the plugin.](images/full-preview-3.png)
 
+Here is what it looks like if you enable the full vault overlay.
+
+![Overlaying the plugin on your Obsidian vault.](images/full-preview-4.png)
+
 ## Available Commands
 - Adding pets
     - `Add a pet`: Select the species and provide it with a name. Added pets will immediately appear in the view.
@@ -54,6 +61,7 @@ You can click and drag on the highlighted icon above the view to drag it into ot
     - `Remove all pets`: Removes all pets from the view.
 - Interacting with pets
     - `Add a ball`: Chooses a random ball and launches it in the view for a pet to chase after.
+    - `Cat toy mouse toggle`: Changes your mouse to a cat toy for your cats to follow.
 - Background
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
 - Chatting with pets

@@ -1,5 +1,7 @@
 import { Plugin, Notice } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
+import { OverlayPetView } from "overlay";
+import { CatToyOverlay } from "pet-utils/cat-toy";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption, ChatModal } from "modals";
 import { askModel, reformulateQuery } from "chatmodels";
@@ -23,6 +25,7 @@ interface PetPluginData {
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
+	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
 	geminiApiKey: string; // Gemini API key for chat feature
 	openAiApiKey: string; // OpenAI API key for RAG
 	indexedFiles?: Record<string, number>; // To track already indexed files in vault
@@ -33,6 +36,7 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	selectedBackground: "none",
 	pets: [],
 	nextPetIdCounters: {},
+	overlayMode: false,
 };
 
 export interface ConversationMessage {
@@ -45,6 +49,10 @@ export default class PetPlugin extends Plugin {
 	instanceData: PetPluginData;
 	ragDb: VectorDB;
 	private chatmodel: GoogleGenAI | OpenAI | null = null;
+	private overlayView: OverlayPetView | null = null;
+	private catToyActive = false;
+	private catToyOverlay: CatToyOverlay | null = null;
+	private currentMouseX = 0;
 	protected BALLS: string[] = [
 		"toys/blue-ball",
 		"toys/cyan-ball",
@@ -191,10 +199,17 @@ export default class PetPlugin extends Plugin {
 
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
-			const isOpen =
-				this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
-			if (!isOpen) {
-				await this.openView();
+			if (this.instanceData.overlayMode) {
+				this.overlayView = new OverlayPetView(this);
+				for (const pet of this.instanceData.pets) {
+					this.overlayView.addPet(pet);
+				}
+			} else {
+				const isOpen =
+					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+				if (!isOpen) {
+					await this.openView();
+				}
 			}
 		});
 
@@ -228,6 +243,14 @@ export default class PetPlugin extends Plugin {
 			id: "add-ball-dropdown",
 			name: "Add a ball",
 			callback: async () => this.throwBallCommand(),
+		});
+
+
+		// Command to change mouse to a cat toy
+		this.addCommand({
+			id: "add-cat-toy-dropdown",
+			name: "Cat toy mouse toggle",
+			callback: async () => this.changeMouseCommand(),
 		});
 
 		// Command to remove all pets
@@ -384,6 +407,48 @@ export default class PetPlugin extends Plugin {
 		).open();
 	}
 
+	public changeMouseCommand(): void {
+		this.catToyActive = !this.catToyActive;
+		if (this.catToyActive) {
+			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize ?? 1, (x) => { this.currentMouseX = x; });
+			this.startCursorFollowMode();
+		} else {
+			this.catToyOverlay?.destroy();
+			this.catToyOverlay = null;
+			this.stopCursorFollowMode();
+		}
+	}
+
+	private startCursorFollowMode() {
+		if (this.instanceData.overlayMode) {
+			const getCursorX = () => this.currentMouseX;
+			this.overlayView?.startCursorFollow(getCursorX);
+		} else {
+			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
+				if (leaf.view instanceof PetView) {
+					const containerEl = leaf.view.getWrapper() as HTMLElement;
+					const getCursorX = () => {
+						const rect = containerEl.getBoundingClientRect();
+						return this.currentMouseX - rect.left;
+					};
+					leaf.view.startCursorFollow(getCursorX);
+				}
+			}
+		}
+	}
+
+	private stopCursorFollowMode() {
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.stopCursorFollow();
+		} else {
+			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
+				if (leaf.view instanceof PetView) {
+					leaf.view.stopCursorFollow();
+				}
+			}
+		}
+	}
+
 	public throwBallCommand() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
 		this.addBall(randomBall);
@@ -519,8 +584,15 @@ export default class PetPlugin extends Plugin {
 	}
 
 	async onunload(): Promise<void> {
-		// Close the view when unloading
-		// await this.closeView(); -> don't detach leafs (https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60)
+		if (this.catToyOverlay) {
+			this.catToyOverlay.destroy();
+			this.catToyOverlay = null;
+		}
+		if (this.overlayView) {
+			this.overlayView.destroy();
+			this.overlayView = null;
+		}
+		// Don't detach leaves: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
 	}
 
 	// Merges current data with default data
@@ -543,6 +615,8 @@ export default class PetPlugin extends Plugin {
 	}
 
 	public async chooseBackground(backgroundFile: string): Promise<void> {
+		if (this.instanceData.overlayMode) return;
+
 		// Make sure not already selected background
 		if (this.instanceData.selectedBackground === backgroundFile) {
 			// console.log("Same picked");
@@ -593,6 +667,14 @@ export default class PetPlugin extends Plugin {
 		this.instanceData.petSize = value;
 		this.saveData(this.instanceData);
 
+		this.catToyOverlay?.updateSize(value);
+
+		// Update pet size in overlay mode as well
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.updatePetSize();
+			return;
+		}
+
 		// Update all open PetViews
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		for (const leaf of leaves) {
@@ -617,6 +699,11 @@ export default class PetPlugin extends Plugin {
 		this.instanceData.pets.push({ id, type, name });
 		await this.saveData(this.instanceData);
 
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.addPet({ id, type, name });
+			return;
+		}
+
 		// Open view on adding pets
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		if (leaves.length === 0) {
@@ -633,6 +720,11 @@ export default class PetPlugin extends Plugin {
 	}
 
 	public async addBall(type: string): Promise<void> {
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.spawnBall(type);
+			return;
+		}
+
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		if (leaves.length === 0) {
 			await this.openView();
@@ -658,6 +750,11 @@ export default class PetPlugin extends Plugin {
 		);
 		await this.saveData(this.instanceData);
 
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.removePet(id);
+			return;
+		}
+
 		// Update view
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		for (const leaf of leaves) {
@@ -677,6 +774,11 @@ export default class PetPlugin extends Plugin {
 		}
 		await this.saveData(this.instanceData);
 
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.removeAllPets();
+			return;
+		}
+
 		// Update view
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
 		for (const leaf of leaves) {
@@ -687,8 +789,32 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
+	// Switch between panel mode and overlay mode
+	public async setOverlayMode(enabled: boolean): Promise<void> {
+		if (this.instanceData.overlayMode === enabled) return;
+
+		this.instanceData.overlayMode = enabled;
+		await this.saveData(this.instanceData);
+
+		if (enabled) {
+			await this.closeView();
+			this.overlayView = new OverlayPetView(this);
+			for (const pet of this.instanceData.pets) {
+				this.overlayView.addPet(pet);
+			}
+		} else {
+			if (this.overlayView) {
+				this.overlayView.destroy();
+				this.overlayView = null;
+			}
+			await this.openView();
+		}
+	}
+
 	// Open the leaf view
 	async openView() {
+		if (this.instanceData.overlayMode) return;
+
 		const { workspace } = this.app;
 
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);

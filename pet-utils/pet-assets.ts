@@ -211,6 +211,9 @@ import purpleBall from '../assets/toys/purple-ball.png';
 import redBall from '../assets/toys/red-ball.png';
 import yellowBall from '../assets/toys/yellow-ball.png';
 
+// Cat toy animations
+import catToy from '../assets/toys/cat-toy.png';
+
 import heart from '../assets/misc/heart.png'
 
 // Export organized by type
@@ -452,6 +455,8 @@ export const toyAssets = {
   'red-ball': redBall,
   'yellow-ball': yellowBall,
 };
+
+export const catToyAsset = catToy;
 
 export const heartAsset = heart;
 

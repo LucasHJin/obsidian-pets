@@ -39,8 +39,12 @@ export class Pet {
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
 	protected petName: string;
-	protected isHovered = false; 
-	private actionLoopPaused = false;
+	protected chasingCursor = false;
+	private getCursorX: (() => number) | null = null;
+	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
+	protected tooltipEl: HTMLElement;
+	protected isHovered = false;
+	protected actionLoopPaused = false;
 
 	constructor(
 		container: Element,
@@ -54,6 +58,8 @@ export class Pet {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
+		// Randomize cursor follow speed per pet (±30%) so cats spread out instead of clumping
+		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 		this.backgroundName = backgroundName;
 		this.petId = petId;
 		this.scale = scale;
@@ -82,12 +88,18 @@ export class Pet {
 		});
 	}
 
+	// Different calcs for overlay vs normal
+	private getGroundTopValue(): string {
+		if (this.backgroundName === "overlay") {
+			return "calc(100% - 14px * var(--scale, 1))";
+		}
+		return this.backgroundHeights[this.backgroundName] ?? this.backgroundHeights["default"];
+	}
+
 	// Creates the div representing the pet and styles
 	protected createPetElement(): HTMLElement {
 		const el = this.container.createDiv({ cls: "pet" });
-		const topPercent =
-			this.backgroundHeights[this.backgroundName] ??
-			this.backgroundHeights["default"];
+		const topPercent = this.getGroundTopValue();
 
 		// Set initial CSS custom properties (to be used as variables in styles.css)
 		el.setCssProps({
@@ -99,8 +111,9 @@ export class Pet {
 			"--heart-url": `url(${heartAsset})`,
 		});
 
-		const tooltip = el.createDiv({ cls: "pet-name-tooltip" });
-		tooltip.textContent = this.petName;
+		this.tooltipEl = el.createDiv({ cls: "pet-name-tooltip" });
+		this.tooltipEl.textContent = this.petName;
+		this.tooltipEl.setCssProps({ "--scale-x": `${this.direction}` });
 
 		return el;
 	}
@@ -110,6 +123,7 @@ export class Pet {
 		this.petEl.addEventListener("mouseenter", () => {
 			this.isHovered = true;
 			this.actionLoopPaused = true;
+			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
 		});
 
@@ -139,12 +153,37 @@ export class Pet {
 	// Leave empty to override in subclasses
 	protected setupActions() {}
 
+	// Clamp current position within the container (if container resizes)
+	public async clampToContainer() {
+		if (!this.petEl || this.isDestroyed) return;
+
+		const wasAlreadyPaused = this.actionLoopPaused;
+		if (!wasAlreadyPaused) {
+			this.actionLoopPaused = true;
+			await new Promise(resolve => setTimeout(resolve, 60));
+			if (this.isDestroyed) return;
+		}
+
+		// currentX is now the actual visual position (accurate post-freeze)
+		const petWidth = this.animations["idle"].frameWidth;
+		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const minX = petWidth / 2;
+		const maxX = containerWidth - petWidth / 2;
+		const clampedX = Math.max(minX, Math.min(maxX, this.currentX));
+		if (clampedX !== this.currentX) {
+			this.currentX = clampedX;
+			this.petEl.setCssProps({ "--left": `${this.currentX}px` });
+		}
+
+		if (!wasAlreadyPaused) {
+			this.actionLoopPaused = false;
+		}
+	}
+
 	// Update height when background change
 	public updateVerticalPosition(newBackground: string) {
 		this.backgroundName = newBackground;
-		const newTop =
-			this.backgroundHeights[newBackground] ??
-			this.backgroundHeights["default"];
+		const newTop = this.getGroundTopValue();
 		// Pass a prop for the new height -> CSS instantly reacts to this change
 		this.petEl.setCssProps({ "--top": newTop });
 	}
@@ -216,8 +255,16 @@ export class Pet {
 		}
 	}
 
+	protected freezeAtCurrentPosition() {
+		const computedLeft = window.getComputedStyle(this.petEl).left;
+		this.petEl.setCssStyles({ transition: "" });
+		this.petEl.setCssProps({ "--left": computedLeft });
+		this.currentX = parseFloat(computedLeft);
+	}
+
 	// Moves the pet in x direction
 	protected move(duration: number, action?: string): Promise<void> {
+		if (this.actionLoopPaused) return Promise.resolve();
 		const petWidth = this.animations["idle"].frameWidth;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 
@@ -287,6 +334,7 @@ export class Pet {
 				"--scale-x": `${this.direction}`,
 				"--move-duration": `${duration}ms`,
 			});
+			this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 		});
 	}
 
@@ -340,6 +388,42 @@ export class Pet {
 				Math.floor(delay / this.animations["run"].duration)
 			);
 		}
+	}
+
+	public startFollowingCursor(getCursorX: () => number): void {
+		this.getCursorX = getCursorX;
+		this.chasingCursor = true;
+	}
+
+	public stopFollowingCursor(): void {
+		this.chasingCursor = false;
+		this.getCursorX = null;
+	}
+
+	protected async followCursorStep(): Promise<void> {
+		if (!this.getCursorX || this.isDestroyed) return;
+		const petWidth = this.animations["idle"].frameWidth;
+		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const minLeft = petWidth / 2;
+		const maxLeft = containerWidth - petWidth / 2;
+
+		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
+		const dx = targetX - this.currentX;
+		if (Math.abs(dx) < 2) {
+			this.setAnimation("idle");
+			return;
+		}
+
+		this.direction = dx < 0 ? -1 : 1;
+		const step = Math.sign(dx) * Math.min(Math.abs(dx), this.cursorMoveDist);
+		this.currentX = Math.max(minLeft, Math.min(maxLeft, this.currentX + step));
+
+		this.setAnimation("run");
+		this.petEl.setCssProps({
+			"--left": `${this.currentX}px`,
+			"--scale-x": `${this.direction}`,
+		});
+		this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 	}
 
 	// Destroys pet instance

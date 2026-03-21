@@ -15,38 +15,55 @@ export class PetSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		// Dropdown for background
+		// Overlay mode toggle
 		new Setting(containerEl)
-			.setName("Background")
-			.setDesc("Select a background for the pet view.")
-			.addDropdown((dropdown) => {
-				dropdown
-					.addOption("none", "None")
-					.addOption("backgrounds/snowbg-1.png", "Snow #1")
-					.addOption("backgrounds/snowbg-2.png", "Snow #2")
-					.addOption("backgrounds/summerbg-1.png", "Summer #1")
-					.addOption("backgrounds/summerbg-2.png", "Summer #2")
-					.addOption("backgrounds/summerbg-3.png", "Summer #3")
-					.addOption("backgrounds/templebg-1.png", "Temple #1")
-					.addOption("backgrounds/templebg-2.png", "Temple #2")
-					.addOption("backgrounds/castlebg-1.png", "Castle #1")
-					.addOption("backgrounds/castlebg-2.png", "Castle #2")
-					.setValue(this.plugin.instanceData.selectedBackground)
+			.setName("Overlay mode")
+			.setDesc(
+				"When enabled, pets treat the entire Obsidian window as their playground (using a transparent overlay)."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.instanceData.overlayMode ?? false)
 					.onChange(async (value) => {
-						await this.plugin.chooseBackground(value);
+						await this.plugin.setOverlayMode(value);
+						this.display(); // Refresh to show/hide background options
 					});
 			});
 
-		new Setting(containerEl)
-			.setName("Animations")
-			.setDesc("Toggle the background's animation ON or OFF.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.instanceData.animatedBackground)
-					.onChange(async (value) => {
-						await this.plugin.toggleBackgroundAnimation(value);
-					});
-			});
+		if (!this.plugin.instanceData.overlayMode) {
+			// Only show background options if overlay mode is off
+			new Setting(containerEl)
+				.setName("Background")
+				.setDesc("Select a background for the pet view.")
+				.addDropdown((dropdown) => {
+					dropdown
+						.addOption("none", "None")
+						.addOption("backgrounds/snowbg-1.png", "Snow #1")
+						.addOption("backgrounds/snowbg-2.png", "Snow #2")
+						.addOption("backgrounds/summerbg-1.png", "Summer #1")
+						.addOption("backgrounds/summerbg-2.png", "Summer #2")
+						.addOption("backgrounds/summerbg-3.png", "Summer #3")
+						.addOption("backgrounds/templebg-1.png", "Temple #1")
+						.addOption("backgrounds/templebg-2.png", "Temple #2")
+						.addOption("backgrounds/castlebg-1.png", "Castle #1")
+						.addOption("backgrounds/castlebg-2.png", "Castle #2")
+						.setValue(this.plugin.instanceData.selectedBackground)
+						.onChange(async (value) => {
+							await this.plugin.chooseBackground(value);
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Animations")
+				.setDesc("Toggle the background's animation ON or OFF.")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.instanceData.animatedBackground)
+						.onChange(async (value) => {
+							await this.plugin.toggleBackgroundAnimation(value);
+						});
+				});
+		}
 
 		new Setting(containerEl)
 			.setName("Pet size")
