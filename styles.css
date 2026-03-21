@@ -178,20 +178,20 @@
 
 .cat-toy-cursor {
 	position: fixed;
-	left: var(--cursor-x, -100px);
-	top: var(--cursor-y, -100px);
-	width: var(--cat-toy-frame-size, 32px);
-	height: var(--cat-toy-frame-size, 32px);
-	transform: translate(var(--cat-toy-offset, -8px), var(--cat-toy-offset, -8px)) scale(var(--cat-toy-scale, 2));
+	left: var(--cursor-x);
+	top: var(--cursor-y);
+	width: var(--cat-toy-frame-size);
+	height: var(--cat-toy-frame-size);
+	transform: translate(var(--cat-toy-offset), var(--cat-toy-offset)) scale(var(--cat-toy-scale));
 	transform-origin: top left;
 	background-image: var(--cat-toy-url);
-	background-size: var(--cat-toy-sprite-width, 192px) var(--cat-toy-frame-size, 32px);
+	background-size: var(--cat-toy-sprite-width);
 	background-repeat: no-repeat;
 	background-position: 0 0;
 	image-rendering: pixelated;
 	pointer-events: none;
 	z-index: 99999;
-	animation: cat-toy-cursor var(--cat-toy-duration, 600ms) steps(6) infinite;
+	animation: cat-toy-cursor var(--cat-toy-duration) steps(6) infinite;
 }
 
 /* Chat Modal Styles */
