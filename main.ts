@@ -249,7 +249,7 @@ export default class PetPlugin extends Plugin {
 		// Command to change mouse to a cat toy
 		this.addCommand({
 			id: "add-cat-toy-dropdown",
-			name: "Change mouse to a cat toy (or back)",
+			name: "Cat toy mouse toggle",
 			callback: async () => this.changeMouseCommand(),
 		});
 
