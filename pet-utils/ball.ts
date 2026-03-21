@@ -52,8 +52,9 @@ export class Ball {
 		this.update = this.update.bind(this);
 		this.frameId = requestAnimationFrame(this.update);
 
-		// Auto-destroy after 3.5 seconds
-		setTimeout(() => this.destroy(), 3500);
+		// Auto-destroy (longer in overlay mode since there's more space to bounce around)
+		const lifetime = this.backgroundName === "overlay" ? 4500 : 3500;
+		setTimeout(() => this.destroy(), lifetime);
 	}
 
 	// Creates the HTML for ball element
@@ -77,6 +78,9 @@ export class Ball {
 	// Gets 'ground' height (not just bottom of container)
 	private getGroundHeight(): number {
 		const rect = this.container.getBoundingClientRect();
+		if (this.backgroundName === "overlay") {
+			return rect.height - this.radius - 1; // ball bottom edge exactly at screen bottom (found by testing)
+		}
 		const bgHeightPercent = this.backgroundHeights[this.backgroundName] || this.backgroundHeights["default"];
 		const fraction = parseFloat(bgHeightPercent) / 100;
 		return rect.height * fraction + 15; // 10.7 is half of sprite size of ball and pet

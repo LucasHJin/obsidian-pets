@@ -105,13 +105,25 @@ export class Cat extends Pet {
 					await this.chaseBall();
 					await new Promise(res => setTimeout(res, 100)); // Small delay to avoid tight loop
 				}
-				// Go back to normal behavior
+				// Stop at current position to avoid gliding animation 
+				this.freezeAtCurrentPosition();
 				this.setAnimation("idle");
 			} else {
+				// Check hover before and after
+				while (this.actionLoopPaused && !this.isDestroyed) {
+					await new Promise(resolve => setTimeout(resolve, 100));
+				}
+				if (this.isDestroyed) break;
+
 				// Normal behavior
 				const randomAction =
 					ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
 				await this.animations[randomAction].action?.();
+
+				while (this.actionLoopPaused && !this.isDestroyed) {
+					await new Promise(resolve => setTimeout(resolve, 100));
+				}
+				if (this.isDestroyed) break;
 
 				const movingAnimation = this.canFly
 					? Math.random() < 0.3

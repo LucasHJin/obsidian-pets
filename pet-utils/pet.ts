@@ -40,8 +40,8 @@ export class Pet {
 	public scale: number; // For different pet sizes
 	protected petName: string;
 	protected tooltipEl: HTMLElement;
-	protected isHovered = false; 
-	private actionLoopPaused = false;
+	protected isHovered = false;
+	protected actionLoopPaused = false;
 
 	constructor(
 		container: Element,
@@ -83,12 +83,18 @@ export class Pet {
 		});
 	}
 
+	// Different calcs for overlay vs normal
+	private getGroundTopValue(): string {
+		if (this.backgroundName === "overlay") {
+			return "calc(100% - 14px * var(--scale, 1))";
+		}
+		return this.backgroundHeights[this.backgroundName] ?? this.backgroundHeights["default"];
+	}
+
 	// Creates the div representing the pet and styles
 	protected createPetElement(): HTMLElement {
 		const el = this.container.createDiv({ cls: "pet" });
-		const topPercent =
-			this.backgroundHeights[this.backgroundName] ??
-			this.backgroundHeights["default"];
+		const topPercent = this.getGroundTopValue();
 
 		// Set initial CSS custom properties (to be used as variables in styles.css)
 		el.setCssProps({
@@ -142,12 +148,37 @@ export class Pet {
 	// Leave empty to override in subclasses
 	protected setupActions() {}
 
+	// Clamp current position within the container (if container resizes)
+	public async clampToContainer() {
+		if (!this.petEl || this.isDestroyed) return;
+
+		const wasAlreadyPaused = this.actionLoopPaused;
+		if (!wasAlreadyPaused) {
+			this.actionLoopPaused = true;
+			await new Promise(resolve => setTimeout(resolve, 60));
+			if (this.isDestroyed) return;
+		}
+
+		// currentX is now the actual visual position (accurate post-freeze)
+		const petWidth = this.animations["idle"].frameWidth;
+		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const minX = petWidth / 2;
+		const maxX = containerWidth - petWidth / 2;
+		const clampedX = Math.max(minX, Math.min(maxX, this.currentX));
+		if (clampedX !== this.currentX) {
+			this.currentX = clampedX;
+			this.petEl.setCssProps({ "--left": `${this.currentX}px` });
+		}
+
+		if (!wasAlreadyPaused) {
+			this.actionLoopPaused = false;
+		}
+	}
+
 	// Update height when background change
 	public updateVerticalPosition(newBackground: string) {
 		this.backgroundName = newBackground;
-		const newTop =
-			this.backgroundHeights[newBackground] ??
-			this.backgroundHeights["default"];
+		const newTop = this.getGroundTopValue();
 		// Pass a prop for the new height -> CSS instantly reacts to this change
 		this.petEl.setCssProps({ "--top": newTop });
 	}
@@ -219,7 +250,7 @@ export class Pet {
 		}
 	}
 
-	private freezeAtCurrentPosition() {
+	protected freezeAtCurrentPosition() {
 		const computedLeft = window.getComputedStyle(this.petEl).left;
 		this.petEl.setCssStyles({ transition: "" });
 		this.petEl.setCssProps({ "--left": computedLeft });

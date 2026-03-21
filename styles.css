@@ -1,3 +1,25 @@
+/* ------------- Overlay Mode Styles ------------- */
+
+/* Full-screen transparent overlay for overlay mode */
+.pet-overlay-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+	z-index: 9999;
+	overflow: hidden;
+}
+
+/* Pets inside the overlay need to capture clicks */
+.pet-overlay-container .pet {
+	pointer-events: auto;
+}
+
+
+/* ------------- Pet View Styles ------------- */
+
 .pet-view-wrapper {
 	position: relative;
 	width: 100%;
