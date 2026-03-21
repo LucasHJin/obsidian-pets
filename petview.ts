@@ -9,8 +9,6 @@ import { Ball } from "pet-utils/ball";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
 import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "pet-utils/pet-animations";
 
-// NOTE -> GHOST REMOVAL DOESN'T WORK RIGHT NOW -> FIX
-
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
 
@@ -43,6 +41,10 @@ export class PetView extends ItemView {
 
 	// Builds content of view when it is opened
 	async onOpen() {
+		this.addAction("paw-print", "Cat toy toggle", () => {
+			this.plugin.changeMouseCommand();
+		})
+		
 		this.addAction("image", "Choose a background", () => {
 			this.plugin.showChooseBackgroundCommand();
 		})
@@ -205,6 +207,22 @@ export class PetView extends ItemView {
 		}
 		// Empty list
 		this.pets = [];
+	}
+
+	startCursorFollow(getCursorX: () => number) {
+		for (const { pet } of this.pets) {
+			if (pet instanceof Cat) {
+				pet.startFollowingCursor(getCursorX);
+			}
+		}
+	}
+
+	stopCursorFollow() {
+		for (const { pet } of this.pets) {
+			if (pet instanceof Cat) {
+				pet.stopFollowingCursor();
+			}
+		}
 	}
 
 	updateAllCatVerticalPositions(newBackground: string) {

@@ -132,6 +132,22 @@ export class OverlayPetView {
 		}
 	}
 
+	startCursorFollow(getCursorX: () => number) {
+		for (const { pet } of this.pets) {
+			if (pet instanceof Cat) {
+				pet.startFollowingCursor(getCursorX);
+			}
+		}
+	}
+
+	stopCursorFollow() {
+		for (const { pet } of this.pets) {
+			if (pet instanceof Cat) {
+				pet.stopFollowingCursor();
+			}
+		}
+	}
+
 	updatePetSize() {
 		for (const { pet } of this.pets) {
 			pet.scale = this.plugin.instanceData.petSize;

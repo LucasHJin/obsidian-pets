@@ -1,6 +1,7 @@
 import { Plugin, Notice } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { OverlayPetView } from "overlay";
+import { CatToyOverlay } from "pet-utils/cat-toy";
 import { PetSettingTab } from "settings";
 import { SelectorModal, SelectorOption, ChatModal } from "modals";
 import { askModel, reformulateQuery } from "chatmodels";
@@ -49,6 +50,9 @@ export default class PetPlugin extends Plugin {
 	ragDb: VectorDB;
 	private chatmodel: GoogleGenAI | OpenAI | null = null;
 	private overlayView: OverlayPetView | null = null;
+	private catToyActive = false;
+	private catToyOverlay: CatToyOverlay | null = null;
+	private currentMouseX = 0;
 	protected BALLS: string[] = [
 		"toys/blue-ball",
 		"toys/cyan-ball",
@@ -241,6 +245,14 @@ export default class PetPlugin extends Plugin {
 			callback: async () => this.throwBallCommand(),
 		});
 
+
+		// Command to change mouse to a cat toy
+		this.addCommand({
+			id: "add-cat-toy-dropdown",
+			name: "Change mouse to a cat toy (or back)",
+			callback: async () => this.changeMouseCommand(),
+		});
+
 		// Command to remove all pets
 		this.addCommand({
 			id: "clear-all-pets",
@@ -395,6 +407,48 @@ export default class PetPlugin extends Plugin {
 		).open();
 	}
 
+	public changeMouseCommand(): void {
+		this.catToyActive = !this.catToyActive;
+		if (this.catToyActive) {
+			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize ?? 1, (x) => { this.currentMouseX = x; });
+			this.startCursorFollowMode();
+		} else {
+			this.catToyOverlay?.destroy();
+			this.catToyOverlay = null;
+			this.stopCursorFollowMode();
+		}
+	}
+
+	private startCursorFollowMode() {
+		if (this.instanceData.overlayMode) {
+			const getCursorX = () => this.currentMouseX;
+			this.overlayView?.startCursorFollow(getCursorX);
+		} else {
+			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
+				if (leaf.view instanceof PetView) {
+					const containerEl = leaf.view.getWrapper() as HTMLElement;
+					const getCursorX = () => {
+						const rect = containerEl.getBoundingClientRect();
+						return this.currentMouseX - rect.left;
+					};
+					leaf.view.startCursorFollow(getCursorX);
+				}
+			}
+		}
+	}
+
+	private stopCursorFollowMode() {
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.stopCursorFollow();
+		} else {
+			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
+				if (leaf.view instanceof PetView) {
+					leaf.view.stopCursorFollow();
+				}
+			}
+		}
+	}
+
 	public throwBallCommand() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
 		this.addBall(randomBall);
@@ -530,6 +584,10 @@ export default class PetPlugin extends Plugin {
 	}
 
 	async onunload(): Promise<void> {
+		if (this.catToyOverlay) {
+			this.catToyOverlay.destroy();
+			this.catToyOverlay = null;
+		}
 		if (this.overlayView) {
 			this.overlayView.destroy();
 			this.overlayView = null;
@@ -608,6 +666,8 @@ export default class PetPlugin extends Plugin {
 	public updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
 		this.saveData(this.instanceData);
+
+		this.catToyOverlay?.updateSize(value);
 
 		// Update pet size in overlay mode as well
 		if (this.instanceData.overlayMode) {

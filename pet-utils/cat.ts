@@ -5,7 +5,6 @@ export class Cat extends Pet {
     private canFly: boolean;
     private chasingBall: Ball | null = null;
     private interruptAction = false;
-    private currentActionCancel?: () => void;
 
     constructor(
         container: Element,
@@ -22,31 +21,23 @@ export class Cat extends Pet {
     }
 
     protected setupActions() {
-		// Add the animations with async action functions (allow waiting for the action to finish before proceeding)
         for (const key in this.animations) {
             this.animations[key].action = async (multiples = 1) => {
                 this.setAnimation(key);
 
-				// Create a cancelled flag and a function to cancel it
-                let cancelled = false;
-                const cancel = () => { cancelled = true; };
-                this.currentActionCancel = cancel;
-                const checkInterrupt = () => cancelled || this.interruptAction; // True if cancelled or interrupted -> check the interrupt for each action
-
                 if (key === "run" || key === "fly") {
-					// Call the moving multiple times
                     for (let i = 0; i < multiples; i++) {
-                        if (checkInterrupt()) break;
+                        if (this.interruptAction) break;
                         await this.move(this.animations[key].duration, key);
                     }
                 } else if (key === "jump" || key === "jump2") {
-                    if (!checkInterrupt()) {
+                    if (!this.interruptAction) {
                         await this.move(this.animations[key].duration, key);
                     }
                 } else if (key === "sit" || key === "sleep") {
                     const extensionAmount = Math.floor(Math.random() * 8) + 5;
                     for (let i = 0; i < extensionAmount; i++) {
-                        if (checkInterrupt()) break;
+                        if (this.interruptAction) break;
                         await new Promise((resolve) =>
                             setTimeout(resolve, this.animations[key].duration)
                         );
@@ -54,25 +45,25 @@ export class Cat extends Pet {
                 } else {
                     const extensionAmount = Math.floor(Math.random() * 2) + 2;
                     for (let i = 0; i < extensionAmount; i++) {
-                        if (checkInterrupt()) break;
+                        if (this.interruptAction) break;
                         await new Promise((resolve) =>
                             setTimeout(resolve, this.animations[key].duration)
                         );
                     }
                 }
-
-                this.currentActionCancel = undefined;
             };
         }
     }
+
+	public override startFollowingCursor(getCursorX: () => number): void {
+		super.startFollowingCursor(getCursorX);
+		this.interruptAction = true;
+	}
 
 	// Function to start chasing the ball
     public startChasingBall(ball: Ball) {
         this.chasingBall = ball;
         this.interruptAction = true;
-        if (this.currentActionCancel) {
-            this.currentActionCancel(); // Immediately cancel current action
-        }
     }
 	// Function to stop chasing the ball
     public stopChasingBall() {
@@ -96,8 +87,16 @@ export class Cat extends Pet {
         );
 
         while (!this.isDestroyed) {
-			// Check if the cat should be chasing a ball
-			if (this.chasingBall) {
+			// Check if cat should be following the cursor (more important than chasing a ball)
+			if (this.chasingCursor) {
+				this.interruptAction = false;
+				while (this.chasingCursor && !this.isDestroyed) {
+					await this.followCursorStep();
+					await new Promise(res => setTimeout(res, 100));
+				}
+				this.freezeAtCurrentPosition();
+				this.setAnimation("idle");
+			} else if (this.chasingBall) { // Check if the cat should be chasing a ball
 				// Reset interrupt immediately so it doesn't stop the loop ahead of time
 				this.interruptAction = false;
 				// Chase the ball until it's destroyed

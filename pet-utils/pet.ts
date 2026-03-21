@@ -39,6 +39,9 @@ export class Pet {
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
 	protected petName: string;
+	protected chasingCursor = false;
+	private getCursorX: (() => number) | null = null;
+	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
 	protected tooltipEl: HTMLElement;
 	protected isHovered = false;
 	protected actionLoopPaused = false;
@@ -55,6 +58,8 @@ export class Pet {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
+		// Randomize cursor follow speed per pet (±30%) so cats spread out instead of clumping
+		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 		this.backgroundName = backgroundName;
 		this.petId = petId;
 		this.scale = scale;
@@ -383,6 +388,42 @@ export class Pet {
 				Math.floor(delay / this.animations["run"].duration)
 			);
 		}
+	}
+
+	public startFollowingCursor(getCursorX: () => number): void {
+		this.getCursorX = getCursorX;
+		this.chasingCursor = true;
+	}
+
+	public stopFollowingCursor(): void {
+		this.chasingCursor = false;
+		this.getCursorX = null;
+	}
+
+	protected async followCursorStep(): Promise<void> {
+		if (!this.getCursorX || this.isDestroyed) return;
+		const petWidth = this.animations["idle"].frameWidth;
+		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const minLeft = petWidth / 2;
+		const maxLeft = containerWidth - petWidth / 2;
+
+		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
+		const dx = targetX - this.currentX;
+		if (Math.abs(dx) < 2) {
+			this.setAnimation("idle");
+			return;
+		}
+
+		this.direction = dx < 0 ? -1 : 1;
+		const step = Math.sign(dx) * Math.min(Math.abs(dx), this.cursorMoveDist);
+		this.currentX = Math.max(minLeft, Math.min(maxLeft, this.currentX + step));
+
+		this.setAnimation("run");
+		this.petEl.setCssProps({
+			"--left": `${this.currentX}px`,
+			"--scale-x": `${this.direction}`,
+		});
+		this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 	}
 
 	// Destroys pet instance
