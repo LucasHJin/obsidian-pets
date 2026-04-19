@@ -22,17 +22,44 @@ export class OverlayPetView {
 	constructor(plugin: PetPlugin) {
 		this.plugin = plugin;
 		this.overlayEl = document.body.createDiv({ cls: "pet-overlay-container" });
+		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {
 			if (this.resizeTimer !== null) clearTimeout(this.resizeTimer);
 			this.resizeTimer = setTimeout(() => {
 				this.resizeTimer = null;
+				this.updateOverlayBounds();
 				for (const { pet } of this.pets) {
 					pet.clampToContainer();
 				}
 			}, 100);
 		};
 		window.addEventListener("resize", this.resizeHandler);
+	}
+
+	// Lowers the overlay bound to not cover Obsidian top drag region (Electron's drag region ignores pointer events)
+	private updateOverlayBounds() {
+		const selectors = [".titlebar", ".workspace-tab-header-container"]; // Need second selector for mac
+		const candidates: HTMLElement[] = [];
+		for (const sel of selectors) {
+			candidates.push(...Array.from(document.body.querySelectorAll<HTMLElement>(sel)));
+		}
+
+		let topOffset = 0;
+		for (const el of candidates) {
+			const style = getComputedStyle(el);
+			const region =
+				style.getPropertyValue("-webkit-app-region") ||
+				(style as unknown as Record<string, string>)["webkitAppRegion"] ||
+				"";
+			if (region !== "drag") continue;
+			const rect = el.getBoundingClientRect();
+			if (rect.top > 5) continue; // Only elements pinned to the window top
+			if (rect.bottom > topOffset) topOffset = rect.bottom;
+		}
+
+		this.overlayEl.setCssProps({ "--overlay-top": `${topOffset}px` });
+		console.log("[obsidian-pets] overlay topOffset =", topOffset);
 	}
 
 	addPet(singlePet: PetInstance) {

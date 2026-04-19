@@ -1,12 +1,12 @@
 /* ------------- Overlay Mode Styles ------------- */
 
-/* Full-screen transparent overlay for overlay mode */
+/* Full-screen transparent overlay for overlay mode (overlay top to allow dragging) */
 .pet-overlay-container {
 	position: fixed;
-	top: 0;
+	top: var(--overlay-top, 0px);
 	left: 0;
 	width: 100vw;
-	height: 100vh;
+	height: calc(100vh - var(--overlay-top, 0px));
 	pointer-events: none;
 	z-index: 9999;
 	overflow: hidden;
