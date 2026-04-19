@@ -1,4 +1,4 @@
-import { Plugin, Notice } from "obsidian";
+import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "petview";
 import { OverlayPetView } from "overlay";
 import { CatToyOverlay } from "pet-utils/cat-toy";
@@ -213,6 +213,13 @@ export default class PetPlugin extends Plugin {
 					await this.openView();
 				}
 			}
+
+			// Detach leaf when sibling sharing petview's tab group is opened
+			this.registerEvent(
+				this.app.workspace.on("active-leaf-change", (leaf) =>
+					this.handleActiveLeafChange(leaf)
+				)
+			);
 		});
 
 		// Adds icon on the ribbon (side panel) to open view
@@ -839,5 +846,60 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of leaves) {
 			await leaf.detach();
 		}
+	}
+
+	private getPetLeaf(): WorkspaceLeaf | null {
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		return leaves[0] ?? null;
+	}
+
+	private sidebarOf(leaf: WorkspaceLeaf): "left" | "right" | null {
+		const root = leaf.getRoot();
+		if (root === this.app.workspace.leftSplit) return "left";
+		if (root === this.app.workspace.rightSplit) return "right";
+		return null;
+	}
+
+	// Don't detach individual leafs
+	private petLeafHasSiblings(leaf: WorkspaceLeaf): boolean {
+		const parent = (leaf as unknown as { parent?: unknown }).parent;
+		if (!parent) return false;
+		const iterate = (
+			this.app.workspace as unknown as {
+				iterateLeaves?: (
+					cb: (l: WorkspaceLeaf) => unknown,
+					item: unknown
+				) => unknown;
+			}
+		).iterateLeaves;
+		if (typeof iterate !== "function") return false;
+
+		let hasSibling = false;
+		iterate.call(
+			this.app.workspace,
+			(l: WorkspaceLeaf) => {
+				if (l !== leaf) hasSibling = true;
+			},
+			parent
+		);
+		return hasSibling;
+	}
+
+	private handleActiveLeafChange(active: WorkspaceLeaf | null): void {
+		if (this.instanceData.overlayMode) return;
+		if (!active) return;
+		if (active.view.getViewType() === VIEW_TYPE_PET) return;
+
+		const activeSide = this.sidebarOf(active);
+		if (!activeSide) return;
+
+		const petLeaf = this.getPetLeaf();
+		if (!petLeaf) return;
+		if (this.sidebarOf(petLeaf) !== activeSide) return;
+
+		// Only yield space when the pet leaf is actually sharing a tab group
+		if (!this.petLeafHasSiblings(petLeaf)) return;
+
+		petLeaf.detach();
 	}
 }
