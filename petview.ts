@@ -41,6 +41,12 @@ export class PetView extends ItemView {
 
 	// Builds content of view when it is opened
 	async onOpen() {
+		// Detach if leaf was rendered while overlay is on
+		if (this.plugin.instanceData.overlayMode) {
+			setTimeout(() => this.leaf.detach(), 0);
+			return;
+		}
+
 		this.addAction("paw-print", "Cat toy toggle", () => {
 			this.plugin.changeMouseCommand();
 		})

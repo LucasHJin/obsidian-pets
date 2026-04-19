@@ -46,8 +46,8 @@ export interface ConversationMessage {
 }
 
 export default class PetPlugin extends Plugin {
-	instanceData: PetPluginData;
-	ragDb: VectorDB;
+	instanceData!: PetPluginData;
+	ragDb!: VectorDB;
 	private chatmodel: GoogleGenAI | OpenAI | null = null;
 	private overlayView: OverlayPetView | null = null;
 	private catToyActive = false;
@@ -200,6 +200,8 @@ export default class PetPlugin extends Plugin {
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
 			if (this.instanceData.overlayMode) {
+				// Close any leafs if they appear from a restored layout
+				await this.closeView();
 				this.overlayView = new OverlayPetView(this);
 				for (const pet of this.instanceData.pets) {
 					this.overlayView.addPet(pet);
