@@ -437,4 +437,9 @@ export class Pet {
 		// Removes instance from DOM
 		this.petEl.remove();
 	}
+
+	public destroyImmediate() {
+		this.isDestroyed = true;
+		this.petEl?.remove();
+	}
 }

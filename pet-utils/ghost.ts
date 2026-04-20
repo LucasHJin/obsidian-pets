@@ -66,4 +66,10 @@ export class Ghost extends Pet {
 			this.petEl.remove();
 		}, 1000);
 	}
+
+	public destroyImmediate() {
+		if (this.isDestroyed) return;
+		this.isDestroyed = true;
+		this.petEl?.remove();
+	}
 }
