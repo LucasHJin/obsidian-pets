@@ -1,3 +1,16 @@
+/* Register scale props as a number so windows build resolves scaleX properly */
+@property --scale-x {
+	syntax: "<number>";
+	inherits: true;
+	initial-value: 1;
+}
+
+@property --scale {
+	syntax: "<number>";
+	inherits: true;
+	initial-value: 1;
+}
+
 /* ------------- Overlay Mode Styles ------------- */
 
 /* Full-screen transparent overlay for overlay mode (overlay top to allow dragging) */
@@ -54,7 +67,7 @@
 	height: var(--pet-size);
 	left: var(--left);
 	top: var(--top);
-	transform: translate(-50%, -50%) scale(var(--scale, 1)) scaleX(calc(var(--scale-x, 1) * 1)); /* calc to force numeric eval */
+	transform: translate(-50%, -50%) scale(var(--scale, 1)) scaleX(var(--scale-x, 1));
 	background-repeat: no-repeat;
 	background-position: 0 0;
 	background-image: var(--sprite-url);
