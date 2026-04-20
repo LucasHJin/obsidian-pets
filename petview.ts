@@ -16,6 +16,8 @@ export class PetView extends ItemView {
 	plugin: PetPlugin;
 	pets: { id: string; pet: Pet }[] = []; // Property for list of existing pets (their id and the instance of the class)
 	balls: { id: string; ball: Ball }[] = []; // Property for list of existing balls (their id and the instance of the class)
+	private resizeObserver?: ResizeObserver;
+	private resizeTimeout?: number;
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -67,6 +69,7 @@ export class PetView extends ItemView {
 			this.plugin.showAddPetCommand();
 		});
 		this.updateView();
+		this.setupResizeObserver();
 	}
 
 	updateView() {
@@ -277,8 +280,66 @@ export class PetView extends ItemView {
 		return wrapper;
 	}
 
+	// Recreates pets from scratch (avoids pet animations getting stuck)
+	resetPets() {
+		for (const { pet } of this.pets) {
+			pet.destroyImmediate(); // Destroy immediately to avoid death animation + id overlaps
+		}
+		this.pets = [];
+		for (const { ball } of this.balls) {
+			ball.destroy();
+		}
+		this.balls = [];
+		this.updateView();
+	}
+
+	private setupResizeObserver() {
+		const container = this.containerEl.children[1] as HTMLElement | undefined;
+		if (!container || typeof ResizeObserver === "undefined") return;
+
+		let initialized = false;
+		let lastWidth = 0;
+		let lastHeight = 0;
+
+		this.resizeObserver = new ResizeObserver((entries) => {
+			const entry = entries[0];
+			if (!entry) return;
+			const { width, height } = entry.contentRect;
+
+			// Skip the initial fire that reports the starting size
+			if (!initialized) {
+				initialized = true;
+				lastWidth = width;
+				lastHeight = height;
+				return;
+			}
+
+			if (width === lastWidth && height === lastHeight) return;
+			lastWidth = width;
+			lastHeight = height;
+
+			// Debounce -> only reset when user stops dragging
+			if (this.resizeTimeout !== undefined) {
+				window.clearTimeout(this.resizeTimeout);
+			}
+			this.resizeTimeout = window.setTimeout(() => {
+				this.resizeTimeout = undefined;
+				this.resetPets();
+			}, 250);
+		});
+		this.resizeObserver.observe(container);
+	}
+
 	// Used to clean up content after view is closed
 	async onClose() {
+		if (this.resizeObserver) {
+			this.resizeObserver.disconnect();
+			this.resizeObserver = undefined;
+		}
+		if (this.resizeTimeout !== undefined) {
+			window.clearTimeout(this.resizeTimeout);
+			this.resizeTimeout = undefined;
+		}
 		for (const { pet } of this.pets) {
 			pet.destroy();
 		}
