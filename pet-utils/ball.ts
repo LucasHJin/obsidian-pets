@@ -22,7 +22,7 @@ export class Ball {
 	private y: number;
 	private vx: number;
 	private vy: number;
-	private radius: number;
+	private radius!: number;
 	private gravity = 0.42; // Acceleration from gravity (0 = no gravity)
 	private damping = 0.99; // Bounce energy retention (1 = all)
 	private airRes = 0.99; // Air resistance (1 = none)
