@@ -201,58 +201,22 @@ export class Pet {
 			return;
 		}
 
-		// Need to use css styles and not props for animation because it needs a hardcoded value, not variable
 		this.petEl.setCssStyles({ animation: "none" });
 		this.petEl.offsetHeight; // Reflow
 
-		// Create the animation for above ^^
-		this.keyFrameAnimation(animation);
-		const keyframeName = `${animation.name}-${this.petId}`;
-
-		// Set animation directly 
+		// No keyframe animation
 		this.petEl.setCssStyles({
-			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
+			animation: `pet-sprite ${animation.duration}ms steps(${animation.frameCount}) infinite`
 		});
 
-		// Set background & sizing using props
 		this.petEl.setCssProps({
 			"--sprite-url": `url(${animation.spriteUrl})`,
-			"--sprite-size": `${
-				animation.frameCount * animation.frameWidth
-			}px auto`,
+			"--sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
+			"--sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
 		});
 
 		// Update tracking for which animation it is
 		this.currentAnimation = animationName;
-	}
-
-	protected keyFrameAnimation(animation: AnimationConfig) {
-		const keyframeName = `${animation.name}-${this.petId}`;
-
-		// Avoid duplipete animations
-		if (document.getElementById(`kf-${keyframeName}`)) {
-			return;
-		}
-
-		// Create the <style> tag
-		const style = document.createElement("style");
-		style.id = `kf-${keyframeName}`;
-
-		// Append the style to the document head first to ensure style.sheet is available
-		document.head.appendChild(style);
-
-		// Keyframe rule for animating the sprite sheet
-		const keyframeRule = `
-		@keyframes ${keyframeName} {
-			from { background-position: 0 0; }
-			to { background-position: -${animation.frameCount * animation.frameWidth}px 0; }
-		}`;
-
-		// Insert the rule using the stylesheet API
-		const sheet = style.sheet as CSSStyleSheet;
-		if (sheet) {
-			sheet.insertRule(keyframeRule, sheet.cssRules.length);
-		}
 	}
 
 	protected freezeAtCurrentPosition() {

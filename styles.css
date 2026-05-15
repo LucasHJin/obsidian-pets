@@ -207,6 +207,16 @@
 	animation: cat-toy-cursor var(--cat-toy-duration) steps(6) infinite;
 }
 
+@keyframes pet-sprite {
+	from { background-position: 0 0; }
+	to   { background-position: var(--sprite-total-width) 0; }
+}
+
+@keyframes cat-toy-cursor {
+	from { background-position: 0 0; }
+	to   { background-position: calc(-1 * var(--cat-toy-sprite-width)) 0; }
+}
+
 /* Chat Modal Styles */
 .modal:has(.pp-chat-modal-content) { /* Target this specific modal to change width + height */
 	width: 65vw !important;

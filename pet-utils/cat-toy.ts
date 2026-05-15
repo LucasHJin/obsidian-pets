@@ -2,15 +2,12 @@ import { catToyAsset } from "./pet-assets";
 
 const FRAME_COUNT = 6;
 const FRAME_WIDTH = 32;
-const KEYFRAME_ID = "kf-cat-toy-cursor";
 
 export class CatToyOverlay {
 	private cursorEl: HTMLElement;
 	private mouseMoveHandler: (e: MouseEvent) => void;
 
 	constructor(petSize: number, onMouseMove: (x: number) => void) {
-		this.injectKeyframes();
-
 		this.cursorEl = document.body.createDiv({ cls: "cat-toy-cursor" });
 		this.cursorEl.setCssProps({
 			"--cat-toy-url": `url(${catToyAsset})`,
@@ -35,24 +32,6 @@ export class CatToyOverlay {
 		document.addEventListener("mousemove", this.mouseMoveHandler);
 	}
 
-	private injectKeyframes() {
-		if (document.getElementById(KEYFRAME_ID)) return;
-
-		const style = document.createElement("style");
-		style.id = KEYFRAME_ID;
-		document.head.appendChild(style);
-
-		const sheet = style.sheet as CSSStyleSheet;
-		if (sheet) {
-			sheet.insertRule(`
-				@keyframes cat-toy-cursor {
-					from { background-position: 0 0; }
-					to   { background-position: -${FRAME_COUNT * FRAME_WIDTH}px 0; }
-				}
-			`, 0);
-		}
-	}
-
 	updateSize(petSize: number) {
 		this.cursorEl.setCssProps({
 			"--cat-toy-scale": `${1.1 * petSize}`,
@@ -63,6 +42,5 @@ export class CatToyOverlay {
 		document.removeEventListener("mousemove", this.mouseMoveHandler);
 		document.body.style.cursor = "";
 		this.cursorEl.remove();
-		document.getElementById(KEYFRAME_ID)?.remove();
 	}
 }
