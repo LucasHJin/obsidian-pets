@@ -40,12 +40,12 @@ export class SelectorModal extends Modal {
 			});
 
 			// Call the chooser function when it is clicked
-			button.addEventListener("click", () => {
+			button.addEventListener("click", async () => {
 				if (option.requiresName) {
 					this.showNameForm(option.value);
 				} else {
 					// No name needed (background)
-					this.onSubmit(option.value, "");
+					await this.onSubmit(option.value, "");
 					this.close();
 				}
 			});
@@ -127,7 +127,7 @@ export class ChatModal extends Modal {
 
 		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
 		
-		this.addMessage("bot", 
+		void this.addMessage("bot",
 			`/\\_/\\ ♥
 >^.^<   ~meow~
 /   \\

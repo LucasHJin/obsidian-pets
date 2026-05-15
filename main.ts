@@ -276,8 +276,6 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
 			callback: () => {
-				//this.instanceData.pets.map((pet) => console.log(pet.id, pet.name));
-
 				const options = this.instanceData.pets.map((pet) => ({
 					value: pet.id,
 					// Label of name and type
@@ -460,7 +458,7 @@ export default class PetPlugin extends Plugin {
 
 	public throwBallCommand() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
-		this.addBall(randomBall);
+		void this.addBall(randomBall);
 	}
 
 	public showChooseBackgroundCommand() {
@@ -525,17 +523,17 @@ export default class PetPlugin extends Plugin {
 
 	public updateGeminiApiKey(geminiApiKey: string): void {
 		this.instanceData.geminiApiKey = geminiApiKey;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 	}
 
 	public updateOpenAiApiKey(openAiApiKey: string): void {
 		this.instanceData.openAiApiKey = openAiApiKey;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 	}
 
 	public updateChosenModel(selectedModel: string): void {
 		this.instanceData.selectedModel = selectedModel;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 
 		try {
 			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
@@ -659,7 +657,7 @@ export default class PetPlugin extends Plugin {
 
 	public toggleBackgroundAnimation(value: boolean): void {
 		this.instanceData.animatedBackground = value;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 
 		// Update all open PetViews
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
@@ -674,7 +672,7 @@ export default class PetPlugin extends Plugin {
 
 	public updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 
 		this.catToyOverlay?.updateSize(value);
 
@@ -828,14 +826,14 @@ export default class PetPlugin extends Plugin {
 
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
 		if (leaves.length > 0) {
-			workspace.revealLeaf(leaves[0]);
+			await workspace.revealLeaf(leaves[0]);
 			return;
 		}
 
 		const leaf = workspace.getLeftLeaf(true);
 		if (leaf) {
 			await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
-			workspace.revealLeaf(leaf);
+			await workspace.revealLeaf(leaf);
 		}
 	}
 

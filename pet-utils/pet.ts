@@ -81,7 +81,7 @@ export class Pet {
 			this.setupHoverListeners();
 
 			// Start the behavior
-			(async () => {
+			void (async () => {
 				await this.animations["idle"].action?.();
 				this.startActionLoop();
 			})();

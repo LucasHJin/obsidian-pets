@@ -56,8 +56,8 @@ export class PetView extends ItemView {
 			this.plugin.showChooseBackgroundCommand();
 		})
 
-		this.addAction("minus", "Remove all pets", () => {
-			this.plugin.clearAllPets();
+		this.addAction("minus", "Remove all pets", async () => {
+			await this.plugin.clearAllPets();
 		});
 		
 		this.addAction("circle-dashed", "Throw a ball", () => {
@@ -203,7 +203,7 @@ export class PetView extends ItemView {
 		const index = this.pets.findIndex((p) => p.id === id);
 		// Clean up the instance's assets and remove it from the list
 		if (index !== -1) {
-			this.pets[index].pet.destroy();
+			void this.pets[index].pet.destroy();
 			this.pets.splice(index, 1);
 		}
 	}
@@ -211,7 +211,7 @@ export class PetView extends ItemView {
 	removeAllPets() {
 		// Clean up resources used by all instances
 		for (const { pet } of this.pets) {
-			pet.destroy();
+			void pet.destroy();
 		}
 		// Empty list
 		this.pets = [];
@@ -339,9 +339,7 @@ export class PetView extends ItemView {
 			activeWindow.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;
 		}
-		for (const { pet } of this.pets) {
-			pet.destroy();
-		}
+		await Promise.all(this.pets.map(({ pet }) => pet.destroy()));
 		for (const { ball } of this.balls) {
 			ball.destroy();
 		}

@@ -26,12 +26,10 @@ export class OverlayPetView {
 
 		this.resizeHandler = () => {
 			if (this.resizeTimer !== null) activeWindow.clearTimeout(this.resizeTimer);
-			this.resizeTimer = activeWindow.setTimeout(() => {
+			this.resizeTimer = activeWindow.setTimeout(async () => {
 				this.resizeTimer = null;
 				this.updateOverlayBounds();
-				for (const { pet } of this.pets) {
-					pet.clampToContainer();
-				}
+				await Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
 			}, 100);
 		};
 		window.addEventListener("resize", this.resizeHandler);
@@ -59,7 +57,6 @@ export class OverlayPetView {
 		}
 
 		this.overlayEl.setCssProps({ "--overlay-top": `${topOffset}px` });
-		console.log("[obsidian-pets] overlay topOffset =", topOffset);
 	}
 
 	addPet(singlePet: PetInstance) {
@@ -115,14 +112,14 @@ export class OverlayPetView {
 	removePet(id: string) {
 		const index = this.pets.findIndex((p) => p.id === id);
 		if (index !== -1) {
-			this.pets[index].pet.destroy();
+			void this.pets[index].pet.destroy();
 			this.pets.splice(index, 1);
 		}
 	}
 
 	removeAllPets() {
 		for (const { pet } of this.pets) {
-			pet.destroy();
+			void pet.destroy();
 		}
 		this.pets = [];
 	}
@@ -199,7 +196,7 @@ export class OverlayPetView {
 			this.resizeTimer = null;
 		}
 		for (const { pet } of this.pets) {
-			pet.destroy();
+			void pet.destroy();
 		}
 		for (const { ball } of this.balls) {
 			ball.destroy();
