@@ -1,15 +1,15 @@
 import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
-import { PetView, VIEW_TYPE_PET } from "petview";
-import { OverlayPetView } from "overlay";
-import { CatToyOverlay } from "pet-utils/cat-toy";
-import { PetSettingTab } from "settings";
-import { SelectorModal, SelectorOption, ChatModal } from "modals";
-import { askModel, reformulateQuery } from "chatmodels";
+import { PetView, VIEW_TYPE_PET } from "./petview";
+import { OverlayPetView } from "./overlay";
+import { CatToyOverlay } from "./pet-utils/cat-toy";
+import { PetSettingTab } from "./settings";
+import { SelectorModal, SelectorOption, ChatModal } from "./modals";
+import { askModel, reformulateQuery } from "./chatmodels";
 import { GoogleGenAI } from "@google/genai";
-import { VectorDB } from "chat-utils/vector-db";
-import { indexVault } from "chat-utils/indexer";
-import { answerQuery } from "chat-utils/retriever";
-import { initModel } from "chatmodels";
+import { VectorDB } from "./chat-utils/vector-db";
+import { indexVault } from "./chat-utils/indexer";
+import { answerQuery } from "./chat-utils/retriever";
+import { initModel } from "./chatmodels";
 import OpenAI from "openai";
 
 export interface PetInstance {

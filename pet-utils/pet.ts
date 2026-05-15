@@ -15,8 +15,8 @@ export type AnimationConfig = {
 
 export class Pet {
 	protected container: Element;
-	public petEl: HTMLElement;
-	protected currentX: number;
+	public petEl!: HTMLElement;
+	protected currentX!: number;
 	protected direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	protected animations: Record<string, AnimationConfig>;
@@ -42,7 +42,7 @@ export class Pet {
 	protected chasingCursor = false;
 	private getCursorX: (() => number) | null = null;
 	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
-	protected tooltipEl: HTMLElement;
+	protected tooltipEl!: HTMLElement;
 	protected isHovered = false;
 	protected actionLoopPaused = false;
 

@@ -1,5 +1,5 @@
 import { PluginSettingTab, App, Setting } from "obsidian";
-import PetPlugin from "main";
+import PetPlugin from "./main";
 
 // https://docs.obsidian.md/Plugins/User+interface/Settings
 

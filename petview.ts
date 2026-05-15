@@ -1,13 +1,12 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import PetPlugin from "main";
-import { PetInstance } from "main";
-import { Pet } from "pet-utils/pet";
-import { Cat } from "pet-utils/cat";
-import { Bunny } from "pet-utils/bunny";
-import { Ghost } from "pet-utils/ghost";
-import { Ball } from "pet-utils/ball";
+import PetPlugin, { PetInstance } from "./main";
+import { Pet } from "./pet-utils/pet";
+import { Cat } from "./pet-utils/cat";
+import { Bunny } from "./pet-utils/bunny";
+import { Ghost } from "./pet-utils/ghost";
+import { Ball } from "./pet-utils/ball";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "pet-utils/pet-animations";
+import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "./pet-utils/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";

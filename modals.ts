@@ -1,6 +1,6 @@
 import { Modal, App } from "obsidian";
 import { MarkdownRenderer } from "obsidian"; // For rendering markdown in chat messages
-import { ConversationMessage } from "main";
+import { ConversationMessage } from "./main";
 
 // Type for selectable option
 export interface SelectorOption {
