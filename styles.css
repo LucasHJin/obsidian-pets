@@ -189,6 +189,10 @@
 	}
 }
 
+.cat-toy-hide-cursor {
+	cursor: none !important;
+}
+
 .cat-toy-cursor {
 	position: fixed;
 	left: var(--cursor-x);
