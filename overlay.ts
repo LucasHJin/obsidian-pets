@@ -21,7 +21,7 @@ export class OverlayPetView {
 
 	constructor(plugin: PetPlugin) {
 		this.plugin = plugin;
-		this.overlayEl = document.body.createDiv({ cls: "pet-overlay-container" });
+		this.overlayEl = activeDocument.body.createDiv({ cls: "pet-overlay-container" });
 		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {
@@ -42,7 +42,7 @@ export class OverlayPetView {
 		const selectors = [".titlebar", ".workspace-tab-header-container"]; // Need second selector for mac
 		const candidates: HTMLElement[] = [];
 		for (const sel of selectors) {
-			candidates.push(...Array.from(document.body.querySelectorAll<HTMLElement>(sel)));
+			candidates.push(...Array.from(activeDocument.body.querySelectorAll<HTMLElement>(sel)));
 		}
 
 		let topOffset = 0;

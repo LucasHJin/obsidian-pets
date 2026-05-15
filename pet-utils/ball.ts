@@ -60,17 +60,15 @@ export class Ball {
 	// Creates the HTML for ball element
 	private createBallElement(spriteUrl: string): HTMLElement {
 		const el = this.container.createDiv({ cls: "ball" });
-		const img = document.createElement("img");
 
 		const BALL_SIZE = 10;
 		this.radius = BALL_SIZE / 2;
-		img.src = spriteUrl;
+		el.createEl("img", { attr: { src: spriteUrl } });
 		el.setCssProps({
 			"--ballwidth": `${Math.round(BALL_SIZE)}px`,
 			"--ballheight": `${Math.round(BALL_SIZE)}px`,
 			"--scale": `${this.scale}`,
 		});
-		el.appendChild(img);
 
 		return el;
 	}

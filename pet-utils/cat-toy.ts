@@ -8,7 +8,7 @@ export class CatToyOverlay {
 	private mouseMoveHandler: (e: MouseEvent) => void;
 
 	constructor(petSize: number, onMouseMove: (x: number) => void) {
-		this.cursorEl = document.body.createDiv({ cls: "cat-toy-cursor" });
+		this.cursorEl = activeDocument.body.createDiv({ cls: "cat-toy-cursor" });
 		this.cursorEl.setCssProps({
 			"--cat-toy-url": `url(${catToyAsset})`,
 			"--cursor-x": "-100px",
@@ -20,7 +20,7 @@ export class CatToyOverlay {
 			"--cat-toy-duration": `${FRAME_COUNT * 100}ms`,
 		});
 
-		document.body.addClass("cat-toy-hide-cursor");
+		activeDocument.body.addClass("cat-toy-hide-cursor");
 
 		this.mouseMoveHandler = (e: MouseEvent) => {
 			this.cursorEl.setCssProps({
@@ -29,7 +29,7 @@ export class CatToyOverlay {
 			});
 			onMouseMove(e.clientX);
 		};
-		document.addEventListener("mousemove", this.mouseMoveHandler);
+		activeDocument.addEventListener("mousemove", this.mouseMoveHandler);
 	}
 
 	updateSize(petSize: number) {
@@ -39,8 +39,8 @@ export class CatToyOverlay {
 	}
 
 	destroy() {
-		document.removeEventListener("mousemove", this.mouseMoveHandler);
-		document.body.removeClass("cat-toy-hide-cursor");
+		activeDocument.removeEventListener("mousemove", this.mouseMoveHandler);
+		activeDocument.body.removeClass("cat-toy-hide-cursor");
 		this.cursorEl.remove();
 	}
 }
