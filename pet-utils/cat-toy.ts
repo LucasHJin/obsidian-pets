@@ -20,7 +20,7 @@ export class CatToyOverlay {
 			"--cat-toy-duration": `${FRAME_COUNT * 100}ms`,
 		});
 
-		document.body.addClass(".cat-toy-hide-cursor");
+		document.body.addClass("cat-toy-hide-cursor");
 
 		this.mouseMoveHandler = (e: MouseEvent) => {
 			this.cursorEl.setCssProps({
@@ -40,7 +40,7 @@ export class CatToyOverlay {
 
 	destroy() {
 		document.removeEventListener("mousemove", this.mouseMoveHandler);
-		document.body.removeClass(".cat-toy-hide-cursor");
+		document.body.removeClass("cat-toy-hide-cursor");
 		this.cursorEl.remove();
 	}
 }

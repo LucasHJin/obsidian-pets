@@ -56,7 +56,7 @@ export async function indexVault(
 				});
 
 				// Small delay to avoid rate limits
-				await new Promise((resolve) => setTimeout(resolve, 100));
+				await new Promise((resolve) => activeWindow.setTimeout(resolve, 100));
 			} catch (e) {
 				// Just log and then continue with next chunking if one error
 				console.error(`Failed to index ${file.path}::${i}:`, e);

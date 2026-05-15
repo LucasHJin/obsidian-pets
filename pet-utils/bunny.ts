@@ -25,7 +25,7 @@ export class Bunny extends Pet {
 				} else if (key === "like" || key === "sleep" || key == "liedown") {
 					const extensionAmount = Math.floor(Math.random() * 7) + 6;
 					await new Promise((resolve) =>
-						setTimeout(
+						activeWindow.setTimeout(
 							resolve,
 							this.animations[key].duration * extensionAmount
 						)
@@ -34,7 +34,7 @@ export class Bunny extends Pet {
                     // Idle
 					const extensionAmount = Math.floor(Math.random() * 2) + 2;
 					await new Promise((resolve) =>
-						setTimeout(
+						activeWindow.setTimeout(
 							resolve,
 							this.animations[key].duration * extensionAmount
 						)

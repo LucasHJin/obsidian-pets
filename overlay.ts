@@ -25,8 +25,8 @@ export class OverlayPetView {
 		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {
-			if (this.resizeTimer !== null) clearTimeout(this.resizeTimer);
-			this.resizeTimer = setTimeout(() => {
+			if (this.resizeTimer !== null) activeWindow.clearTimeout(this.resizeTimer);
+			this.resizeTimer = activeWindow.setTimeout(() => {
 				this.resizeTimer = null;
 				this.updateOverlayBounds();
 				for (const { pet } of this.pets) {
@@ -195,7 +195,7 @@ export class OverlayPetView {
 	destroy() {
 		window.removeEventListener("resize", this.resizeHandler);
 		if (this.resizeTimer !== null) {
-			clearTimeout(this.resizeTimer);
+			activeWindow.clearTimeout(this.resizeTimer);
 			this.resizeTimer = null;
 		}
 		for (const { pet } of this.pets) {

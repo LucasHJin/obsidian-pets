@@ -44,7 +44,7 @@ export class PetView extends ItemView {
 	async onOpen() {
 		// Detach if leaf was rendered while overlay is on
 		if (this.plugin.instanceData.overlayMode) {
-			setTimeout(() => this.leaf.detach(), 0);
+			activeWindow.setTimeout(() => this.leaf.detach(), 0);
 			return;
 		}
 
@@ -319,9 +319,9 @@ export class PetView extends ItemView {
 
 			// Debounce -> only reset when user stops dragging
 			if (this.resizeTimeout !== undefined) {
-				window.clearTimeout(this.resizeTimeout);
+				activeWindow.clearTimeout(this.resizeTimeout);
 			}
-			this.resizeTimeout = window.setTimeout(() => {
+			this.resizeTimeout = activeWindow.setTimeout(() => {
 				this.resizeTimeout = undefined;
 				this.resetPets();
 			}, 250);
@@ -336,7 +336,7 @@ export class PetView extends ItemView {
 			this.resizeObserver = undefined;
 		}
 		if (this.resizeTimeout !== undefined) {
-			window.clearTimeout(this.resizeTimeout);
+			activeWindow.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;
 		}
 		for (const { pet } of this.pets) {

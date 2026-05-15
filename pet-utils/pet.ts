@@ -145,7 +145,7 @@ export class Pet {
 			"--heart-random-x": `${randomX}%`
 		});
 	
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			heart.remove();
 		}, 1000);
 	}
@@ -160,7 +160,7 @@ export class Pet {
 		const wasAlreadyPaused = this.actionLoopPaused;
 		if (!wasAlreadyPaused) {
 			this.actionLoopPaused = true;
-			await new Promise(resolve => setTimeout(resolve, 60));
+			await new Promise(resolve => activeWindow.setTimeout(resolve, 60));
 			if (this.isDestroyed) return;
 		}
 
@@ -264,7 +264,7 @@ export class Pet {
 		// Return a promise that is being awaited (to prevent moving on until this is finished)
 		return new Promise((res) => {
 			// Interval to constantly check if hovered (if so stop transition)
-			const hoverCheck = setInterval(() => {
+			const hoverCheck = activeWindow.setInterval(() => {
 				if (this.actionLoopPaused) {
 					const computedLeft = window.getComputedStyle(this.petEl).left;
 					this.petEl.setCssStyles({ transition: "" });
@@ -274,7 +274,7 @@ export class Pet {
 					this.currentX = parseFloat(computedLeft);
 					
 					// Clean up
-					clearInterval(hoverCheck);
+					activeWindow.clearInterval(hoverCheck);
 					this.petEl.removeEventListener("transitionend", done);
 					
 					res();
@@ -283,7 +283,7 @@ export class Pet {
 			
 			// Cleanup function for after transition
 			const done = () => {
-				clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
+				activeWindow.clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
 				this.petEl.removeEventListener("transitionend", done);
 				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
@@ -322,7 +322,7 @@ export class Pet {
 		while (!this.isDestroyed) {
 			// Check if is hovered
 			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 			}
 
 			if (this.isDestroyed) {
@@ -335,7 +335,7 @@ export class Pet {
 			await this.animations[randomAction].action?.();
 
 			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 			}
 
 			if (this.isDestroyed) {
@@ -396,7 +396,7 @@ export class Pet {
 		// Death animation (wait for the animation to finish)
 		this.setAnimation("die");
 		await new Promise((resolve) =>
-			setTimeout(resolve, this.animations["die"].duration)
+			activeWindow.setTimeout(resolve, this.animations["die"].duration)
 		);
 		// Removes instance from DOM
 		this.petEl.remove();

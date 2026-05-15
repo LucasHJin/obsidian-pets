@@ -395,7 +395,7 @@ export default class PetPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			// Small delay to let initial file loading finish (so that not all files are processed in refresh)
-			setTimeout(() => {
+			activeWindow.setTimeout(() => {
 				this.registerEvent(
 					this.app.vault.on("create", (file) => {
 						const randomMessage = NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];

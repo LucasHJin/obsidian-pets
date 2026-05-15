@@ -54,7 +54,7 @@ export class Ball {
 
 		// Auto-destroy (longer in overlay mode since there's more space to bounce around)
 		const lifetime = this.backgroundName === "overlay" ? 4500 : 3500;
-		setTimeout(() => this.destroy(), lifetime);
+		activeWindow.setTimeout(() => this.destroy(), lifetime);
 	}
 
 	// Creates the HTML for ball element

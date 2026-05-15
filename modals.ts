@@ -109,7 +109,7 @@ export class ChatModal extends Modal {
 	messages: ChatMessage[] = [];
 	plugin: any;
 	private conversationHistory: ConversationMessage[] = []; 
-	private activeTypingInterval: ReturnType<typeof setInterval> | null = null;
+	private activeTypingInterval: ReturnType<typeof activeWindow.setInterval> | null = null;
 	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
 
 	constructor(app: App, plugin: any, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
@@ -191,7 +191,7 @@ Cat (chat) with me anything about~
 			await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
 
 			// Scroll to bottom
-			setTimeout(() => {
+			activeWindow.setTimeout(() => {
 				chatContainer.scrollTop = chatContainer.scrollHeight;
 			}, 0);
 		});
@@ -231,7 +231,7 @@ Cat (chat) with me anything about~
 
 		const span = typingBox.createSpan();
 		let dots = 0;
-		const interval = setInterval(() => {
+		const interval = activeWindow.setInterval(() => {
 			dots = (dots + 1) % 3;
 			span.setText("meow." + ".".repeat(dots));
 		}, 400);
@@ -245,7 +245,7 @@ Cat (chat) with me anything about~
 	private removeTypingIndicator(typingBox: HTMLElement) {
 		const interval = (typingBox as any)._typingInterval;
 		if (interval) {
-			clearInterval(interval); // Clean up the interval animation
+			activeWindow.clearInterval(interval); // Clean up the interval animation
 		}
 		this.activeTypingInterval = null;
 		typingBox.remove();
@@ -253,7 +253,7 @@ Cat (chat) with me anything about~
 
 	onClose() {
 		if (this.activeTypingInterval) {
-			clearInterval(this.activeTypingInterval);
+			activeWindow.clearInterval(this.activeTypingInterval);
 			this.activeTypingInterval = null;
 		}
 
