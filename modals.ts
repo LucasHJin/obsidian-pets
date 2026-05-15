@@ -62,7 +62,7 @@ export class SelectorModal extends Modal {
 		});
 
 		// Title
-		container.createEl("div", {
+		container.createDiv({
 			text: "Enter a name:",
 			cls: "pet-name-title setting-item-heading",
 		});
