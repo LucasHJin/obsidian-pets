@@ -8,7 +8,7 @@ export type AnimationConfig = {
 	frameWidth: number;
 	frameHeight: number;
 	duration: number; // Of animation (ms)
-	action?: (multiples?: number) => void; // Function that gets added in
+	action?: (multiples?: number) => Promise<void> | void;
 };
 
 // Make size changeable
