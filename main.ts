@@ -284,7 +284,7 @@ export default class PetPlugin extends Plugin {
 				new SelectorModal(
 					this.app,
 					options,
-					async (value: string, name: string) => {
+					async (value: string, _name: string) => {
 						await this.removePetById(value);
 					}
 				).open();
@@ -465,7 +465,7 @@ export default class PetPlugin extends Plugin {
 		new SelectorModal(
 			this.app,
 			this.BACKGROUNDS,
-			async (value: string, name: string) => {
+			async (value: string, _name: string) => {
 				await this.chooseBackground(value); // Pass chooseBackground() function to modal
 			}
 		).open();
