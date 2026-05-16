@@ -1,6 +1,6 @@
-import { Modal, App } from "obsidian";
+import { Modal, App, Component } from "obsidian";
 import { MarkdownRenderer } from "obsidian"; // For rendering markdown in chat messages
-import { ConversationMessage } from "main";
+import { ConversationMessage } from "./main";
 
 // Type for selectable option
 export interface SelectorOption {
@@ -40,12 +40,12 @@ export class SelectorModal extends Modal {
 			});
 
 			// Call the chooser function when it is clicked
-			button.addEventListener("click", () => {
+			button.addEventListener("click", async () => {
 				if (option.requiresName) {
 					this.showNameForm(option.value);
 				} else {
 					// No name needed (background)
-					this.onSubmit(option.value, "");
+					await this.onSubmit(option.value, "");
 					this.close();
 				}
 			});
@@ -62,7 +62,7 @@ export class SelectorModal extends Modal {
 		});
 
 		// Title
-		container.createEl("div", {
+		container.createDiv({
 			text: "Enter a name:",
 			cls: "pet-name-title setting-item-heading",
 		});
@@ -85,7 +85,7 @@ export class SelectorModal extends Modal {
 			cls: "pet-name-button",
 		});
 
-		form.addEventListener("submit", async (e) => {
+		form.addEventListener("submit", (e) => {
 			e.preventDefault();
 			// Prevent submitting blank name
 			const name = input.value.trim();
@@ -94,8 +94,10 @@ export class SelectorModal extends Modal {
 			}
 
 			// Call function to use the selected type and pet name
-			await this.onSubmit(selectedValue, name);
-			this.close();
+			void (async () => {
+				await this.onSubmit(selectedValue, name);
+				this.close();
+			})();
 		});
 	}
 
@@ -107,12 +109,12 @@ export class SelectorModal extends Modal {
 
 export class ChatModal extends Modal {
 	messages: ChatMessage[] = [];
-	plugin: any;
-	private conversationHistory: ConversationMessage[] = []; 
-	private activeTypingInterval: ReturnType<typeof setInterval> | null = null;
+	plugin: Component;
+	private conversationHistory: ConversationMessage[] = [];
+	private activeTypingInterval: ReturnType<typeof activeWindow.setInterval> | null = null;
 	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
 
-	constructor(app: App, plugin: any, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
+	constructor(app: App, plugin: Component, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
 		super(app);
 		this.plugin = plugin;
 		this.onMessage = onMessage;
@@ -127,7 +129,7 @@ export class ChatModal extends Modal {
 
 		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
 		
-		this.addMessage("bot", 
+		void this.addMessage("bot",
 			`/\\_/\\ ♥
 >^.^<   ~meow~
 /   \\
@@ -155,45 +157,46 @@ Cat (chat) with me anything about~
 		});
 
 		// Handle message being sent
-		form.addEventListener("submit", async (e) => {
+		form.addEventListener("submit", (e) => {
 			e.preventDefault();
 			const text = textarea.value.trim();
 			if (!text) {
 				return;
 			}
+			void (async () => {
+				await this.addMessage("user", text, chatContainer);
 
-			await this.addMessage("user", text, chatContainer);
+				textarea.value = "";
 
-			textarea.value = "";
+				// Typing
+				const typingAnimation = this.showTypingIndicator(chatContainer);
+				const response = await this.onMessage(text, this.conversationHistory);
+				this.removeTypingIndicator(typingAnimation);
 
-			// Typing 
-			const typingAnimation = this.showTypingIndicator(chatContainer);
-			const response = await this.onMessage(text, this.conversationHistory);
-			this.removeTypingIndicator(typingAnimation);
+				// Context of the conversation
+				this.conversationHistory.push({
+					role: "user",
+					content: text,
+					timestamp: Date.now()
+				});
+				this.conversationHistory.push({
+					role: "assistant",
+					content: response,
+					timestamp: Date.now()
+				});
 
-			// Context of the conversation
-			this.conversationHistory.push({
-				role: "user",
-				content: text,
-				timestamp: Date.now()
-			});
-			this.conversationHistory.push({
-				role: "assistant",
-				content: response,
-				timestamp: Date.now()
-			});
+				// Keep recent 8 messages max (avoid overflow context window)
+				if (this.conversationHistory.length > 8) {
+					this.conversationHistory = this.conversationHistory.slice(-8);
+				}
 
-			// Keep recent 8 messages max (avoid overflow context window)
-			if (this.conversationHistory.length > 8) {
-				this.conversationHistory = this.conversationHistory.slice(-8);
-			}
+				await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
 
-			await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
-
-			// Scroll to bottom
-			setTimeout(() => {
-				chatContainer.scrollTop = chatContainer.scrollHeight;
-			}, 0);
+				// Scroll to bottom
+				activeWindow.setTimeout(() => {
+					chatContainer.scrollTop = chatContainer.scrollHeight;
+				}, 0);
+			})();
 		});
 	}
 
@@ -231,21 +234,16 @@ Cat (chat) with me anything about~
 
 		const span = typingBox.createSpan();
 		let dots = 0;
-		const interval = setInterval(() => {
+		this.activeTypingInterval = activeWindow.setInterval(() => {
 			dots = (dots + 1) % 3;
 			span.setText("meow." + ".".repeat(dots));
 		}, 400);
-
-		// Attach interval reference so we can stop it later (use any to avoid TS error)
-		(typingBox as any)._typingInterval = interval;
-		this.activeTypingInterval = interval;
 		return typingBox;
 	}
 
 	private removeTypingIndicator(typingBox: HTMLElement) {
-		const interval = (typingBox as any)._typingInterval;
-		if (interval) {
-			clearInterval(interval); // Clean up the interval animation
+		if (this.activeTypingInterval) {
+			activeWindow.clearInterval(this.activeTypingInterval); // Clean up the interval animation
 		}
 		this.activeTypingInterval = null;
 		typingBox.remove();
@@ -253,7 +251,7 @@ Cat (chat) with me anything about~
 
 	onClose() {
 		if (this.activeTypingInterval) {
-			clearInterval(this.activeTypingInterval);
+			activeWindow.clearInterval(this.activeTypingInterval);
 			this.activeTypingInterval = null;
 		}
 

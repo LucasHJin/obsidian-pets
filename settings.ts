@@ -1,5 +1,5 @@
 import { PluginSettingTab, App, Setting } from "obsidian";
-import PetPlugin from "main";
+import PetPlugin from "./main";
 
 // https://docs.obsidian.md/Plugins/User+interface/Settings
 
@@ -59,8 +59,8 @@ export class PetSettingTab extends PluginSettingTab {
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.instanceData.animatedBackground)
-						.onChange(async (value) => {
-							await this.plugin.toggleBackgroundAnimation(value);
+						.onChange((value) => {
+							this.plugin.toggleBackgroundAnimation(value);
 						});
 				});
 		}

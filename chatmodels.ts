@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
-import { ConversationMessage } from "main";
+import { ConversationMessage } from "./main";
 
 // Note -> File links cannot be clicked
 // ADD CONTEXT OF PREVIOUS MESSAGES -> need to do this before searching for context?

@@ -28,7 +28,7 @@ export class Ghost extends Pet {
 			this.setAnimation("idle");
 			// Delay for one cycle so it doesn't instantly switch again
 			await new Promise((res) =>
-				setTimeout(res, this.animations["idle"].duration)
+				activeWindow.setTimeout(res, this.animations["idle"].duration)
 			);
 		};
 	}
@@ -49,7 +49,7 @@ export class Ghost extends Pet {
 			// Always idle afterwards (small amount of time)
 			await this.animations["idle"].action?.();
 			const delay2 = 2000 + Math.random() * 3000;
-			await new Promise((res) => setTimeout(res, delay2));
+			await new Promise((res) => activeWindow.setTimeout(res, delay2));
 		}
 	}
 
@@ -62,7 +62,7 @@ export class Ghost extends Pet {
 			transition: "opacity 1s ease",
 			opacity: "0"
 		});
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			this.petEl.remove();
 		}, 1000);
 	}

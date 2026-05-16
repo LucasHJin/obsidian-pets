@@ -1,13 +1,12 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import PetPlugin from "main";
-import { PetInstance } from "main";
-import { Pet } from "pet-utils/pet";
-import { Cat } from "pet-utils/cat";
-import { Bunny } from "pet-utils/bunny";
-import { Ghost } from "pet-utils/ghost";
-import { Ball } from "pet-utils/ball";
+import PetPlugin, { PetInstance } from "./main";
+import { Pet } from "./pet-utils/pet";
+import { Cat } from "./pet-utils/cat";
+import { Bunny } from "./pet-utils/bunny";
+import { Ghost } from "./pet-utils/ghost";
+import { Ball } from "./pet-utils/ball";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "pet-utils/pet-animations";
+import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "./pet-utils/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -45,7 +44,7 @@ export class PetView extends ItemView {
 	async onOpen() {
 		// Detach if leaf was rendered while overlay is on
 		if (this.plugin.instanceData.overlayMode) {
-			setTimeout(() => this.leaf.detach(), 0);
+			activeWindow.setTimeout(() => this.leaf.detach(), 0);
 			return;
 		}
 
@@ -57,8 +56,8 @@ export class PetView extends ItemView {
 			this.plugin.showChooseBackgroundCommand();
 		})
 
-		this.addAction("minus", "Remove all pets", () => {
-			this.plugin.clearAllPets();
+		this.addAction("minus", "Remove all pets", async () => {
+			await this.plugin.clearAllPets();
 		});
 		
 		this.addAction("circle-dashed", "Throw a ball", () => {
@@ -204,7 +203,7 @@ export class PetView extends ItemView {
 		const index = this.pets.findIndex((p) => p.id === id);
 		// Clean up the instance's assets and remove it from the list
 		if (index !== -1) {
-			this.pets[index].pet.destroy();
+			void this.pets[index].pet.destroy();
 			this.pets.splice(index, 1);
 		}
 	}
@@ -212,7 +211,7 @@ export class PetView extends ItemView {
 	removeAllPets() {
 		// Clean up resources used by all instances
 		for (const { pet } of this.pets) {
-			pet.destroy();
+			void pet.destroy();
 		}
 		// Empty list
 		this.pets = [];
@@ -320,9 +319,9 @@ export class PetView extends ItemView {
 
 			// Debounce -> only reset when user stops dragging
 			if (this.resizeTimeout !== undefined) {
-				window.clearTimeout(this.resizeTimeout);
+				activeWindow.clearTimeout(this.resizeTimeout);
 			}
-			this.resizeTimeout = window.setTimeout(() => {
+			this.resizeTimeout = activeWindow.setTimeout(() => {
 				this.resizeTimeout = undefined;
 				this.resetPets();
 			}, 250);
@@ -337,12 +336,10 @@ export class PetView extends ItemView {
 			this.resizeObserver = undefined;
 		}
 		if (this.resizeTimeout !== undefined) {
-			window.clearTimeout(this.resizeTimeout);
+			activeWindow.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;
 		}
-		for (const { pet } of this.pets) {
-			pet.destroy();
-		}
+		await Promise.all(this.pets.map(({ pet }) => pet.destroy()));
 		for (const { ball } of this.balls) {
 			ball.destroy();
 		}

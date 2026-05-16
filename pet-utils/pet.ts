@@ -8,15 +8,15 @@ export type AnimationConfig = {
 	frameWidth: number;
 	frameHeight: number;
 	duration: number; // Of animation (ms)
-	action?: (multiples?: number) => void; // Function that gets added in
+	action?: (multiples?: number) => Promise<void> | void;
 };
 
 // Make size changeable
 
 export class Pet {
 	protected container: Element;
-	public petEl: HTMLElement;
-	protected currentX: number;
+	public petEl!: HTMLElement;
+	protected currentX!: number;
 	protected direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
 	protected animations: Record<string, AnimationConfig>;
@@ -42,7 +42,7 @@ export class Pet {
 	protected chasingCursor = false;
 	private getCursorX: (() => number) | null = null;
 	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
-	protected tooltipEl: HTMLElement;
+	protected tooltipEl!: HTMLElement;
 	protected isHovered = false;
 	protected actionLoopPaused = false;
 
@@ -81,7 +81,7 @@ export class Pet {
 			this.setupHoverListeners();
 
 			// Start the behavior
-			(async () => {
+			void (async () => {
 				await this.animations["idle"].action?.();
 				this.startActionLoop();
 			})();
@@ -145,7 +145,7 @@ export class Pet {
 			"--heart-random-x": `${randomX}%`
 		});
 	
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			heart.remove();
 		}, 1000);
 	}
@@ -160,7 +160,7 @@ export class Pet {
 		const wasAlreadyPaused = this.actionLoopPaused;
 		if (!wasAlreadyPaused) {
 			this.actionLoopPaused = true;
-			await new Promise(resolve => setTimeout(resolve, 60));
+			await new Promise(resolve => activeWindow.setTimeout(resolve, 60));
 			if (this.isDestroyed) return;
 		}
 
@@ -201,58 +201,22 @@ export class Pet {
 			return;
 		}
 
-		// Need to use css styles and not props for animation because it needs a hardcoded value, not variable
 		this.petEl.setCssStyles({ animation: "none" });
 		this.petEl.offsetHeight; // Reflow
 
-		// Create the animation for above ^^
-		this.keyFrameAnimation(animation);
-		const keyframeName = `${animation.name}-${this.petId}`;
-
-		// Set animation directly 
+		// No keyframe animation
 		this.petEl.setCssStyles({
-			animation: `${keyframeName} ${animation.duration}ms steps(${animation.frameCount}) infinite`
+			animation: `pet-sprite ${animation.duration}ms steps(${animation.frameCount}) infinite`
 		});
 
-		// Set background & sizing using props
 		this.petEl.setCssProps({
 			"--sprite-url": `url(${animation.spriteUrl})`,
-			"--sprite-size": `${
-				animation.frameCount * animation.frameWidth
-			}px auto`,
+			"--sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
+			"--sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
 		});
 
 		// Update tracking for which animation it is
 		this.currentAnimation = animationName;
-	}
-
-	protected keyFrameAnimation(animation: AnimationConfig) {
-		const keyframeName = `${animation.name}-${this.petId}`;
-
-		// Avoid duplipete animations
-		if (document.getElementById(`kf-${keyframeName}`)) {
-			return;
-		}
-
-		// Create the <style> tag
-		const style = document.createElement("style");
-		style.id = `kf-${keyframeName}`;
-
-		// Append the style to the document head first to ensure style.sheet is available
-		document.head.appendChild(style);
-
-		// Keyframe rule for animating the sprite sheet
-		const keyframeRule = `
-		@keyframes ${keyframeName} {
-			from { background-position: 0 0; }
-			to { background-position: -${animation.frameCount * animation.frameWidth}px 0; }
-		}`;
-
-		// Insert the rule using the stylesheet API
-		const sheet = style.sheet as CSSStyleSheet;
-		if (sheet) {
-			sheet.insertRule(keyframeRule, sheet.cssRules.length);
-		}
 	}
 
 	protected freezeAtCurrentPosition() {
@@ -300,7 +264,7 @@ export class Pet {
 		// Return a promise that is being awaited (to prevent moving on until this is finished)
 		return new Promise((res) => {
 			// Interval to constantly check if hovered (if so stop transition)
-			const hoverCheck = setInterval(() => {
+			const hoverCheck = activeWindow.setInterval(() => {
 				if (this.actionLoopPaused) {
 					const computedLeft = window.getComputedStyle(this.petEl).left;
 					this.petEl.setCssStyles({ transition: "" });
@@ -310,7 +274,7 @@ export class Pet {
 					this.currentX = parseFloat(computedLeft);
 					
 					// Clean up
-					clearInterval(hoverCheck);
+					activeWindow.clearInterval(hoverCheck);
 					this.petEl.removeEventListener("transitionend", done);
 					
 					res();
@@ -319,7 +283,7 @@ export class Pet {
 			
 			// Cleanup function for after transition
 			const done = () => {
-				clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
+				activeWindow.clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
 				this.petEl.removeEventListener("transitionend", done);
 				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
 				this.currentX = targetX;
@@ -358,7 +322,7 @@ export class Pet {
 		while (!this.isDestroyed) {
 			// Check if is hovered
 			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 			}
 
 			if (this.isDestroyed) {
@@ -371,7 +335,7 @@ export class Pet {
 			await this.animations[randomAction].action?.();
 
 			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 			}
 
 			if (this.isDestroyed) {
@@ -432,7 +396,7 @@ export class Pet {
 		// Death animation (wait for the animation to finish)
 		this.setAnimation("die");
 		await new Promise((resolve) =>
-			setTimeout(resolve, this.animations["die"].duration)
+			activeWindow.setTimeout(resolve, this.animations["die"].duration)
 		);
 		// Removes instance from DOM
 		this.petEl.remove();

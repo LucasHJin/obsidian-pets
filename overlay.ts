@@ -1,15 +1,15 @@
-import PetPlugin, { PetInstance } from "main";
-import { Pet } from "pet-utils/pet";
-import { Cat } from "pet-utils/cat";
-import { Bunny } from "pet-utils/bunny";
-import { Ghost } from "pet-utils/ghost";
-import { Ball } from "pet-utils/ball";
+import PetPlugin, { PetInstance } from "./main";
+import { Pet } from "./pet-utils/pet";
+import { Cat } from "./pet-utils/cat";
+import { Bunny } from "./pet-utils/bunny";
+import { Ghost } from "./pet-utils/ghost";
+import { Ball } from "./pet-utils/ball";
 import {
 	getCatAnimations,
 	getBunnyAnimations,
 	getGhostAnimations,
 	getBallAnimations,
-} from "pet-utils/pet-animations";
+} from "./pet-utils/pet-animations";
 
 export class OverlayPetView {
 	private overlayEl: HTMLElement;
@@ -21,17 +21,15 @@ export class OverlayPetView {
 
 	constructor(plugin: PetPlugin) {
 		this.plugin = plugin;
-		this.overlayEl = document.body.createDiv({ cls: "pet-overlay-container" });
+		this.overlayEl = activeDocument.body.createDiv({ cls: "pet-overlay-container" });
 		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {
-			if (this.resizeTimer !== null) clearTimeout(this.resizeTimer);
-			this.resizeTimer = setTimeout(() => {
+			if (this.resizeTimer !== null) activeWindow.clearTimeout(this.resizeTimer);
+			this.resizeTimer = activeWindow.setTimeout(async () => {
 				this.resizeTimer = null;
 				this.updateOverlayBounds();
-				for (const { pet } of this.pets) {
-					pet.clampToContainer();
-				}
+				await Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
 			}, 100);
 		};
 		window.addEventListener("resize", this.resizeHandler);
@@ -42,7 +40,7 @@ export class OverlayPetView {
 		const selectors = [".titlebar", ".workspace-tab-header-container"]; // Need second selector for mac
 		const candidates: HTMLElement[] = [];
 		for (const sel of selectors) {
-			candidates.push(...Array.from(document.body.querySelectorAll<HTMLElement>(sel)));
+			candidates.push(...Array.from(activeDocument.body.querySelectorAll<HTMLElement>(sel)));
 		}
 
 		let topOffset = 0;
@@ -59,7 +57,6 @@ export class OverlayPetView {
 		}
 
 		this.overlayEl.setCssProps({ "--overlay-top": `${topOffset}px` });
-		console.log("[obsidian-pets] overlay topOffset =", topOffset);
 	}
 
 	addPet(singlePet: PetInstance) {
@@ -115,14 +112,14 @@ export class OverlayPetView {
 	removePet(id: string) {
 		const index = this.pets.findIndex((p) => p.id === id);
 		if (index !== -1) {
-			this.pets[index].pet.destroy();
+			void this.pets[index].pet.destroy();
 			this.pets.splice(index, 1);
 		}
 	}
 
 	removeAllPets() {
 		for (const { pet } of this.pets) {
-			pet.destroy();
+			void pet.destroy();
 		}
 		this.pets = [];
 	}
@@ -195,11 +192,11 @@ export class OverlayPetView {
 	destroy() {
 		window.removeEventListener("resize", this.resizeHandler);
 		if (this.resizeTimer !== null) {
-			clearTimeout(this.resizeTimer);
+			activeWindow.clearTimeout(this.resizeTimer);
 			this.resizeTimer = null;
 		}
 		for (const { pet } of this.pets) {
-			pet.destroy();
+			void pet.destroy();
 		}
 		for (const { ball } of this.balls) {
 			ball.destroy();

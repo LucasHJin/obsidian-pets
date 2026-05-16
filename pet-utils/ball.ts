@@ -22,7 +22,7 @@ export class Ball {
 	private y: number;
 	private vx: number;
 	private vy: number;
-	private radius: number;
+	private radius!: number;
 	private gravity = 0.42; // Acceleration from gravity (0 = no gravity)
 	private damping = 0.99; // Bounce energy retention (1 = all)
 	private airRes = 0.99; // Air resistance (1 = none)
@@ -54,23 +54,21 @@ export class Ball {
 
 		// Auto-destroy (longer in overlay mode since there's more space to bounce around)
 		const lifetime = this.backgroundName === "overlay" ? 4500 : 3500;
-		setTimeout(() => this.destroy(), lifetime);
+		activeWindow.setTimeout(() => this.destroy(), lifetime);
 	}
 
 	// Creates the HTML for ball element
 	private createBallElement(spriteUrl: string): HTMLElement {
 		const el = this.container.createDiv({ cls: "ball" });
-		const img = document.createElement("img");
 
 		const BALL_SIZE = 10;
 		this.radius = BALL_SIZE / 2;
-		img.src = spriteUrl;
+		el.createEl("img", { attr: { src: spriteUrl } });
 		el.setCssProps({
 			"--ballwidth": `${Math.round(BALL_SIZE)}px`,
 			"--ballheight": `${Math.round(BALL_SIZE)}px`,
 			"--scale": `${this.scale}`,
 		});
-		el.appendChild(img);
 
 		return el;
 	}

@@ -1,15 +1,15 @@
 import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
-import { PetView, VIEW_TYPE_PET } from "petview";
-import { OverlayPetView } from "overlay";
-import { CatToyOverlay } from "pet-utils/cat-toy";
-import { PetSettingTab } from "settings";
-import { SelectorModal, SelectorOption, ChatModal } from "modals";
-import { askModel, reformulateQuery } from "chatmodels";
+import { PetView, VIEW_TYPE_PET } from "./petview";
+import { OverlayPetView } from "./overlay";
+import { CatToyOverlay } from "./pet-utils/cat-toy";
+import { PetSettingTab } from "./settings";
+import { SelectorModal, SelectorOption, ChatModal } from "./modals";
+import { askModel, reformulateQuery } from "./chatmodels";
 import { GoogleGenAI } from "@google/genai";
-import { VectorDB } from "chat-utils/vector-db";
-import { indexVault } from "chat-utils/indexer";
-import { answerQuery } from "chat-utils/retriever";
-import { initModel } from "chatmodels";
+import { VectorDB } from "./chat-utils/vector-db";
+import { indexVault } from "./chat-utils/indexer";
+import { answerQuery } from "./chat-utils/retriever";
+import { initModel } from "./chatmodels";
 import OpenAI from "openai";
 
 export interface PetInstance {
@@ -276,8 +276,6 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
 			callback: () => {
-				//this.instanceData.pets.map((pet) => console.log(pet.id, pet.name));
-
 				const options = this.instanceData.pets.map((pet) => ({
 					value: pet.id,
 					// Label of name and type
@@ -286,7 +284,7 @@ export default class PetPlugin extends Plugin {
 				new SelectorModal(
 					this.app,
 					options,
-					async (value: string, name: string) => {
+					async (value: string, _name: string) => {
 						await this.removePetById(value);
 					}
 				).open();
@@ -395,7 +393,7 @@ export default class PetPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			// Small delay to let initial file loading finish (so that not all files are processed in refresh)
-			setTimeout(() => {
+			activeWindow.setTimeout(() => {
 				this.registerEvent(
 					this.app.vault.on("create", (file) => {
 						const randomMessage = NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
@@ -460,14 +458,14 @@ export default class PetPlugin extends Plugin {
 
 	public throwBallCommand() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
-		this.addBall(randomBall);
+		void this.addBall(randomBall);
 	}
 
 	public showChooseBackgroundCommand() {
 		new SelectorModal(
 			this.app,
 			this.BACKGROUNDS,
-			async (value: string, name: string) => {
+			async (value: string, _name: string) => {
 				await this.chooseBackground(value); // Pass chooseBackground() function to modal
 			}
 		).open();
@@ -525,17 +523,17 @@ export default class PetPlugin extends Plugin {
 
 	public updateGeminiApiKey(geminiApiKey: string): void {
 		this.instanceData.geminiApiKey = geminiApiKey;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 	}
 
 	public updateOpenAiApiKey(openAiApiKey: string): void {
 		this.instanceData.openAiApiKey = openAiApiKey;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 	}
 
 	public updateChosenModel(selectedModel: string): void {
 		this.instanceData.selectedModel = selectedModel;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 
 		try {
 			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
@@ -580,8 +578,7 @@ export default class PetPlugin extends Plugin {
 		if (!match) {
 			return desired;
 		}
-		// Don't need the full match
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- _ is the full regex match, not needed
 		const [_, base, num] = match;
 		// Capitalize each word
 		const name = base
@@ -592,7 +589,7 @@ export default class PetPlugin extends Plugin {
 		return name;
 	}
 
-	async onunload(): Promise<void> {
+	onunload() {
 		if (this.catToyOverlay) {
 			this.catToyOverlay.destroy();
 			this.catToyOverlay = null;
@@ -659,7 +656,7 @@ export default class PetPlugin extends Plugin {
 
 	public toggleBackgroundAnimation(value: boolean): void {
 		this.instanceData.animatedBackground = value;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 
 		// Update all open PetViews
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
@@ -674,7 +671,7 @@ export default class PetPlugin extends Plugin {
 
 	public updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
-		this.saveData(this.instanceData);
+		void this.saveData(this.instanceData);
 
 		this.catToyOverlay?.updateSize(value);
 
@@ -828,14 +825,14 @@ export default class PetPlugin extends Plugin {
 
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
 		if (leaves.length > 0) {
-			workspace.revealLeaf(leaves[0]);
+			await workspace.revealLeaf(leaves[0]);
 			return;
 		}
 
 		const leaf = workspace.getLeftLeaf(true);
 		if (leaf) {
 			await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
-			workspace.revealLeaf(leaf);
+			await workspace.revealLeaf(leaf);
 		}
 	}
 
@@ -844,7 +841,7 @@ export default class PetPlugin extends Plugin {
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
 		for (const leaf of leaves) {
-			await leaf.detach();
+			leaf.detach();
 		}
 	}
 
