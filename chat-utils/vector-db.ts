@@ -1,5 +1,13 @@
 import { cosineSim } from "./chat-helpers";
 
+export interface VectorEntry {
+	id: string;
+	notePath: string;
+	chunkIndex: number;
+	text: string;
+	embedding: number[];
+}
+
 // Build simplified vector DB inheriting from IndexedDB
 export class VectorDB {
 	private dbName = "obsidian-rag-db";
@@ -31,8 +39,7 @@ export class VectorDB {
 	}
 
 	// Stores 1 chunk of data into the database
-	// item should have {id, notePath, chunkIndex, text, embedding}
-	async put(item: any): Promise<void> {
+	async put(item: VectorEntry): Promise<void> {
 		const db = await this.dbPromise;
 		return new Promise((resolve, reject) => {
 			const tx = db.transaction(this.storeName, "readwrite"); // Uses transactions to avoid crash on failure
@@ -45,7 +52,7 @@ export class VectorDB {
 	// Get all chunks in database
 	// No built in vector search -> manually search with search()
 	// Fast enough for small DBs and most vaults
-	async getAll(): Promise<any[]> {
+	async getAll(): Promise<VectorEntry[]> {
 		const db = await this.dbPromise;
 		return new Promise((res, rej) => {
 			const tx = db.transaction(this.storeName, "readonly");

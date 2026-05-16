@@ -1,4 +1,4 @@
-import { Modal, App } from "obsidian";
+import { Modal, App, Component } from "obsidian";
 import { MarkdownRenderer } from "obsidian"; // For rendering markdown in chat messages
 import { ConversationMessage } from "./main";
 
@@ -109,12 +109,12 @@ export class SelectorModal extends Modal {
 
 export class ChatModal extends Modal {
 	messages: ChatMessage[] = [];
-	plugin: any;
-	private conversationHistory: ConversationMessage[] = []; 
+	plugin: Component;
+	private conversationHistory: ConversationMessage[] = [];
 	private activeTypingInterval: ReturnType<typeof activeWindow.setInterval> | null = null;
 	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
 
-	constructor(app: App, plugin: any, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
+	constructor(app: App, plugin: Component, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
 		super(app);
 		this.plugin = plugin;
 		this.onMessage = onMessage;
@@ -234,21 +234,16 @@ Cat (chat) with me anything about~
 
 		const span = typingBox.createSpan();
 		let dots = 0;
-		const interval = activeWindow.setInterval(() => {
+		this.activeTypingInterval = activeWindow.setInterval(() => {
 			dots = (dots + 1) % 3;
 			span.setText("meow." + ".".repeat(dots));
 		}, 400);
-
-		// Attach interval reference so we can stop it later (use any to avoid TS error)
-		(typingBox as any)._typingInterval = interval;
-		this.activeTypingInterval = interval;
 		return typingBox;
 	}
 
 	private removeTypingIndicator(typingBox: HTMLElement) {
-		const interval = (typingBox as any)._typingInterval;
-		if (interval) {
-			activeWindow.clearInterval(interval); // Clean up the interval animation
+		if (this.activeTypingInterval) {
+			activeWindow.clearInterval(this.activeTypingInterval); // Clean up the interval animation
 		}
 		this.activeTypingInterval = null;
 		typingBox.remove();
