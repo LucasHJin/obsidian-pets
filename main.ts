@@ -578,8 +578,7 @@ export default class PetPlugin extends Plugin {
 		if (!match) {
 			return desired;
 		}
-		// Don't need the full match
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- _ is the full regex match, not needed
 		const [_, base, num] = match;
 		// Capitalize each word
 		const name = base
