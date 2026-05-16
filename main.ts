@@ -590,7 +590,7 @@ export default class PetPlugin extends Plugin {
 		return name;
 	}
 
-	async onunload(): Promise<void> {
+	onunload() {
 		if (this.catToyOverlay) {
 			this.catToyOverlay.destroy();
 			this.catToyOverlay = null;
@@ -842,7 +842,7 @@ export default class PetPlugin extends Plugin {
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
 		for (const leaf of leaves) {
-			await leaf.detach();
+			leaf.detach();
 		}
 	}
 
