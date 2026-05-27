@@ -87,6 +87,7 @@ Reformulated query:`;
 function buildPageRantPrompt(
 	pageLabel: string,
 	trigger: "timer" | "rightclick",
+	selectedText: string,
 	pageContext: string,
 	contextCharLimit: number,
 	activitySummary: string,
@@ -100,18 +101,26 @@ function buildPageRantPrompt(
 		? `\n最近活动摘要（最近约 10 分钟）：\n${activitySummary}`
 		: "\n最近活动摘要：无可用活动";
 
+	const selectionSection = selectedText
+		? `\n选中内容（已截断，供参考）：\n${selectedText}`
+		: "\n选中内容：无";
+
 	if (useChinesePrompt) {
 		return `你是一只很有灵气、会观察页面的小猫，正在对当前打开的页面吐槽。
 页面标题：${pageLabel}
 触发方式：${trigger === "timer" ? "随机路过" : "右键互动"}
-	${contextSection}
-	${activitySection}
+${contextSection}
+${selectionSection}
+${activitySection}
+
+提示：如果有选中内容，请把吐槽的焦点放在选中内容上，而不是仅针对页面整体进行笼统点评。
 
 请生成一句自然、鲜活、带画面感的吐槽，像真的在现场观察。
 要求：
 - 只输出 1 句
 - 10 到 28 个汉字左右
 - 口语化，有一点情绪和俏皮感
+- 明确围绕选中内容（如果有），否则针对页面进行吐槽
 - 可以轻微阴阳怪气，但不要刻薄、冒犯或说教
 - 不要解释，不要加前缀，不要加引号`;
 	}
@@ -120,6 +129,10 @@ function buildPageRantPrompt(
 Page title: ${pageLabel}
 Trigger: ${trigger === "timer" ? "random pass-by" : "right click interaction"}
 ${contextSection}
+${selectionSection}
+${activitySection}
+
+Note: If there is selected text, focus the roast on that selected content rather than a generic page-level comment.
 
 Write one natural, vivid roast line that feels like a real-time observation.
 Requirements:
@@ -142,6 +155,7 @@ function cleanSingleLine(text: string): string {
 export async function generatePageRantText(
 	pageLabel: string,
 	trigger: "timer" | "rightclick",
+	selectedText: string,
 	pageContext: string,
 	contextCharLimit: number,
 	activitySummary: string,
@@ -153,7 +167,7 @@ export async function generatePageRantText(
 		return "";
 	}
 
-	const prompt = buildPageRantPrompt(pageLabel, trigger, pageContext, contextCharLimit, activitySummary, useChinesePrompt);
+	const prompt = buildPageRantPrompt(pageLabel, trigger, selectedText, pageContext, contextCharLimit, activitySummary, useChinesePrompt);
 
 	try {
 		const response = await model.chat.completions.create({

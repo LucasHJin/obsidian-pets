@@ -1,4 +1,4 @@
-import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
+import { Plugin, Notice, WorkspaceLeaf, MarkdownView } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./petview";
 import { OverlayPetView } from "./overlay";
 import { CatToyOverlay } from "./pet-utils/cat-toy";
@@ -700,6 +700,44 @@ export default class PetPlugin extends Plugin {
 	}
 
 	private async getCurrentPageContextSnippet(maxChars: number): Promise<string> {
+		// Prefer extracting context from the active Markdown editor around selection/cursor
+		const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (mdView && (mdView as any).editor) {
+			try {
+				const editor = (mdView as any).editor;
+				const sel = editor.getSelection();
+				const lineCount = typeof editor.lineCount === "function" ? editor.lineCount() : (editor.lineCount ?? 10000);
+
+				if (sel && sel.trim().length > 0) {
+					// Include a few lines of context around the selection
+					const cursor = editor.getCursor();
+					const startLine = Math.max(0, cursor.line - 5);
+					const endLine = Math.min(lineCount - 1, cursor.line + 5);
+					const lines: string[] = [];
+					for (let i = startLine; i <= endLine; i++) {
+						lines.push(editor.getLine(i) || "");
+					}
+					const joined = lines.join("\n") + "\n" + sel;
+					return joined.length > maxChars ? `${joined.slice(0, maxChars)}\n...[内容已截断]` : joined;
+				} else {
+					// No selection: focus on cursor line and nearby lines
+					const cursor = editor.getCursor();
+					const startLine = Math.max(0, cursor.line - 8);
+					const endLine = Math.min(lineCount - 1, cursor.line + 8);
+					const lines: string[] = [];
+					for (let i = startLine; i <= endLine; i++) {
+						lines.push(editor.getLine(i) || "");
+					}
+					const snippet = lines.join("\n");
+					return snippet.length > maxChars ? `${snippet.slice(0, maxChars)}\n...[内容已截断]` : snippet;
+				}
+			} catch (error) {
+				console.error("Failed to read editor content for context snippet:", error);
+				// fallthrough to vault read below
+			}
+		}
+
+		// Fallback: read from vault start as before
 		const activeFile = this.app.workspace.getActiveFile();
 		if (!activeFile) {
 			return "";
@@ -725,11 +763,33 @@ export default class PetPlugin extends Plugin {
 
 	public async getPageRantText(trigger: "timer" | "rightclick"): Promise<string> {
 		const pageLabel = this.getCurrentPageLabel();
+		// Capture selected text or caret vicinity from active editor (if available)
+		let selectedText = "";
+		const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (mdView && (mdView as any).editor) {
+			try {
+				const editor = (mdView as any).editor;
+				const sel = editor.getSelection();
+				if (sel && sel.trim().length > 0) {
+					selectedText = sel.length > 1000 ? `${sel.slice(0, 1000)}\n...[已截断]` : sel;
+				} else {
+					const cursor = editor.getCursor();
+					const prev = cursor.line > 0 ? editor.getLine(cursor.line - 1) : "";
+					const line = editor.getLine(cursor.line) || "";
+					const next = editor.getLine(cursor.line + 1) || "";
+					const contextSnippet = [prev, line, next].filter(Boolean).join("\n");
+					selectedText = contextSnippet.length > 1000 ? `${contextSnippet.slice(0, 1000)}\n...[已截断]` : contextSnippet;
+				}
+			} catch (e) {
+				console.warn("Failed to read editor selection for page rant:", e);
+			}
+		}
 		const pageContext = await this.getCurrentPageContextSnippet(this.instanceData.pageRantContextChars || 1200);
 		const activitySummary = this.getRecentActivitySummary(10);
 		const generated = await generatePageRantText(
 			pageLabel,
 			trigger,
+			selectedText,
 			pageContext,
 			this.instanceData.pageRantContextChars || 1200,
 			activitySummary,
