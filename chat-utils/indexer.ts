@@ -7,6 +7,7 @@ export async function indexVault(
 	app: App,
 	db: VectorDB,
 	apiKey: string,
+	baseUrl: string,
 	indexedFiles: Record<string, number> = {} // Track all the indexed files (includes last modified timestamps)
 ) {
 	// Get a set of all markdown file paths in the vault (faster lookup -> good for bigger vaults)
@@ -46,7 +47,7 @@ export async function indexVault(
 		// Embed and store each chunk
 		for (let i = 0; i < chunks.length; i++) {
 			try {
-				const emb = await fetchEmbedding(apiKey, chunks[i]);
+				const emb = await fetchEmbedding(apiKey, chunks[i], baseUrl);
 				await db.put({
 					id: `${file.path}::${i}`,
 					notePath: file.path,

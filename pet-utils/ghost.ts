@@ -9,7 +9,8 @@ export class Ghost extends Pet {
 		backgroundName: string,
 		petId: string,
 		scale: number,
-		petName: string
+		petName: string,
+		rightClickTextProvider: (() => string | Promise<string>) | null = null
 	) {
 		super(
 			container,
@@ -18,7 +19,8 @@ export class Ghost extends Pet {
 			backgroundName,
 			petId,
 			scale,
-			petName
+			petName,
+			rightClickTextProvider
 		);
 	}
 

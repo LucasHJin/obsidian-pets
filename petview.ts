@@ -17,6 +17,7 @@ export class PetView extends ItemView {
 	balls: { id: string; ball: Ball }[] = []; // Property for list of existing balls (their id and the instance of the class)
 	private resizeObserver?: ResizeObserver;
 	private resizeTimeout?: number;
+	private rantLoopTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -69,6 +70,7 @@ export class PetView extends ItemView {
 		});
 		this.updateView();
 		this.setupResizeObserver();
+		this.startRantLoop();
 	}
 
 	updateView() {
@@ -180,17 +182,45 @@ export class PetView extends ItemView {
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize,singlePet.name, singlePet.type.includes("witch"));
+				const cat = new Cat(
+					wrapper,
+					catAnimations,
+					moveDist,
+					background,
+					cleanPetId,
+					this.plugin.instanceData.petSize,
+					singlePet.name,
+					singlePet.type.includes("witch"),
+					() => this.plugin.getPageRantText("rightclick")
+				);
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
-				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
+				const bunny = new Bunny(
+					wrapper,
+					bunnyAnimations,
+					moveDist,
+					background,
+					cleanPetId,
+					this.plugin.instanceData.petSize,
+					singlePet.name,
+					() => this.plugin.getPageRantText("rightclick")
+				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			} else if (singlePet.type.includes("ghost")) {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
-				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
+				const ghost = new Ghost(
+					wrapper,
+					ghostAnimations,
+					moveDist,
+					background,
+					cleanPetId,
+					this.plugin.instanceData.petSize,
+					singlePet.name,
+					() => this.plugin.getPageRantText("rightclick")
+				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
 		} catch (error) {
@@ -339,9 +369,47 @@ export class PetView extends ItemView {
 			activeWindow.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;
 		}
+		if (this.rantLoopTimeout !== null) {
+			activeWindow.clearTimeout(this.rantLoopTimeout);
+			this.rantLoopTimeout = null;
+		}
 		await Promise.all(this.pets.map(({ pet }) => pet.destroy()));
 		for (const { ball } of this.balls) {
 			ball.destroy();
 		}
+	}
+
+	private startRantLoop() {
+		const scheduleNext = () => {
+			const minMinutes = Math.min(
+				this.plugin.instanceData.pageRantMinMinutes || 5,
+				this.plugin.instanceData.pageRantMaxMinutes || 20
+			);
+			const maxMinutes = Math.max(
+				this.plugin.instanceData.pageRantMinMinutes || 5,
+				this.plugin.instanceData.pageRantMaxMinutes || 20
+			);
+			const minMs = minMinutes * 60 * 1000;
+			const maxMs = maxMinutes * 60 * 1000;
+			const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+
+			this.rantLoopTimeout = activeWindow.setTimeout(() => {
+				if (this.plugin.instanceData.pageRantEnabled) {
+					const cats = this.pets.filter(({ pet }) => pet instanceof Cat);
+					const targets = cats.length > 0 ? cats : this.pets;
+					const target = targets[Math.floor(Math.random() * targets.length)]?.pet;
+					if (target) {
+						void this.plugin.getPageRantText("timer").then((text) => {
+							if (text) {
+								target.showSpeechBubble(text);
+							}
+						});
+					}
+				}
+				scheduleNext();
+			}, delay);
+		};
+
+		scheduleNext();
 	}
 }

@@ -14,6 +14,8 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
     - You can get them to follow you with a pet toy
 - ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
 - 🤖 *Catbot* (chatbot) that can answer questions with context from your vault / allow you to chat with your pets
+    - Supports OpenAI, Gemini, Alibaba Bailian, and DeepSeek chat providers
+    - Optional Chinese prompt mode for all AI-related behavior
 
 ## Getting Started
 ### Installation
@@ -66,9 +68,12 @@ Here is what it looks like if you enable the full vault overlay.
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
 - Chatting with pets
     - `Chat with your pets`: Opens up a chat modal for you to ask your pet questions.
-        - **NOTE:** You must first set API keys for OpenAI (and optionally Gemini) to access this feature. 
-            - Further instructions can be found here -> [OpenAI](https://platform.openai.com/api-keys), [Gemini](https://aistudio.google.com/)
+        - **NOTE:** Set the API key for the provider you want to use. OpenAI is still used for optional vault indexing / RAG context.
+            - Further instructions can be found here -> [OpenAI](https://platform.openai.com/api-keys), [Gemini](https://aistudio.google.com/), [Alibaba Bailian model list](https://bailian.console.aliyun.com/cn-beijing?tab=model#/model-market), [DeepSeek docs](https://api-docs.deepseek.com/zh-cn/)
         - *Usecases include*: Chatting for fun, studying/reviewing your notes, and learning new concepts.
+
+## AI Language Options
+- Enable **Chinese prompt** to send Chinese instructions and Chinese query reformulation to the selected model.
 
 ## Contacts
 If you have any kind of feedback or questions, feel free to reach out via GitHub issues or @hi.bye_2025 on the [Obsidian Discord server](https://discord.gg/obsidianmd).

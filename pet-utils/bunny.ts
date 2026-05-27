@@ -8,9 +8,10 @@ export class Bunny extends Pet {
         backgroundName: string,
         petId: string,
 		scale: number,
-		petName: string
+		petName: string,
+		rightClickTextProvider: (() => string | Promise<string>) | null = null
     ) {
-        super(container, animations, moveDist, backgroundName, petId, scale, petName);
+		super(container, animations, moveDist, backgroundName, petId, scale, petName, rightClickTextProvider);
     }
     protected setupActions() {
 		for (const key in this.animations) {

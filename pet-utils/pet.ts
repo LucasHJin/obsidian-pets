@@ -45,6 +45,9 @@ export class Pet {
 	protected tooltipEl!: HTMLElement;
 	protected isHovered = false;
 	protected actionLoopPaused = false;
+	private speechBubbleEl: HTMLElement | null = null;
+	private speechBubbleTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
+	private rightClickTextProvider: (() => string | Promise<string>) | null = null;
 
 	constructor(
 		container: Element,
@@ -54,6 +57,7 @@ export class Pet {
 		petId: string,
 		scale: number,
 		petName: string,
+		rightClickTextProvider: (() => string | Promise<string>) | null = null,
 	) {
 		this.container = container;
 		this.animations = animations;
@@ -64,6 +68,7 @@ export class Pet {
 		this.petId = petId;
 		this.scale = scale;
 		this.petName = petName;
+		this.rightClickTextProvider = rightClickTextProvider;
 
 		this.setupActions();
 
@@ -107,6 +112,7 @@ export class Pet {
 			"--top": topPercent,
 			"--pet-size": `${this.animations["idle"].frameWidth}px`,
 			"--scale-x": `${this.direction}`,
+			"--bubble-scale-x": `${1 / this.direction}`,
 			"--scale": `${this.scale}`,
 			"--heart-url": `url(${heartAsset})`,
 		});
@@ -135,6 +141,28 @@ export class Pet {
 		this.petEl.addEventListener("click", () => {
 			this.showHeart();
 		})
+
+		this.petEl.addEventListener("contextmenu", (event) => {
+			event.preventDefault();
+			const text = this.rightClickTextProvider?.();
+			if (!text) {
+				this.showHeart();
+				return;
+			}
+
+			void Promise.resolve(text)
+				.then((resolvedText) => {
+					const finalText = resolvedText.trim();
+					if (finalText) {
+						this.showSpeechBubble(finalText);
+						return;
+					}
+					this.showHeart();
+				})
+				.catch(() => {
+					this.showHeart();
+				});
+		});
 	}
 
 	protected showHeart() {
@@ -148,6 +176,36 @@ export class Pet {
 		activeWindow.setTimeout(() => {
 			heart.remove();
 		}, 1000);
+	}
+
+	public showSpeechBubble(text: string, duration = 4500) {
+		if (this.isDestroyed || !this.petEl) return;
+
+		this.clearSpeechBubble();
+
+		const bubble = this.petEl.createDiv({ cls: "pet-speech-bubble" });
+		bubble.setCssProps({ "--bubble-scale-x": `${1 / this.direction}` });
+		bubble.setText(text);
+		this.speechBubbleEl = bubble;
+
+		this.speechBubbleTimeout = activeWindow.setTimeout(() => {
+			bubble.remove();
+			if (this.speechBubbleEl === bubble) {
+				this.speechBubbleEl = null;
+			}
+			this.speechBubbleTimeout = null;
+		}, duration);
+	}
+
+	public clearSpeechBubble() {
+		if (this.speechBubbleEl) {
+			this.speechBubbleEl.remove();
+			this.speechBubbleEl = null;
+		}
+		if (this.speechBubbleTimeout !== null) {
+			activeWindow.clearTimeout(this.speechBubbleTimeout);
+			this.speechBubbleTimeout = null;
+		}
 	}
 
 	// Leave empty to override in subclasses
@@ -299,6 +357,7 @@ export class Pet {
 				"--move-duration": `${duration}ms`,
 			});
 			this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
+			this.speechBubbleEl?.setCssProps({ "--bubble-scale-x": `${1 / this.direction}` });
 		});
 	}
 
@@ -388,11 +447,16 @@ export class Pet {
 			"--scale-x": `${this.direction}`,
 		});
 		this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
+		this.speechBubbleEl?.setCssProps({ "--bubble-scale-x": `${1 / this.direction}` });
 	}
 
 	// Destroys pet instance
 	public async destroy() {
 		this.isDestroyed = true;
+		if (this.speechBubbleTimeout !== null) {
+			activeWindow.clearTimeout(this.speechBubbleTimeout);
+			this.speechBubbleTimeout = null;
+		}
 		// Death animation (wait for the animation to finish)
 		this.setAnimation("die");
 		await new Promise((resolve) =>
@@ -404,6 +468,12 @@ export class Pet {
 
 	public destroyImmediate() {
 		this.isDestroyed = true;
+		if (this.speechBubbleTimeout !== null) {
+			activeWindow.clearTimeout(this.speechBubbleTimeout);
+			this.speechBubbleTimeout = null;
+		}
+		this.speechBubbleEl?.remove();
+		this.speechBubbleEl = null;
 		this.petEl?.remove();
 	}
 }

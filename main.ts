@@ -4,8 +4,7 @@ import { OverlayPetView } from "./overlay";
 import { CatToyOverlay } from "./pet-utils/cat-toy";
 import { PetSettingTab } from "./settings";
 import { SelectorModal, SelectorOption, ChatModal } from "./modals";
-import { askModel, reformulateQuery } from "./chatmodels";
-import { GoogleGenAI } from "@google/genai";
+import { askModel, reformulateQuery, generatePageRantText } from "./chatmodels";
 import { VectorDB } from "./chat-utils/vector-db";
 import { indexVault } from "./chat-utils/indexer";
 import { answerQuery } from "./chat-utils/retriever";
@@ -26,10 +25,15 @@ interface PetPluginData {
 	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
-	geminiApiKey: string; // Gemini API key for chat feature
 	openAiApiKey: string; // OpenAI API key for RAG
+	openAiBaseUrl: string; // OpenAI-compatible base URL
+	pageRantEnabled: boolean;
+	pageRantMinMinutes: number;
+	pageRantMaxMinutes: number;
+	pageRantContextChars: number;
 	indexedFiles?: Record<string, number>; // To track already indexed files in vault
 	selectedModel?: string; // Selected model for chat
+	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -37,6 +41,12 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pets: [],
 	nextPetIdCounters: {},
 	overlayMode: false,
+	useChinesePrompt: false,
+	openAiBaseUrl: "https://api.openai.com/v1",
+	pageRantEnabled: false,
+	pageRantMinMinutes: 5,
+	pageRantMaxMinutes: 20,
+	pageRantContextChars: 1200,
 };
 
 export interface ConversationMessage {
@@ -48,7 +58,7 @@ export interface ConversationMessage {
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
 	ragDb!: VectorDB;
-	private chatmodel: GoogleGenAI | OpenAI | null = null;
+	private chatmodel: OpenAI | null = null;
 	private overlayView: OverlayPetView | null = null;
 	private catToyActive = false;
 	private catToyOverlay: CatToyOverlay | null = null;
@@ -176,9 +186,9 @@ export default class PetPlugin extends Plugin {
 			) {
 				try {
 					this.chatmodel = initModel(
-						this.instanceData.selectedModel,
-						this.instanceData.geminiApiKey,
-						this.instanceData.openAiApiKey
+						this.instanceData.openAiApiKey,
+						this.instanceData.openAiBaseUrl,
+						this.instanceData.selectedModel || "gpt-5-mini"
 					);
 				} catch (e) {
 					console.warn("Failed to initialize chat model:", e);
@@ -206,6 +216,7 @@ export default class PetPlugin extends Plugin {
 				for (const pet of this.instanceData.pets) {
 					this.overlayView.addPet(pet);
 				}
+				this.overlayView.startRantLoop();
 			} else {
 				const isOpen =
 					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
@@ -295,12 +306,12 @@ export default class PetPlugin extends Plugin {
 			id: "chat-with-pets",
 			name: "Chat with your pets",
 			callback: () => {
-				if (!this.instanceData.selectedModel || this.instanceData.selectedModel === "none") {
-					new Notice("Please select a chat model in settings first.");
+				if (!this.instanceData.selectedModel?.trim()) {
+					new Notice("Please set a chat model in settings first.");
 					return;
 				}
 				if (!this.chatmodel) {
-					new Notice("Please set your API key(s) in settings first.");
+					new Notice("Please set your API key and endpoint in settings first.");
 					return;
 				}
 
@@ -322,6 +333,7 @@ export default class PetPlugin extends Plugin {
 					this.app,
 					this.ragDb,
 					this.instanceData.openAiApiKey,
+					this.instanceData.openAiBaseUrl,
 					this.instanceData.indexedFiles
 				);
 				await this.saveData(this.instanceData);
@@ -343,6 +355,7 @@ export default class PetPlugin extends Plugin {
 					this.app,
 					this.ragDb,
 					this.instanceData.openAiApiKey,
+					this.instanceData.openAiBaseUrl,
 					this.instanceData.indexedFiles
 				);
 				await this.saveData(this.instanceData);
@@ -487,7 +500,13 @@ export default class PetPlugin extends Plugin {
 				.map(msg => `${msg.role}: ${msg.content}`)
 				.join("\n");
 			
-			searchQuery = await reformulateQuery(question, recentContext, this.chatmodel, this.instanceData.selectedModel || "none");
+				searchQuery = await reformulateQuery(
+					question,
+					recentContext,
+					this.chatmodel,
+					this.instanceData.selectedModel || "gpt-5-mini",
+					this.instanceData.useChinesePrompt ?? false
+				);
 		}
 
 		// If OpenAI key exists -> fetch context (retrieval)
@@ -497,6 +516,7 @@ export default class PetPlugin extends Plugin {
 				context = await answerQuery(
 					searchQuery,
 					this.instanceData.openAiApiKey,
+					this.instanceData.openAiBaseUrl,
 					this.ragDb
 				);
 			} catch (e) {
@@ -512,18 +532,14 @@ export default class PetPlugin extends Plugin {
 				context || "No context available.",
 				question,
 				this.chatmodel,
-				this.instanceData.selectedModel || "none",
-				conversationHistory
+				this.instanceData.selectedModel || "gpt-5-mini",
+				conversationHistory,
+				this.instanceData.useChinesePrompt ?? false
 			);
 		} catch (e) {
 			console.error("Chat model error:", e);
-			return "Sorry, I couldn't process your request. Please check your selected model and API key.";
+			return "Sorry, I couldn't process your request. Please check your model, endpoint, and API key.";
 		}
-	}
-
-	public updateGeminiApiKey(geminiApiKey: string): void {
-		this.instanceData.geminiApiKey = geminiApiKey;
-		void this.saveData(this.instanceData);
 	}
 
 	public updateOpenAiApiKey(openAiApiKey: string): void {
@@ -531,38 +547,139 @@ export default class PetPlugin extends Plugin {
 		void this.saveData(this.instanceData);
 	}
 
+	public updateOpenAiBaseUrl(openAiBaseUrl: string): void {
+		this.instanceData.openAiBaseUrl = openAiBaseUrl;
+		void this.saveData(this.instanceData);
+	}
+
+	public updateChinesePrompt(useChinesePrompt: boolean): void {
+		this.instanceData.useChinesePrompt = useChinesePrompt;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantEnabled(pageRantEnabled: boolean): void {
+		this.instanceData.pageRantEnabled = pageRantEnabled;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantMinMinutes(pageRantMinMinutes: number): void {
+		this.instanceData.pageRantMinMinutes = pageRantMinMinutes;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantMaxMinutes(pageRantMaxMinutes: number): void {
+		this.instanceData.pageRantMaxMinutes = pageRantMaxMinutes;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantContextChars(pageRantContextChars: number): void {
+		this.instanceData.pageRantContextChars = pageRantContextChars;
+		void this.saveData(this.instanceData);
+	}
+
+	public getCurrentPageLabel(): string {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (activeFile) {
+			return activeFile.basename;
+		}
+
+		const activeLeaf = this.app.workspace.getMostRecentLeaf();
+		return activeLeaf?.view?.getDisplayText?.() ?? "当前页面";
+	}
+
+	private getFallbackPageRantText(trigger: "timer" | "rightclick"): string {
+		const pageLabel = this.getCurrentPageLabel();
+		const timerTemplates = this.instanceData.useChinesePrompt
+			? [
+				`这个页面《${pageLabel}》看起来很忙，但我怀疑它其实在偷偷摸鱼。`,
+				`《${pageLabel}》正在努力工作，我看得出来，只是效率像在打盹。`,
+				`我盯着《${pageLabel}》半天了，它的进度条好像一直在原地散步。`,
+				`《${pageLabel}》今天也在认真营业，不过节奏有点像慢动作回放。`,
+			]
+			: [
+				`This page, ${pageLabel}, looks busy, but I suspect it's secretly taking snack breaks.`,
+				`${pageLabel} is working hard. The pace just feels a little like a cat on a windowsill.`,
+				`I've been watching ${pageLabel} for a while now, and its progress bar seems to be power-napping.`,
+				`${pageLabel} is clearly on the job, but the workflow has strong slow-cooked energy.`,
+			];
+
+		const rightClickTemplates = this.instanceData.useChinesePrompt
+			? [
+				`你点我干嘛？我刚想吐槽《${pageLabel}》呢。`,
+				`右键我也没用，${pageLabel} 这页的工作量还是很可疑。`,
+				`《${pageLabel}》看起来很忙，我正准备帮你吐槽它。`,
+			]
+			: [
+				`Hey, why the right click? I was just about to roast ${pageLabel}.`,
+				`Right-click noted. ${pageLabel} still looks suspiciously overworked.`,
+				`I can explain this page's job, but first: ${pageLabel} is giving me busy-but-not-that-busy vibes.`,
+			];
+
+		const templates = trigger === "timer" ? timerTemplates : rightClickTemplates;
+		return templates[Math.floor(Math.random() * templates.length)];
+	}
+
+	private async getCurrentPageContextSnippet(maxChars: number): Promise<string> {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			return "";
+		}
+
+		try {
+			const rawContent = await this.app.vault.cachedRead(activeFile);
+			const normalized = rawContent.replace(/\r\n/g, "\n").trim();
+			if (!normalized) {
+				return "";
+			}
+
+			if (normalized.length <= maxChars) {
+				return normalized;
+			}
+
+			return `${normalized.slice(0, maxChars)}\n...[内容已截断]`;
+		} catch (error) {
+			console.error("Failed to read current page content:", error);
+			return "";
+		}
+	}
+
+	public async getPageRantText(trigger: "timer" | "rightclick"): Promise<string> {
+		const pageLabel = this.getCurrentPageLabel();
+		const pageContext = await this.getCurrentPageContextSnippet(this.instanceData.pageRantContextChars || 1200);
+		const generated = await generatePageRantText(
+			pageLabel,
+			trigger,
+			pageContext,
+			this.instanceData.pageRantContextChars || 1200,
+			this.chatmodel,
+			this.instanceData.selectedModel || "gpt-5-mini",
+			this.instanceData.useChinesePrompt ?? false
+		);
+
+		return generated || this.getFallbackPageRantText(trigger);
+	}
+
 	public updateChosenModel(selectedModel: string): void {
-		this.instanceData.selectedModel = selectedModel;
+		this.instanceData.selectedModel = selectedModel.trim() || "gpt-5-mini";
 		void this.saveData(this.instanceData);
 
 		try {
-			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
-				new Notice("Set your Gemini API key first.");
-				this.chatmodel = null;
-				return;
-			}
-			if (selectedModel === "openai" && !this.instanceData.openAiApiKey) {
+			if (!this.instanceData.openAiApiKey) {
 				new Notice("Set your OpenAI API key first.");
 				this.chatmodel = null;
 				return;
 			}
 
 			this.chatmodel = initModel(
-				selectedModel,
-				this.instanceData.geminiApiKey,
-				this.instanceData.openAiApiKey
+				this.instanceData.openAiApiKey,
+				this.instanceData.openAiBaseUrl,
+				this.instanceData.selectedModel || "gpt-5-mini"
 			);
 
-			if (selectedModel === "gemini") {
-				new Notice(`Model set to Gemini.`);
-			} else if (selectedModel === "openai") {
-				new Notice(`Model set to OpenAI.`);
-			} else {
-				new Notice("No model selected.");
-			}
+			new Notice(`Model set to ${this.instanceData.selectedModel}.`);
 		} catch (e) {
 			console.error("Failed to initialize model after selection:", e);
-			new Notice("Could not initialize model. Check API keys.");
+			new Notice("Could not initialize model. Check API key, endpoint, and model.");
 			this.chatmodel = null;
 		}
 	}
@@ -617,6 +734,30 @@ export default class PetPlugin extends Plugin {
 		// Make sure indexedFiles exists
 		if (!this.instanceData.indexedFiles) {
 			this.instanceData.indexedFiles = {};
+		}
+		if (this.instanceData.openAiApiKey === undefined) {
+			this.instanceData.openAiApiKey = "";
+		}
+		if (this.instanceData.openAiBaseUrl === undefined) {
+			this.instanceData.openAiBaseUrl = "https://api.openai.com/v1";
+		}
+		if (!this.instanceData.selectedModel) {
+			this.instanceData.selectedModel = "gpt-5-mini";
+		}
+		if (this.instanceData.useChinesePrompt === undefined) {
+			this.instanceData.useChinesePrompt = false;
+		}
+		if (this.instanceData.pageRantEnabled === undefined) {
+			this.instanceData.pageRantEnabled = false;
+		}
+		if (this.instanceData.pageRantMinMinutes === undefined) {
+			this.instanceData.pageRantMinMinutes = 5;
+		}
+		if (this.instanceData.pageRantMaxMinutes === undefined) {
+			this.instanceData.pageRantMaxMinutes = 20;
+		}
+		if (this.instanceData.pageRantContextChars === undefined) {
+			this.instanceData.pageRantContextChars = 1200;
 		}
 	}
 
@@ -805,6 +946,7 @@ export default class PetPlugin extends Plugin {
 		if (enabled) {
 			await this.closeView();
 			this.overlayView = new OverlayPetView(this);
+				this.overlayView.startRantLoop();
 			for (const pet of this.instanceData.pets) {
 				this.overlayView.addPet(pet);
 			}

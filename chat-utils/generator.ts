@@ -2,11 +2,12 @@ import { requestUrl } from "obsidian";
 
 export async function fetchEmbedding(
 	apiKey: string,
-	input: string
+	input: string,
+	baseUrl = "https://api.openai.com/v1"
 ): Promise<number[]> {
 	try {
 		const res = await requestUrl({
-			url: "https://api.openai.com/v1/embeddings",
+			url: `${baseUrl.replace(/\/$/, "")}/embeddings`,
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${apiKey}`,

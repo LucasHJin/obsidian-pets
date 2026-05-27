@@ -18,6 +18,7 @@ export class OverlayPetView {
 	balls: { id: string; ball: Ball }[] = [];
 	private resizeHandler: () => void;
 	private resizeTimer: ReturnType<typeof setTimeout> | null = null;
+	private rantLoopTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
 
 	constructor(plugin: PetPlugin) {
 		this.plugin = plugin;
@@ -74,7 +75,8 @@ export class OverlayPetView {
 					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
-					singlePet.type.includes("witch")
+					singlePet.type.includes("witch"),
+					() => this.plugin.getPageRantText("rightclick")
 				);
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
@@ -87,7 +89,8 @@ export class OverlayPetView {
 					"overlay",
 					cleanPetId,
 					this.plugin.instanceData.petSize,
-					singlePet.name
+						singlePet.name,
+					() => this.plugin.getPageRantText("rightclick")
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			} else if (singlePet.type.includes("ghost")) {
@@ -100,7 +103,8 @@ export class OverlayPetView {
 					"overlay",
 					cleanPetId,
 					this.plugin.instanceData.petSize,
-					singlePet.name
+					singlePet.name,
+					() => this.plugin.getPageRantText("rightclick")
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
@@ -195,6 +199,10 @@ export class OverlayPetView {
 			activeWindow.clearTimeout(this.resizeTimer);
 			this.resizeTimer = null;
 		}
+		if (this.rantLoopTimeout !== null) {
+			activeWindow.clearTimeout(this.rantLoopTimeout);
+			this.rantLoopTimeout = null;
+		}
 		for (const { pet } of this.pets) {
 			void pet.destroy();
 		}
@@ -202,5 +210,39 @@ export class OverlayPetView {
 			ball.destroy();
 		}
 		this.overlayEl.remove();
+	}
+
+	startRantLoop() {
+		const scheduleNext = () => {
+			const minMinutes = Math.min(
+				this.plugin.instanceData.pageRantMinMinutes || 5,
+				this.plugin.instanceData.pageRantMaxMinutes || 20
+			);
+			const maxMinutes = Math.max(
+				this.plugin.instanceData.pageRantMinMinutes || 5,
+				this.plugin.instanceData.pageRantMaxMinutes || 20
+			);
+			const minMs = minMinutes * 60 * 1000;
+			const maxMs = maxMinutes * 60 * 1000;
+			const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+
+			this.rantLoopTimeout = activeWindow.setTimeout(() => {
+				if (this.plugin.instanceData.pageRantEnabled) {
+					const cats = this.pets.filter(({ pet }) => pet instanceof Cat);
+					const targets = cats.length > 0 ? cats : this.pets;
+					const target = targets[Math.floor(Math.random() * targets.length)]?.pet;
+					if (target) {
+						void this.plugin.getPageRantText("timer").then((text) => {
+							if (text) {
+								target.showSpeechBubble(text);
+							}
+						});
+					}
+				}
+				scheduleNext();
+			}, delay);
+		};
+
+		scheduleNext();
 	}
 }

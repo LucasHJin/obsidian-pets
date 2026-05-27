@@ -120,6 +120,15 @@
 	background-color: var(--background-secondary-alt) !important;
 }
 
+.pet-setting-slider-value {
+	min-width: 4ch;
+	margin-left: 0.75rem;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
 .pet-name-title {
 	margin-top: 0;
 	margin-bottom: 0.5rem;
@@ -172,6 +181,57 @@
 	pointer-events: none;
 	z-index: 1001;
 	animation: heart-float 1s ease-out forwards;
+}
+
+.pet-speech-bubble {
+	position: absolute;
+	left: 50%;
+	bottom: 100%;
+	transform: translateX(-50%) translateY(-8px) scaleX(var(--bubble-scale-x, 1));
+	transform-origin: bottom center;
+	display: block;
+	width: fit-content;
+	min-width: 120px;
+	max-width: min(280px, 65vw);
+	padding: 0.6rem 0.85rem;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--background-primary) 92%, transparent);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	box-shadow: 0 10px 22px color-mix(in srgb, black 18%, transparent);
+	font-size: 0.88rem;
+	line-height: 1.5;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: anywhere;
+	line-break: loose;
+	pointer-events: none;
+	z-index: 1002;
+	animation: speech-pop 0.2s ease-out;
+}
+
+.pet-speech-bubble::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: -6px;
+	width: 12px;
+	height: 12px;
+	background: inherit;
+	border-left: 1px solid var(--background-modifier-border);
+	border-bottom: 1px solid var(--background-modifier-border);
+	transform: translateX(-50%) rotate(-45deg);
+}
+
+@keyframes speech-pop {
+	from {
+		opacity: 0;
+		transform: translateX(-50%) translateY(-2px) scaleX(var(--bubble-scale-x, 1)) scale(0.94);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(-50%) translateY(-8px) scaleX(var(--bubble-scale-x, 1)) scale(1);
+	}
 }
 
 @keyframes heart-float {
