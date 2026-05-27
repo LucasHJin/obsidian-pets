@@ -31,6 +31,7 @@ interface PetPluginData {
 	pageRantMinMinutes: number;
 	pageRantMaxMinutes: number;
 	pageRantContextChars: number;
+	pageRantOnlyWhenFocused?: boolean;
 	indexedFiles?: Record<string, number>; // To track already indexed files in vault
 	selectedModel?: string; // Selected model for chat
 	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
@@ -47,6 +48,7 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pageRantMinMinutes: 5,
 	pageRantMaxMinutes: 20,
 	pageRantContextChars: 1200,
+	pageRantOnlyWhenFocused: true,
 };
 
 export interface ConversationMessage {
@@ -58,6 +60,8 @@ export interface ConversationMessage {
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
 	ragDb!: VectorDB;
+	// Recent activity log (in-memory). Each entry: {ts, type, file}
+	recentActivity: { ts: number; type: "modify" | "create" | "open"; path: string }[] = [];
 	private chatmodel: OpenAI | null = null;
 	private overlayView: OverlayPetView | null = null;
 	private catToyActive = false;
@@ -206,6 +210,26 @@ export default class PetPlugin extends Plugin {
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
+
+		// Track recent activity for page rants (kept in-memory, pruned periodically)
+		this.registerEvent(
+			this.app.vault.on("modify", (file) => {
+				this.recordActivity("modify", file.path);
+			})
+		);
+		this.registerEvent(
+			this.app.vault.on("create", (file) => {
+				this.recordActivity("create", file.path);
+			})
+		);
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (activeFile) {
+					this.recordActivity("open", activeFile.path);
+				}
+			})
+		);
 
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
@@ -577,6 +601,62 @@ export default class PetPlugin extends Plugin {
 		void this.saveData(this.instanceData);
 	}
 
+	public updatePageRantOnlyWhenFocused(pageRantOnlyWhenFocused: boolean): void {
+		this.instanceData.pageRantOnlyWhenFocused = pageRantOnlyWhenFocused;
+		void this.saveData(this.instanceData);
+	}
+
+	private recordActivity(type: "modify" | "create" | "open", path: string) {
+		const ts = Date.now();
+		this.recentActivity.push({ ts, type, path });
+		// prune entries older than 15 minutes to keep memory small
+		const cutoff = Date.now() - 15 * 60 * 1000;
+		this.recentActivity = this.recentActivity.filter((e) => e.ts >= cutoff);
+	}
+
+	/**
+	 * Returns a concise human-readable summary of activity in the last `minutes` minutes.
+	 */
+	public getRecentActivitySummary(minutes = 10): string {
+		const cutoff = Date.now() - minutes * 60 * 1000;
+		const recent = this.recentActivity.filter((e) => e.ts >= cutoff);
+		if (recent.length === 0) {
+			return this.instanceData.useChinesePrompt
+				? `过去 ${minutes} 分钟内没有可见的编辑或打开记录。`
+				: `No edits or file opens detected in the last ${minutes} minutes.`;
+		}
+
+		// Group by type and file (basename)
+		const map = new Map<string, Set<string>>();
+		for (const ev of recent) {
+			const name = ev.path.split("/").pop() || ev.path;
+			const key = ev.type;
+			if (!map.has(key)) map.set(key, new Set());
+			map.get(key)!.add(name);
+		}
+
+		const parts: string[] = [];
+		if (map.has("modify")) {
+			const files = Array.from(map.get("modify")!).slice(0, 6).join(", ");
+			parts.push(this.instanceData.useChinesePrompt ? `修改了：${files}` : `modified: ${files}`);
+		}
+		if (map.has("create")) {
+			const files = Array.from(map.get("create")!).slice(0, 6).join(", ");
+			parts.push(this.instanceData.useChinesePrompt ? `新建：${files}` : `created: ${files}`);
+		}
+		if (map.has("open")) {
+			const files = Array.from(map.get("open")!).slice(0, 6).join(", ");
+			parts.push(this.instanceData.useChinesePrompt ? `打开了：${files}` : `opened: ${files}`);
+		}
+
+		// If there are more events than listed, append a short note
+		if (recent.length > 6) {
+			parts.push(this.instanceData.useChinesePrompt ? `以及其他活动` : `and other activity`);
+		}
+
+		return parts.join(this.instanceData.useChinesePrompt ? "；" : "; ");
+	}
+
 	public getCurrentPageLabel(): string {
 		const activeFile = this.app.workspace.getActiveFile();
 		if (activeFile) {
@@ -646,11 +726,13 @@ export default class PetPlugin extends Plugin {
 	public async getPageRantText(trigger: "timer" | "rightclick"): Promise<string> {
 		const pageLabel = this.getCurrentPageLabel();
 		const pageContext = await this.getCurrentPageContextSnippet(this.instanceData.pageRantContextChars || 1200);
+		const activitySummary = this.getRecentActivitySummary(10);
 		const generated = await generatePageRantText(
 			pageLabel,
 			trigger,
 			pageContext,
 			this.instanceData.pageRantContextChars || 1200,
+			activitySummary,
 			this.chatmodel,
 			this.instanceData.selectedModel || "gpt-5-mini",
 			this.instanceData.useChinesePrompt ?? false
@@ -758,6 +840,9 @@ export default class PetPlugin extends Plugin {
 		}
 		if (this.instanceData.pageRantContextChars === undefined) {
 			this.instanceData.pageRantContextChars = 1200;
+		}
+		if (this.instanceData.pageRantOnlyWhenFocused === undefined) {
+			this.instanceData.pageRantOnlyWhenFocused = true;
 		}
 	}
 

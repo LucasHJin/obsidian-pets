@@ -89,17 +89,23 @@ function buildPageRantPrompt(
 	trigger: "timer" | "rightclick",
 	pageContext: string,
 	contextCharLimit: number,
+	activitySummary: string,
 	useChinesePrompt: boolean
 ): string {
 	const contextSection = pageContext
 		? `\n页面内容摘录（最多约 ${contextCharLimit} 字）：\n${pageContext}`
 		: "\n页面内容摘录：无可用内容";
 
+	const activitySection = activitySummary
+		? `\n最近活动摘要（最近约 10 分钟）：\n${activitySummary}`
+		: "\n最近活动摘要：无可用活动";
+
 	if (useChinesePrompt) {
 		return `你是一只很有灵气、会观察页面的小猫，正在对当前打开的页面吐槽。
 页面标题：${pageLabel}
 触发方式：${trigger === "timer" ? "随机路过" : "右键互动"}
-${contextSection}
+	${contextSection}
+	${activitySection}
 
 请生成一句自然、鲜活、带画面感的吐槽，像真的在现场观察。
 要求：
@@ -138,6 +144,7 @@ export async function generatePageRantText(
 	trigger: "timer" | "rightclick",
 	pageContext: string,
 	contextCharLimit: number,
+	activitySummary: string,
 	model: OpenAI | null,
 	selectedModel: string,
 	useChinesePrompt: boolean
@@ -146,7 +153,7 @@ export async function generatePageRantText(
 		return "";
 	}
 
-	const prompt = buildPageRantPrompt(pageLabel, trigger, pageContext, contextCharLimit, useChinesePrompt);
+	const prompt = buildPageRantPrompt(pageLabel, trigger, pageContext, contextCharLimit, activitySummary, useChinesePrompt);
 
 	try {
 		const response = await model.chat.completions.create({

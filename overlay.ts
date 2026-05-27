@@ -228,6 +228,11 @@ export class OverlayPetView {
 
 			this.rantLoopTimeout = activeWindow.setTimeout(() => {
 				if (this.plugin.instanceData.pageRantEnabled) {
+					// If configured, suppress rants when Obsidian window is not focused/backgrounded
+					if (this.plugin.instanceData.pageRantOnlyWhenFocused && !activeDocument.hasFocus()) {
+						scheduleNext();
+						return;
+					}
 					const cats = this.pets.filter(({ pet }) => pet instanceof Cat);
 					const targets = cats.length > 0 ? cats : this.pets;
 					const target = targets[Math.floor(Math.random() * targets.length)]?.pet;

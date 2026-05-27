@@ -171,6 +171,17 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Only rant when window focused")
+			.setDesc("When enabled, random rant bubbles are suppressed while Obsidian is unfocused/backgrounded.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.instanceData.pageRantOnlyWhenFocused ?? true)
+					.onChange((value) => {
+						this.plugin.updatePageRantOnlyWhenFocused(value);
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Rant interval minimum")
 			.setDesc("Minimum random delay in minutes before a rant bubble appears.")
 			.then((setting) =>
