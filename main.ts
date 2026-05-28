@@ -33,6 +33,7 @@ interface PetPluginData {
 	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
 	petSpeechEnabled: boolean; // Whether regular pets can show speech bubbles
 	npcSpeechEnabled: boolean; // Whether NPCs can show speech bubbles
+	firstRunComplete?: boolean; // Whether the user has seen the welcome notice
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -50,6 +51,8 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pageRantOnlyWhenFocused: true,
 	petSpeechEnabled: true,
 	npcSpeechEnabled: true,
+	petSize: 1,
+	firstRunComplete: false,
 };
 
 export default class PetPlugin extends Plugin {
@@ -96,6 +99,20 @@ export default class PetPlugin extends Plugin {
 			}
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
+		}
+
+		// First-run welcome
+		if (!this.instanceData.firstRunComplete) {
+			this.instanceData.firstRunComplete = true;
+			await this.saveData(this.instanceData);
+
+			// Show a welcome notice after layout is ready for better visibility
+			this.app.workspace.onLayoutReady(() => {
+				new Notice(
+					'Welcome to Stardew Valley in Obsidian! Use the ribbon icon or the "Add a pet" command to bring in your first companion.',
+					8000
+				);
+			});
 		}
 
 		// Add instance of the view
@@ -674,6 +691,9 @@ export default class PetPlugin extends Plugin {
 		}
 		if (this.instanceData.petSpeed === undefined) {
 			this.instanceData.petSpeed = 1;
+		}
+		if (this.instanceData.petSize === undefined) {
+			this.instanceData.petSize = 1;
 		}
 	}
 

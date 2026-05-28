@@ -40,6 +40,46 @@
 	overflow: hidden; /* Allow for resizing */
 }
 
+/* Empty state when no pets are present */
+.pet-empty-state {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	text-align: center;
+	z-index: 10;
+	pointer-events: auto;
+}
+
+.pet-empty-state-icon {
+	font-size: 2.5rem;
+	opacity: 0.6;
+	margin-bottom: 4px;
+}
+
+.pet-empty-state-title {
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.pet-empty-state-desc {
+	font-size: 0.85rem;
+	color: var(--text-muted);
+	max-width: 260px;
+	line-height: 1.4;
+}
+
+.pet-empty-state-button {
+	margin-top: 8px;
+	padding: 6px 18px;
+	cursor: pointer;
+}
+
 .pet-view-background {
 	position: absolute;
 	top: 0;

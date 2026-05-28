@@ -102,6 +102,9 @@ export class PetView extends ItemView {
 				this.addPetToView(wrapper, pet);
 			}
 		}
+
+		// Show empty state when no pets are present
+		this.updateEmptyState(wrapper);
 	}
 
 	updateBackground(wrapper: HTMLElement) {
@@ -147,6 +150,37 @@ export class PetView extends ItemView {
 		}
 
 		this.updateAllPetVerticalPositions(background);
+	}
+
+	private updateEmptyState(wrapper: HTMLElement) {
+		const existingEmpty = wrapper.querySelector('.pet-empty-state');
+		const petCount = this.pets.length;
+
+		if (petCount === 0) {
+			if (!existingEmpty) {
+				const emptyState = wrapper.createDiv({ cls: 'pet-empty-state' });
+				emptyState.createDiv({ cls: 'pet-empty-state-icon', text: '🐾' });
+				emptyState.createDiv({
+					cls: 'pet-empty-state-title',
+					text: 'No pets yet!',
+				});
+				emptyState.createDiv({
+					cls: 'pet-empty-state-desc',
+					text: 'Click the + button in the header or use the "Add a pet" command to bring in your first companion.',
+				});
+				const addButton = emptyState.createEl('button', {
+					cls: 'pet-empty-state-button',
+					text: 'Add a pet',
+				});
+				addButton.addEventListener('click', () => {
+					this.plugin.showAddPetCommand();
+				});
+			}
+		} else {
+			if (existingEmpty) {
+				existingEmpty.remove();
+			}
+		}
 	}
 
 	updatePetSize() {
@@ -195,6 +229,7 @@ export class PetView extends ItemView {
 			void this.pets[index].pet.destroy();
 			this.pets.splice(index, 1);
 		}
+		this.updateEmptyState(this.getWrapper());
 	}
 
 	removeAllPets() {
@@ -204,6 +239,7 @@ export class PetView extends ItemView {
 		}
 		// Empty list
 		this.pets = [];
+		this.updateEmptyState(this.getWrapper());
 	}
 
 	updateAllPetVerticalPositions(newBackground: string) {
@@ -214,8 +250,8 @@ export class PetView extends ItemView {
 	}
 
 	// Getter function to get wrapper of entire pet view
-	getWrapper() {
-		const wrapper = this.containerEl.querySelector(".pet-view-wrapper");
+	getWrapper(): HTMLElement {
+		const wrapper = this.containerEl.querySelector(".pet-view-wrapper") as HTMLElement;
 		if (!wrapper) {
 			throw new Error("pet-view-wrapper not found");
 		}
