@@ -42,6 +42,7 @@ ${personaSection}
 - 如果有选中内容，请把吐槽的焦点放在选中内容上
 - 用这个角色独有的口吻和性格说话，像游戏中他们真正会说出来的台词
 - 可以提到星露谷的世界（农场、矿洞、酒吧、社区中心、季节、节日等）
+- 重要：不要每句话都重复角色的"标志性标签"（如水晶、Joja、矿洞、诗歌等）——根据页面内容灵活反应，角色背景只是调味料，不是每句话的必备元素
 
 要求：
 - 输出恰好 1 句话
@@ -60,7 +61,7 @@ ${selectionSection}
 ${activitySection}
 ${personaSection}
 
-提示：如果有选中内容，请把吐槽的焦点放在选中内容上，而不是仅针对页面整体进行笼统点评。
+提示：如果有选中内容，请把吐槽的焦点放在选中内容上，而不是仅针对页面整体进行笼统点评。不要总是提到同一种农场事物——根据页面内容灵活变化，角色身份只是调味料。
 
 请生成一句自然、鲜活、像星露谷日常对话一样的吐槽。
 要求：
@@ -86,6 +87,7 @@ Notes:
 - If there is selected text, focus your reaction on that selected content.
 - Speak in this character's unique voice and personality, as if it were an actual line from the game.
 - You may reference the Stardew Valley world (the farm, mines, saloon, community center, seasons, festivals, etc.)
+- Important: Don't reach for the character's most obvious "signature topic" every time — react to the actual page content. The character's interests are seasoning, not a checklist.
 
 Requirements:
 - Output exactly 1 sentence
@@ -104,7 +106,7 @@ ${selectionSection}
 ${activitySection}
 ${personaSection}
 
-Note: If there is selected text, focus the roast on that selected content rather than a generic page-level comment.
+Note: If there is selected text, focus the roast on that selected content rather than a generic page-level comment. Vary what you comment on — don't always mention the same farm thing. React to the actual page content.
 
 Write one natural, vivid line that sounds like a Stardew Valley NPC talking.
 Requirements:
@@ -149,11 +151,11 @@ export async function generatePageRantText(
 			messages: [{ role: "user", content: prompt }],
 		});
 		return cleanSingleLine(response.choices[0].message.content || "");
-	} catch (e) {
+	} catch (e: any) {
+		const msg = e?.message || String(e);
 		console.error("Page rant generation failed:", e);
+		throw new Error(`AI 模型调用失败: ${msg}`);
 	}
-
-	return "";
 }
 
 export function initModel(

@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import { heartAsset } from "./pet-assets";
 import { getStardewSpeciesSprite, StardewAnimation, StardewSpeciesDefinition } from "./stardew-species";
 
@@ -242,7 +243,12 @@ export class StardewPet {
 					}
 					this.showHeart();
 				})
-				.catch(() => this.showHeart());
+				.catch((e) => {
+					const errMsg = e?.message || String(e);
+					console.error("Right-click rant failed:", e);
+					new Notice(`AI 模型调用失败: ${errMsg}`, 5000);
+					this.showHeart();
+				});
 		});
 	}
 

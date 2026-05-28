@@ -537,19 +537,26 @@ export default class PetPlugin extends Plugin {
 		}
 		const pageContext = await this.getCurrentPageContextSnippet(this.instanceData.pageRantContextChars || 1200);
 		const activitySummary = this.getRecentActivitySummary(10);
-		const generated = await generatePageRantText(
-			pageLabel,
-			trigger,
-			selectedText,
-			pageContext,
-			this.instanceData.pageRantContextChars || 1200,
-			activitySummary,
-			petType ? getStardewSpeciesPersona(petType) : undefined,
-			this.chatmodel,
-			this.instanceData.selectedModel || "gpt-5-mini",
-			this.instanceData.useChinesePrompt ?? false,
-			petType ? petType.startsWith("stardew/npc/") : false
-		);
+		let generated = "";
+		try {
+			generated = await generatePageRantText(
+				pageLabel,
+				trigger,
+				selectedText,
+				pageContext,
+				this.instanceData.pageRantContextChars || 1200,
+				activitySummary,
+				petType ? getStardewSpeciesPersona(petType) : undefined,
+				this.chatmodel,
+				this.instanceData.selectedModel || "gpt-5-mini",
+				this.instanceData.useChinesePrompt ?? false,
+				petType ? petType.startsWith("stardew/npc/") : false
+			);
+		} catch (e: any) {
+			const errMsg = e?.message || String(e);
+			console.error("Page rant generation failed:", e);
+			new Notice(`AI 模型调用失败，使用离线吐槽: ${errMsg}`, 5000);
+		}
 
 		return generated || this.getFallbackPageRantText(trigger, petType);
 	}
