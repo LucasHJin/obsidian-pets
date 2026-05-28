@@ -23,6 +23,7 @@ export class StardewPet {
 	private direction = 1;
 	private isDestroyed = false;
 	private animationTimer: ReturnType<typeof activeWindow.setInterval> | null = null;
+	private currentAnimName: string | null = null;
 	private speechBubbleEl: HTMLElement | null = null;
 	private speechBubbleTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
 	private actionLoopPaused = false;
@@ -30,6 +31,7 @@ export class StardewPet {
 	private readonly definition: StardewSpeciesDefinition;
 	private readonly petName: string;
 	private readonly rightClickTextProvider: (() => string | Promise<string>) | null;
+	private readonly speechEnabledProvider: (() => boolean) | null;
 	private isDragging = false;
 	private dragThreshold = 3;
 	private readonly isNPC: boolean;
@@ -43,12 +45,14 @@ export class StardewPet {
 		petName: string,
 		rightClickTextProvider: (() => string | Promise<string>) | null = null,
 		speedMultiplier = 1,
+		speechEnabledProvider: (() => boolean) | null = null,
 	) {
 		this.definition = definition;
 		this.scale = scale;
 		this.speedMultiplier = speedMultiplier;
 		this.petName = petName;
 		this.rightClickTextProvider = rightClickTextProvider;
+		this.speechEnabledProvider = speechEnabledProvider;
 		this.spritesheetUrl = getStardewSpeciesSprite(definition.id);
 		this.isNPC = definition.id.startsWith("stardew/npc/");
 
@@ -148,12 +152,16 @@ export class StardewPet {
 		const animation = toAnimation(this.definition.animations[name]);
 		if (!animation) return;
 
+		this.setFlip(Boolean(animation.flip));
+
+		if (name === this.currentAnimName) return;
+
 		if (this.animationTimer !== null) {
 			activeWindow.clearInterval(this.animationTimer);
 			this.animationTimer = null;
 		}
 
-		this.setFlip(Boolean(animation.flip));
+		this.currentAnimName = name;
 		this.applyFrame(animation.frames[0] ?? [0, 0]);
 
 		let frameIndex = 0;
@@ -174,6 +182,7 @@ export class StardewPet {
 						activeWindow.clearInterval(this.animationTimer);
 						this.animationTimer = null;
 					}
+					this.currentAnimName = null;
 					return;
 				}
 				frameIndex = 0;
@@ -214,6 +223,10 @@ export class StardewPet {
 
 		this.petEl.addEventListener("contextmenu", (event) => {
 			event.preventDefault();
+			if (this.speechEnabledProvider && !this.speechEnabledProvider()) {
+				this.showHeart();
+				return;
+			}
 			const text = this.rightClickTextProvider?.();
 			if (!text) {
 				this.showHeart();
@@ -404,7 +417,9 @@ export class StardewPet {
 		const animName = `move${dir.charAt(0).toUpperCase() + dir.slice(1)}`;
 		void this.playAnimation(animName);
 
-		const duration = Math.max(200, (this.definition.moveDist / 50) * 1000);
+		const animation = toAnimation(this.definition.animations[animName]);
+		const animCycleMs = animation ? (animation.frames.length / animation.fps) * 1000 : 0;
+		const duration = Math.max(200, (this.definition.moveDist / 50) * 1000, animCycleMs);
 
 		this.petEl.setCssProps({
 			"--left": `${tx}px`,

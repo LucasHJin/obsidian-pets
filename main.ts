@@ -19,7 +19,6 @@ interface PetPluginData {
 	selectedBackground: string;
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
-	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
 	petSpeed: number; // Movement speed multiplier (1 = normal speed)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
@@ -32,6 +31,7 @@ interface PetPluginData {
 	pageRantOnlyWhenFocused?: boolean;
 	selectedModel?: string; // Selected model for chat
 	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
+	petSpeechEnabled: boolean; // Whether pets can show speech bubbles (right-click and auto rant)
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -47,6 +47,7 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pageRantMaxMinutes: 20,
 	pageRantContextChars: 1200,
 	pageRantOnlyWhenFocused: true,
+	petSpeechEnabled: true,
 };
 
 export default class PetPlugin extends Plugin {
@@ -292,6 +293,11 @@ export default class PetPlugin extends Plugin {
 
 	public updatePageRantEnabled(pageRantEnabled: boolean): void {
 		this.instanceData.pageRantEnabled = pageRantEnabled;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePetSpeechEnabled(petSpeechEnabled: boolean): void {
+		this.instanceData.petSpeechEnabled = petSpeechEnabled;
 		void this.saveData(this.instanceData);
 	}
 
@@ -688,21 +694,6 @@ export default class PetPlugin extends Plugin {
 	// Getter function to get background in petview.ts
 	public getSelectedBackground(): string {
 		return this.instanceData.selectedBackground;
-	}
-
-	public toggleBackgroundAnimation(value: boolean): void {
-		this.instanceData.animatedBackground = value;
-		void this.saveData(this.instanceData);
-
-		// Update all open PetViews
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			// if is a PetView
-			if (view instanceof PetView) {
-				view.updateView();
-			}
-		}
 	}
 
 	public updatePetSize(value: number): void {

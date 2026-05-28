@@ -12,13 +12,14 @@ export function createRenderablePet(
 	petName: string,
 	rightClickTextProvider: (() => string | Promise<string>) | null,
 	speedMultiplier = 1,
+	speechEnabledProvider: (() => boolean) | null = null,
 ): RenderablePet | null {
 	if (isStardewSpecies(type)) {
 		const species = getStardewSpeciesDefinition(type);
 		if (!species) {
 			return null;
 		}
-		return new StardewPet(container, species, background, petId, scale, petName, rightClickTextProvider, speedMultiplier);
+		return new StardewPet(container, species, background, petId, scale, petName, rightClickTextProvider, speedMultiplier, speechEnabledProvider);
 	}
 
 	return null;

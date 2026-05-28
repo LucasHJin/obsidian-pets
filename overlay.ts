@@ -61,6 +61,7 @@ export class OverlayPetView {
 				singlePet.name,
 				() => this.plugin.getPageRantText("rightclick", singlePet.type),
 				this.plugin.instanceData.petSpeed,
+				() => this.plugin.instanceData.petSpeechEnabled ?? true,
 			);
 			if (pet) {
 				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });
@@ -131,7 +132,7 @@ export class OverlayPetView {
 			const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
 
 			this.rantLoopTimeout = activeWindow.setTimeout(() => {
-				if (this.plugin.instanceData.pageRantEnabled) {
+				if (this.plugin.instanceData.pageRantEnabled && (this.plugin.instanceData.petSpeechEnabled ?? true)) {
 					// If configured, suppress rants when Obsidian window is not focused/backgrounded
 					if (this.plugin.instanceData.pageRantOnlyWhenFocused && !activeDocument.hasFocus()) {
 						scheduleNext();
