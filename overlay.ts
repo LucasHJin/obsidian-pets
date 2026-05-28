@@ -4,7 +4,7 @@ import { RenderablePet, createRenderablePet } from "./pet-utils/pet-factory";
 export class OverlayPetView {
 	private overlayEl: HTMLElement;
 	private plugin: PetPlugin;
-	pets: { id: string; pet: RenderablePet }[] = [];
+	pets: { id: string; type: string; pet: RenderablePet }[] = [];
 	private resizeHandler: () => void;
 	private resizeTimer: ReturnType<typeof setTimeout> | null = null;
 	private rantLoopTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
@@ -62,7 +62,7 @@ export class OverlayPetView {
 				() => this.plugin.getPageRantText("rightclick", singlePet.type)
 			);
 			if (pet) {
-				this.pets.push({ id: singlePet.id, pet });
+				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });
 			}
 		} catch (error) {
 			console.error(`Failed to create overlay pet ${singlePet.id}:`, error);
@@ -130,11 +130,11 @@ export class OverlayPetView {
 						scheduleNext();
 						return;
 					}
-					const target = this.pets[Math.floor(Math.random() * this.pets.length)]?.pet;
+					const target = this.pets[Math.floor(Math.random() * this.pets.length)];
 					if (target) {
-						void this.plugin.getPageRantText("timer").then((text) => {
+						void this.plugin.getPageRantText("timer", target.type).then((text) => {
 							if (text) {
-								target.showSpeechBubble(text);
+								target.pet.showSpeechBubble(text);
 							}
 						});
 					}

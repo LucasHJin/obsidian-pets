@@ -63,8 +63,8 @@
 /* Use css variables for most of the dynamically changing values, i.e. top, transition, etc. */
 .pet {
 	position: absolute;
-	width: var(--pet-size);
-	height: var(--pet-size);
+	width: var(--pet-width, var(--pet-size));
+	height: var(--pet-height, var(--pet-size));
 	left: var(--left);
 	top: var(--top);
 	transform: translate(-50%, -50%) scale(var(--scale, 1)) scaleX(var(--scale-x, 1));

@@ -9,7 +9,7 @@ export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
-	pets: { id: string; pet: RenderablePet }[] = []; // Property for list of existing pets (their id and the instance of the class)
+	pets: { id: string; type: string; pet: RenderablePet }[] = []; // Property for list of existing pets (their id and the instance of the class)
 	private resizeObserver?: ResizeObserver;
 	private resizeTimeout?: number;
 	private rantLoopTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
@@ -167,7 +167,7 @@ export class PetView extends ItemView {
 				() => this.plugin.getPageRantText("rightclick", singlePet.type)
 			);
 			if (pet) {
-				this.pets.push({ id: singlePet.id, pet });
+				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });
 			}
 		} catch (error) {
 			console.error(`Failed to create pet ${singlePet.id}:`, error);
@@ -293,11 +293,11 @@ export class PetView extends ItemView {
 						scheduleNext();
 						return;
 					}
-					const target = this.pets[Math.floor(Math.random() * this.pets.length)]?.pet;
+					const target = this.pets[Math.floor(Math.random() * this.pets.length)];
 					if (target) {
-						void this.plugin.getPageRantText("timer").then((text) => {
+						void this.plugin.getPageRantText("timer", target.type).then((text) => {
 							if (text) {
-								target.showSpeechBubble(text);
+								target.pet.showSpeechBubble(text);
 							}
 						});
 					}

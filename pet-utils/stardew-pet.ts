@@ -15,7 +15,8 @@ function wait(ms: number): Promise<void> {
 export class StardewPet {
 	public petEl!: HTMLElement;
 	public scale: number;
-	private spriteFrameSize = 16;
+	private spriteFrameWidth = 16;
+	private spriteFrameHeight = 16;
 	private currentX!: number;
 	private currentY!: number;
 	private direction = 1;
@@ -69,7 +70,9 @@ export class StardewPet {
 		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--top": `${this.currentY}px`,
-			"--pet-size": `${this.spriteFrameSize}px`,
+			"--pet-size": `${this.spriteFrameHeight}px`,
+			"--pet-width": `${this.spriteFrameWidth}px`,
+			"--pet-height": `${this.spriteFrameHeight}px`,
 			"--scale-x": `${this.direction}`,
 			"--bubble-scale-x": `${1 / this.direction}`,
 			"--scale": `${this.scale}`,
@@ -89,7 +92,8 @@ export class StardewPet {
 
 		const maxRow = this.getMaxRow();
 		const inferredFrame = maxRow >= 0 ? Math.floor(img.naturalHeight / (maxRow + 1)) : 16;
-		this.spriteFrameSize = this.definition.frameSize && this.definition.frameSize > 0 ? this.definition.frameSize : inferredFrame;
+		this.spriteFrameWidth = this.definition.frameWidth || this.definition.frameSize || inferredFrame;
+		this.spriteFrameHeight = this.definition.frameHeight || this.definition.frameSize || inferredFrame;
 
 		this.petEl.setCssStyles({
 			backgroundImage: `url('${this.spritesheetUrl}')`,
@@ -97,7 +101,11 @@ export class StardewPet {
 			backgroundSize: `${img.naturalWidth * this.definition.scale}px ${img.naturalHeight * this.definition.scale}px`,
 			imageRendering: "pixelated",
 		});
-		this.petEl.setCssProps({ "--pet-size": `${this.spriteFrameSize}px` });
+		this.petEl.setCssProps({
+			"--pet-size": `${this.spriteFrameHeight}px`,
+			"--pet-width": `${this.spriteFrameWidth}px`,
+			"--pet-height": `${this.spriteFrameHeight}px`,
+		});
 		this.applyFrame([0, 0]);
 	}
 
@@ -119,8 +127,8 @@ export class StardewPet {
 
 	private applyFrame(frame: [number, number]) {
 		const [ox, oy] = this.definition.variantOffset ?? [0, 0];
-		const x = -((frame[0] + ox) * this.spriteFrameSize) * this.definition.scale;
-		const y = -((frame[1] + oy) * this.spriteFrameSize) * this.definition.scale;
+		const x = -((frame[0] + ox) * this.spriteFrameWidth) * this.definition.scale;
+		const y = -((frame[1] + oy) * this.spriteFrameHeight) * this.definition.scale;
 		this.petEl.setCssStyles({ backgroundPosition: `${x}px ${y}px` });
 	}
 
@@ -305,8 +313,8 @@ export class StardewPet {
 
 	public async clampToContainer() {
 		if (!this.petEl || this.isDestroyed) return;
-		const petWidth = this.spriteFrameSize * this.definition.scale;
-		const petHeight = this.spriteFrameSize * this.definition.scale;
+		const petWidth = this.spriteFrameWidth * this.definition.scale;
+		const petHeight = this.spriteFrameHeight * this.definition.scale;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 		const containerHeight = (this.container as HTMLElement).offsetHeight;
 		const minX = petWidth / 2;
@@ -339,8 +347,8 @@ export class StardewPet {
 
 	private async move(duration: number, directionName: "left" | "right" | "up" | "down") {
 		if (this.actionLoopPaused || this.isDestroyed) return;
-		const petWidth = this.spriteFrameSize * this.definition.scale;
-		const petHeight = this.spriteFrameSize * this.definition.scale;
+		const petWidth = this.spriteFrameWidth * this.definition.scale;
+		const petHeight = this.spriteFrameHeight * this.definition.scale;
 		const containerWidth = (this.container as HTMLElement).offsetWidth;
 		const containerHeight = (this.container as HTMLElement).offsetHeight;
 		const maxLeft = containerWidth - petWidth / 2;

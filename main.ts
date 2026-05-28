@@ -374,8 +374,37 @@ export default class PetPlugin extends Plugin {
 		return activeLeaf?.view?.getDisplayText?.() ?? "当前页面";
 	}
 
-	private getFallbackPageRantText(trigger: "timer" | "rightclick"): string {
+	private getFallbackPageRantText(trigger: "timer" | "rightclick", petType?: string): string {
 		const pageLabel = this.getCurrentPageLabel();
+		const isNPC = petType ? petType.startsWith("stardew/npc/") : false;
+
+		if (isNPC) {
+			const npcTimerTemplates = this.instanceData.useChinesePrompt
+				? [
+					`《${pageLabel}》？嗯……看起来挺有意思的。`,
+					`我刚路过看到了《${pageLabel}》，这让我想起了星露谷的日子。`,
+					`《${pageLabel}》这篇东西不错，比 Joja 的广告强多了。`,
+				]
+				: [
+					`${pageLabel}? Hmm... looks interesting.`,
+					`I just passed by ${pageLabel}. Reminds me of something back in the valley.`,
+					`${pageLabel} is definitely more interesting than Joja's pamphlets.`,
+				];
+
+			const npcRightClickTemplates = this.instanceData.useChinesePrompt
+				? [
+					`哦？有什么事吗？我正盯着《${pageLabel}》呢。`,
+					`你好啊，${pageLabel} 这篇笔记我也在看。`,
+				]
+				: [
+					`Oh? Need something? I was just looking at ${pageLabel}.`,
+					`Hey there, I was reading through ${pageLabel} myself.`,
+				];
+
+			const templates = trigger === "timer" ? npcTimerTemplates : npcRightClickTemplates;
+			return templates[Math.floor(Math.random() * templates.length)];
+		}
+
 		const timerTemplates = this.instanceData.useChinesePrompt
 			? [
 				`这个页面《${pageLabel}》看起来很忙，但我怀疑它其实在偷偷摸鱼。`,
@@ -503,10 +532,11 @@ export default class PetPlugin extends Plugin {
 			petType ? getStardewSpeciesPersona(petType) : undefined,
 			this.chatmodel,
 			this.instanceData.selectedModel || "gpt-5-mini",
-			this.instanceData.useChinesePrompt ?? false
+			this.instanceData.useChinesePrompt ?? false,
+			petType ? petType.startsWith("stardew/npc/") : false
 		);
 
-		return generated || this.getFallbackPageRantText(trigger);
+		return generated || this.getFallbackPageRantText(trigger, petType);
 	}
 
 	public updateChosenModel(selectedModel: string): void {
