@@ -31,7 +31,8 @@ interface PetPluginData {
 	pageRantOnlyWhenFocused?: boolean;
 	selectedModel?: string; // Selected model for chat
 	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
-	petSpeechEnabled: boolean; // Whether pets can show speech bubbles (right-click and auto rant)
+	petSpeechEnabled: boolean; // Whether regular pets can show speech bubbles
+	npcSpeechEnabled: boolean; // Whether NPCs can show speech bubbles
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -48,6 +49,7 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pageRantContextChars: 1200,
 	pageRantOnlyWhenFocused: true,
 	petSpeechEnabled: true,
+	npcSpeechEnabled: true,
 };
 
 export default class PetPlugin extends Plugin {
@@ -298,6 +300,11 @@ export default class PetPlugin extends Plugin {
 
 	public updatePetSpeechEnabled(petSpeechEnabled: boolean): void {
 		this.instanceData.petSpeechEnabled = petSpeechEnabled;
+		void this.saveData(this.instanceData);
+	}
+
+	public updateNpcSpeechEnabled(npcSpeechEnabled: boolean): void {
+		this.instanceData.npcSpeechEnabled = npcSpeechEnabled;
 		void this.saveData(this.instanceData);
 	}
 

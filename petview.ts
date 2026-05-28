@@ -177,7 +177,7 @@ export class PetView extends ItemView {
 				singlePet.name,
 				() => this.plugin.getPageRantText("rightclick", singlePet.type),
 				this.plugin.instanceData.petSpeed,
-				() => this.plugin.instanceData.petSpeechEnabled ?? true,
+				(isNPC: boolean) => isNPC ? (this.plugin.instanceData.npcSpeechEnabled ?? true) : (this.plugin.instanceData.petSpeechEnabled ?? true),
 			);
 			if (pet) {
 				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });
@@ -300,7 +300,7 @@ export class PetView extends ItemView {
 			const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
 
 			this.rantLoopTimeout = activeWindow.setTimeout(() => {
-				if (this.plugin.instanceData.pageRantEnabled && (this.plugin.instanceData.petSpeechEnabled ?? true)) {
+				if (this.plugin.instanceData.pageRantEnabled) {
 					// If configured, suppress rants when Obsidian window is not focused/backgrounded
 					if (this.plugin.instanceData.pageRantOnlyWhenFocused && !activeDocument.hasFocus()) {
 						scheduleNext();
@@ -308,11 +308,15 @@ export class PetView extends ItemView {
 					}
 					const target = this.pets[Math.floor(Math.random() * this.pets.length)];
 					if (target) {
-						void this.plugin.getPageRantText("timer", target.type).then((text) => {
-							if (text) {
-								target.pet.showSpeechBubble(text);
-							}
-						});
+						const isNPC = target.type.startsWith("stardew/npc/");
+						const speechEnabled = isNPC ? (this.plugin.instanceData.npcSpeechEnabled ?? true) : (this.plugin.instanceData.petSpeechEnabled ?? true);
+						if (speechEnabled) {
+							void this.plugin.getPageRantText("timer", target.type).then((text) => {
+								if (text) {
+									target.pet.showSpeechBubble(text);
+								}
+							});
+						}
 					}
 				}
 				scheduleNext();

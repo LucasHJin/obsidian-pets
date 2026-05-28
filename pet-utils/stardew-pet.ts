@@ -31,7 +31,7 @@ export class StardewPet {
 	private readonly definition: StardewSpeciesDefinition;
 	private readonly petName: string;
 	private readonly rightClickTextProvider: (() => string | Promise<string>) | null;
-	private readonly speechEnabledProvider: (() => boolean) | null;
+	private readonly speechEnabledProvider: ((isNPC: boolean) => boolean) | null;
 	private isDragging = false;
 	private dragThreshold = 3;
 	private readonly isNPC: boolean;
@@ -45,7 +45,7 @@ export class StardewPet {
 		petName: string,
 		rightClickTextProvider: (() => string | Promise<string>) | null = null,
 		speedMultiplier = 1,
-		speechEnabledProvider: (() => boolean) | null = null,
+		speechEnabledProvider: ((isNPC: boolean) => boolean) | null = null,
 	) {
 		this.definition = definition;
 		this.scale = scale;
@@ -223,7 +223,7 @@ export class StardewPet {
 
 		this.petEl.addEventListener("contextmenu", (event) => {
 			event.preventDefault();
-			if (this.speechEnabledProvider && !this.speechEnabledProvider()) {
+			if (this.speechEnabledProvider && !this.speechEnabledProvider(this.isNPC)) {
 				this.showHeart();
 				return;
 			}

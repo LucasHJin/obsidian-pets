@@ -166,8 +166,30 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Pet speech bubbles")
+			.setDesc("When enabled, regular pets (cats, dogs, etc.) can show speech bubbles on right-click and via automatic rant timers.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.instanceData.petSpeechEnabled ?? true)
+					.onChange((value) => {
+						this.plugin.updatePetSpeechEnabled(value);
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("NPC speech bubbles")
+			.setDesc("When enabled, NPCs can show speech bubbles on right-click and via automatic rant timers.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.instanceData.npcSpeechEnabled ?? true)
+					.onChange((value) => {
+						this.plugin.updateNpcSpeechEnabled(value);
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Random page rant bubbles")
-			.setDesc("When enabled, cats will occasionally complain about the current page and react on right click.")
+			.setDesc("When enabled, pets will occasionally complain about the current page and react on right click.")
 			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.instanceData.pageRantEnabled ?? false)

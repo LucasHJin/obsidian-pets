@@ -12,7 +12,7 @@ export function createRenderablePet(
 	petName: string,
 	rightClickTextProvider: (() => string | Promise<string>) | null,
 	speedMultiplier = 1,
-	speechEnabledProvider: (() => boolean) | null = null,
+	speechEnabledProvider: ((isNPC: boolean) => boolean) | null = null,
 ): RenderablePet | null {
 	if (isStardewSpecies(type)) {
 		const species = getStardewSpeciesDefinition(type);
