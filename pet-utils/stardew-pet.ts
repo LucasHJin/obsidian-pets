@@ -67,12 +67,14 @@ export class StardewPet {
 
 	private createPetElement(petId: string): HTMLElement {
 		const el = this.container.createDiv({ cls: "pet stardew-pet", attr: { "data-pet-id": petId } });
+		const fw = (this.definition.frameWidth || this.definition.frameSize || 16) * this.definition.scale;
+		const fh = (this.definition.frameHeight || this.definition.frameSize || 16) * this.definition.scale;
 		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--top": `${this.currentY}px`,
-			"--pet-size": `${this.spriteFrameHeight}px`,
-			"--pet-width": `${this.spriteFrameWidth}px`,
-			"--pet-height": `${this.spriteFrameHeight}px`,
+			"--pet-size": `${fh}px`,
+			"--pet-width": `${fw}px`,
+			"--pet-height": `${fh}px`,
 			"--scale-x": `${this.direction}`,
 			"--bubble-scale-x": `${1 / this.direction}`,
 			"--scale": `${this.scale}`,
@@ -102,9 +104,9 @@ export class StardewPet {
 			imageRendering: "pixelated",
 		});
 		this.petEl.setCssProps({
-			"--pet-size": `${this.spriteFrameHeight}px`,
-			"--pet-width": `${this.spriteFrameWidth}px`,
-			"--pet-height": `${this.spriteFrameHeight}px`,
+			"--pet-size": `${this.spriteFrameHeight * this.definition.scale}px`,
+			"--pet-width": `${this.spriteFrameWidth * this.definition.scale}px`,
+			"--pet-height": `${this.spriteFrameHeight * this.definition.scale}px`,
 		});
 		this.applyFrame([0, 0]);
 	}
