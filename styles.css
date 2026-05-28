@@ -82,10 +82,11 @@
 	bottom: 100%; 
 	left: 50%;
 	transform: translateX(-50%) translateY(-2px) scaleX(var(--scale-x, 1));
-	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
-	color: var(--text-normal);
+	background: linear-gradient(180deg, #f7e6b7 0%, #e6c87d 100%);
+	color: #3d2d16;
 	padding: 4px 8px;
-	border-radius: 4px;
+	border: 2px solid #3d2d16;
+	border-radius: 0;
 	font-size: 0.8em;
 	white-space: nowrap;
 	pointer-events: none; 
@@ -221,6 +222,33 @@
 	border-left: 1px solid var(--background-modifier-border);
 	border-bottom: 1px solid var(--background-modifier-border);
 	transform: translateX(-50%) rotate(-45deg);
+}
+
+.pp-chat-modal-content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+}
+
+.chat-message {
+	padding: 10px 20px;
+	border-radius: 6px;
+	max-width: 70%;
+	word-wrap: break-word;
+	white-space: pre-wrap;
+}
+
+.chat-message.bot {
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	align-self: flex-start;
+}
+
+.chat-message.user {
+	background-color: var(--interactive-accent);
+	color: white;
+	align-self: flex-end;
 }
 
 @keyframes speech-pop {

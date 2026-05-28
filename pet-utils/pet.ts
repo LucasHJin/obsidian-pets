@@ -26,15 +26,15 @@ export class Pet {
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
 		none: "80%",
-		"backgrounds/snowbg-1.png": "85%",
-		"backgrounds/snowbg-2.png": "86%",
-		"backgrounds/summerbg-1.png": "78%",
-		"backgrounds/summerbg-2.png": "88%",
-		"backgrounds/summerbg-3.png": "75%",
-		"backgrounds/templebg-1.png": "85.5%",
-		"backgrounds/templebg-2.png": "78.3%",
-		"backgrounds/castlebg-1.png": "82.1%",
-		"backgrounds/castlebg-2.png": "74%",
+		dirt: "82%",
+		grass: "80%",
+		grass_fall: "79%",
+		sand: "83%",
+		snow: "84%",
+		wood_broken: "81%",
+		wood_dark: "81%",
+		wood_light: "81%",
+		wood_orange: "81%",
 	};
 	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes

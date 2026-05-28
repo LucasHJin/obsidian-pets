@@ -62,15 +62,15 @@ export class PetSettingTab extends PluginSettingTab {
 				.addDropdown((dropdown) => {
 					dropdown
 						.addOption("none", "None")
-						.addOption("backgrounds/snowbg-1.png", "Snow #1")
-						.addOption("backgrounds/snowbg-2.png", "Snow #2")
-						.addOption("backgrounds/summerbg-1.png", "Summer #1")
-						.addOption("backgrounds/summerbg-2.png", "Summer #2")
-						.addOption("backgrounds/summerbg-3.png", "Summer #3")
-						.addOption("backgrounds/templebg-1.png", "Temple #1")
-						.addOption("backgrounds/templebg-2.png", "Temple #2")
-						.addOption("backgrounds/castlebg-1.png", "Castle #1")
-						.addOption("backgrounds/castlebg-2.png", "Castle #2")
+						.addOption("dirt", "Dirt")
+						.addOption("grass", "Grass")
+						.addOption("grass_fall", "Grass (Fall)")
+						.addOption("sand", "Sand")
+						.addOption("snow", "Snow")
+						.addOption("wood_broken", "Wood (Broken)")
+						.addOption("wood_dark", "Wood (Dark)")
+						.addOption("wood_light", "Wood (Light)")
+						.addOption("wood_orange", "Wood (Orange)")
 						.setValue(this.plugin.instanceData.selectedBackground)
 						.onChange(async (value) => {
 							await this.plugin.chooseBackground(value);

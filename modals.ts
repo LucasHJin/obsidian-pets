@@ -129,17 +129,11 @@ export class ChatModal extends Modal {
 
 		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
 		
-		void this.addMessage("bot",
-			`/\\_/\\ ♥
->^.^<   ~meow~
-/   \\
-(___)_/
--------
-
-you're my meeeooooowwwwner~
-Cat (chat) with me anything about~
-(except about rats, I hate them)~`,
-			chatContainer);
+		void this.addMessage(
+			"bot",
+			"Welcome to the chat!\nAsk me anything about your vault, notes, or setup.",
+			chatContainer
+		);
 
 		const form = contentEl.createEl("form", { cls: "chat-form" });
 

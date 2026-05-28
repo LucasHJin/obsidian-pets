@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { ConversationMessage } from "./main";
+import { StardewPersona } from "./pet-utils/stardew-species";
 
 // Note -> File links cannot be clicked
 // ADD CONTEXT OF PREVIOUS MESSAGES -> need to do this before searching for context?
@@ -91,6 +92,7 @@ function buildPageRantPrompt(
 	pageContext: string,
 	contextCharLimit: number,
 	activitySummary: string,
+	petPersona: StardewPersona | undefined,
 	useChinesePrompt: boolean
 ): string {
 	const contextSection = pageContext
@@ -104,14 +106,18 @@ function buildPageRantPrompt(
 	const selectionSection = selectedText
 		? `\n选中内容（已截断，供参考）：\n${selectedText}`
 		: "\n选中内容：无";
+	const personaSection = petPersona
+		? `\n宠物身份：${petPersona.identity}\n宠物性格：${petPersona.temperament}\n吐槽风格：${petPersona.rantStyle}`
+		: "";
 
 	if (useChinesePrompt) {
-		return `你是一只很有灵气、会观察页面的小猫，正在对当前打开的页面吐槽。
+		return `你是一只很有灵气、会观察页面的星露谷宠物，正在对当前打开的页面吐槽。
 页面标题：${pageLabel}
 触发方式：${trigger === "timer" ? "随机路过" : "右键互动"}
 ${contextSection}
 ${selectionSection}
 ${activitySection}
+${personaSection}
 
 提示：如果有选中内容，请把吐槽的焦点放在选中内容上，而不是仅针对页面整体进行笼统点评。
 
@@ -125,12 +131,13 @@ ${activitySection}
 - 不要解释，不要加前缀，不要加引号`;
 	}
 
-	return `You are a lively, observant cat teasing the currently open page.
+	return `You are a lively, observant Stardew Valley pet teasing the currently open page.
 Page title: ${pageLabel}
 Trigger: ${trigger === "timer" ? "random pass-by" : "right click interaction"}
 ${contextSection}
 ${selectionSection}
 ${activitySection}
+${personaSection}
 
 Note: If there is selected text, focus the roast on that selected content rather than a generic page-level comment.
 
@@ -159,6 +166,7 @@ export async function generatePageRantText(
 	pageContext: string,
 	contextCharLimit: number,
 	activitySummary: string,
+	petPersona: StardewPersona | undefined,
 	model: OpenAI | null,
 	selectedModel: string,
 	useChinesePrompt: boolean
@@ -167,7 +175,7 @@ export async function generatePageRantText(
 		return "";
 	}
 
-	const prompt = buildPageRantPrompt(pageLabel, trigger, selectedText, pageContext, contextCharLimit, activitySummary, useChinesePrompt);
+	const prompt = buildPageRantPrompt(pageLabel, trigger, selectedText, pageContext, contextCharLimit, activitySummary, petPersona, useChinesePrompt);
 
 	try {
 		const response = await model.chat.completions.create({
