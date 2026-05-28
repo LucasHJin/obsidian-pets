@@ -200,10 +200,10 @@
 	transform-origin: bottom center;
 	display: block;
 	width: fit-content;
-	min-width: 120px;
-	max-width: min(280px, 65vw);
-	padding: 0.6rem 0.85rem;
-	border-radius: 12px;
+	min-width: 140px;
+	max-width: min(420px, 80vw);
+	padding: 0.45rem 1.1rem;
+	border-radius: 8px 16px 8px 16px;
 	background: color-mix(in srgb, var(--background-primary) 92%, transparent);
 	color: var(--text-normal);
 	border: 1px solid var(--background-modifier-border);
