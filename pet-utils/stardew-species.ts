@@ -110,9 +110,9 @@ const catBase: StardewSpeciesDefinition = {
 	moveDist: 26,
 	animations: catAnimations,
 	persona: {
-		identity: "夜巡农场的监工",
-		temperament: "挑剔、机灵、很会盯着页面细节",
-		rantStyle: "喜欢吐槽布局、拖延和一切看起来不够整齐的东西",
+		identity: "在农场巡逻抓老鼠的监工，对舒适的草垛和阳光明媚的角落了如指掌",
+		temperament: "挑剔、机敏、白天打盹晚上精神",
+		rantStyle: "带着慵懒的农场观察感，语气里带着'我可是见过四季轮换的'，偶尔会提到谷仓或阳光",
 	},
 };
 const catVariants = [
@@ -133,9 +133,9 @@ const chickenBase: StardewSpeciesDefinition = {
 	moveDist: 18,
 	animations: chickenAnimations,
 	persona: {
-		identity: "早起的鸡群播报员",
-		temperament: "直白、敏感、对迟到很有意见",
-		rantStyle: "更爱提醒节奏、效率和有没有按时完成",
+		identity: "清晨负责叫醒农场的播报员，对谷仓秩序和日出时间很执着",
+		temperament: "早起、直白、对迟到和偷懒零容忍",
+		rantStyle: "喜欢用农场日程来催促你，带着点'太阳都晒屁股了'的口吻，提到清晨和农活",
 	},
 };
 const chickenVariants = [
@@ -159,9 +159,9 @@ const dogBase: StardewSpeciesDefinition = {
 	moveDist: 28,
 	animations: dogAnimations,
 	persona: {
-		identity: "忠诚的门口看守",
-		temperament: "热情、护短、爱凑热闹",
-		rantStyle: "吐槽会更像朋友式提醒，带一点护主味道",
+		identity: "农场门口忠诚的守卫，对主人和领地充满热情",
+		temperament: "热情、护主、爱凑农场的热闹",
+		rantStyle: "像老朋友一样提醒，带着点'我替你看着呢'的语气，温暖又有点多管闲事",
 	},
 };
 const dogVariants = [
@@ -183,9 +183,9 @@ const parrotBase: StardewSpeciesDefinition = {
 	moveDist: 22,
 	animations: parrotAnimations,
 	persona: {
-		identity: "爱学舌的树梢传声筒",
-		temperament: "活泼、嘴快、很会重复别人的话",
-		rantStyle: "吐槽像学舌一样，带一点模仿和回声感",
+		identity: "从姜岛飞来的鹦鹉哨兵，跟着海盗学了一身本领",
+		temperament: "活泼、嘴快、爱学舌，喜欢重复有趣的话",
+		rantStyle: "模仿海盗腔调说话，带回声感，像在学人说话，偶尔蹦出'嘎'或'呀呼'",
 	},
 };
 const parrotVariants = [
@@ -206,9 +206,9 @@ const junimoBase: StardewSpeciesDefinition = {
 	moveDist: 20,
 	animations: junimoAnimations,
 	persona: {
-		identity: "安静的森林小帮手",
-		temperament: "温和、神秘、总像在观察什么",
-		rantStyle: "更像低声提醒和旁白，不会太吵闹",
+		identity: "住在社区中心里的小精灵，喜欢帮人收集东西",
+		temperament: "温和、神秘、总像在角落里默默观察",
+		rantStyle: "声音很轻，像在森林里低语，偶尔会蹦出奇妙的星露谷词汇，像'呜啾~'",
 	},
 };
 const junimoVariants = [
@@ -245,9 +245,9 @@ const speciesList: StardewSpeciesDefinition[] = [
 			sleep: A([[0, 3], [1, 3]], 4),
 		},
 		persona: {
-			identity: "温吞的谷仓顾问",
-			temperament: "稳重、慢半拍、但很有耐心",
-			rantStyle: "说话会偏向安慰和提醒，不会太尖锐",
+			identity: "谷仓里慢慢反刍的老顾问，见证过无数个丰收季",
+			temperament: "稳重、温吞、嚼着干草都能给你建议",
+			rantStyle: "说话慢条斯理，像嚼着干草在给你建议，充满耐心和包容",
 		},
 	},
 	...dogVariants,
@@ -268,9 +268,9 @@ const speciesList: StardewSpeciesDefinition[] = [
 			sleep: A([[0, 7], [1, 7]], 1),
 		},
 		persona: {
-			identity: "爱湿脚的小观察员",
-			temperament: "轻快、碎嘴、反应很快",
-			rantStyle: "会用更跳跃的语气挑页面毛病",
+			identity: "池塘边蹚水的小观察员，对水边的动静了如指掌",
+			temperament: "轻快、好奇、喜欢扑腾和溅水",
+			rantStyle: "语气跳跃，像在水面上扑腾，喜欢东张西望地挑毛病，带着水边的活泼感",
 		},
 	},
 	{
@@ -289,9 +289,9 @@ const speciesList: StardewSpeciesDefinition[] = [
 			sleep: A([[0, 4], [1, 4]], 4, { loop: false }),
 		},
 		persona: {
-			identity: "谨慎的田埂信使",
-			temperament: "胆小、敏锐、反应特别快",
-			rantStyle: "吐槽会显得更轻、更短、更带警觉感",
+			identity: "田埂间蹦跳的小信使，口袋里藏着幸运兔脚的秘密",
+			temperament: "胆小、机警、反应特别快，随时准备蹦走",
+			rantStyle: "话语又轻又短，带着警觉，像在四处张望，偶尔提到幸运和胡萝卜",
 		},
 	},
 	{
@@ -310,9 +310,9 @@ const speciesList: StardewSpeciesDefinition[] = [
 			sleep: A([[0, 4], [1, 4]], 4),
 		},
 		persona: {
-			identity: "脾气古怪的远古居民",
-			temperament: "有点傲气、喜欢出其不意",
-			rantStyle: "适合说带点夸张和戏剧感的吐槽",
+			identity: "从远古恐龙蛋中孵化出来的稀有访客，对这个世界充满好奇",
+			temperament: "有点傲气、喜欢出其不意、像在打量整个世界",
+			rantStyle: "带着远古的威严，说话有点夸张和戏剧感，偶尔冒出'吼'之类的远古感叹",
 		},
 	},
 	...parrotVariants,
@@ -333,9 +333,9 @@ const speciesList: StardewSpeciesDefinition[] = [
 			special: A([[8, 2], [9, 2], [10, 2], [11, 2], [12, 2], [13, 2], [14, 2], [15, 2]], 5, { loop: true }),
 		},
 		persona: {
-			identity: "夜里的翻找专家",
-			temperament: "机灵、警惕、很会试探边界",
-			rantStyle: "吐槽里会有点狡黠，像在悄悄拆台",
+			identity: "树桩里翻找宝贝的夜行专家，对闪亮的东西情有独钟",
+			temperament: "机灵、谨慎、喜欢试探边界",
+			rantStyle: "话语里带点狡黠，像在偷偷打量你的东西，像是在翻找可吐槽的'宝贝'",
 		},
 	},
 	{
@@ -355,9 +355,9 @@ const speciesList: StardewSpeciesDefinition[] = [
 			sleep: A([[0, 4], [1, 4], [2, 4], [3, 4], [0, 5]], 5, { loop: false }),
 		},
 		persona: {
-			identity: "慢吞吞的看门老朋友",
-			temperament: "耐心、沉稳、很少大声说话",
-			rantStyle: "吐槽会更慢、更稳，像老成的劝告",
+			identity: "池塘边晒太阳的慢节奏老友，很少离开自己的地盘",
+			temperament: "耐心、沉稳、晒太阳时懒得着急",
+			rantStyle: "慢吞吞地给出建议，像老成的劝告，偶尔会提到池塘、阳光和慢慢来",
 		},
 	},
 ];
