@@ -1,10 +1,9 @@
 {
-	"id": "pixel-pets",
-	"name": "Pixel Pets",
-	"version": "1.5.2",
+	"id": "stardew-valley-pets",
+	"name": "Stardew Valley in Obsidian",
+	"version": "1.0.0",
 	"minAppVersion": "1.11.7",
-	"description": "Adds cute and interactive pixel pets.",
-	"author": "Lucas Jin",
-	"authorUrl": "https://www.lucasjin.ca/",
+	"description": "Bring Stardew Valley characters and pets into your Obsidian vault.",
+	"author": "miaowuduck",
 	"isDesktopOnly": true
 }

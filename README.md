@@ -1,89 +1,162 @@
-# Pixel Pets Plugin
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2FHEAD%2Fcommunity-plugin-stats.json&query=%24%5B%22pixel-pets%22%5D.downloads&label=downloads&logo=obsidian&color=7c3aed)
+# Stardew Valley in Obsidian
 
-A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Key Features
-- 🐱 22 different cats with 7+ different animations (and more pets on the way!)
-    - Customizable with individual names
-- 🖼️ 10 different backgrounds for your pets to play in
-- 🎾 Pet interactivity 
-    - You can play fetch and throw balls for your pets to retrieve
-    - You can pet your pets
-    - You can get them to follow you with a pet toy
-- ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
-- 🤖 *Catbot* (chatbot) that can answer questions with context from your vault / allow you to chat with your pets
-    - Supports OpenAI, Gemini, Alibaba Bailian, and DeepSeek chat providers
-    - Optional Chinese prompt mode for all AI-related behavior
+Bring the charming world of Stardew Valley into your Obsidian vault. Adopt pets, befriend NPCs, and let them keep you company while you work on your notes.
+
+![overview](assets\misc\image.png)
+
+## About This Plugin
+
+This plugin is built on top of [obsidian-pets](https://github.com/hiden2000/obsidian-pets) by hiden2000, with animation logic adapted from [stardew-pet-farm](https://github.com/PROF0UND/stardew-pet-farm) by PROF0UND. It extends the original with Stardew Valley characters, AI-powered speech bubbles, expanded NPC interactions, and a redesigned settings system.
+
+## Features
+
+### Pets & NPCs
+
+- **11 pet species** with 55+ color variants: cats, dogs, chickens, cows, ducks, rabbits, dinosaurs, parrots, junimos, raccoons, and turtles — each with idle, walk, special, and sleep animations
+- **35 Stardew Valley NPCs** including Abigail, Sebastian, Lewis, Robin, and more — each with their own walking animations and personality
+- All sprites use authentic Stardew Valley pixel art
+
+<!-- TODO: Insert pet variety preview image here -->
+<!-- ![Pets](images/pets-preview.png) -->
+
+### Display Modes
+
+- **Panel mode**: Pets live in a resizable panel you can dock anywhere in your workspace
+- **Overlay mode**: Pets roam freely across your entire Obsidian window
+- Drag pets to reposition them, or let them wander on their own
+- Click a pet to show a heart, right-click to trigger a speech bubble
+
+<!-- TODO: Insert panel mode screenshot here -->
+<!-- ![Panel Mode](images/panel-mode.png) -->
+
+<!-- TODO: Insert overlay mode screenshot here -->
+<!-- ![Overlay Mode](images/overlay-mode.png) -->
+
+### AI-Powered Speech Bubbles
+
+Pets and NPCs can comment on your notes using AI, with configurable persona-based responses:
+
+- **Right-click** a pet to get a contextual comment about your current note
+- **Auto-rant mode**: Pets periodically speak up on their own at random intervals
+- Supports **OpenAI**, **Google Gemini**, **DeepSeek**, and **Alibaba Bailian** (any OpenAI-compatible API)
+- Each species and NPC has a unique personality that shapes their dialogue
+- Optional Chinese-language prompt mode for all AI interactions
+
+<!-- TODO: Insert speech bubble screenshot here -->
+<!-- ![Speech Bubble](images/speech-bubble.png) -->
+
+### Backgrounds
+
+9 themed backgrounds inspired by Stardew Valley seasons and locations:
+
+| Background | Style |
+|---|---|
+| None | Clean, no background |
+| Dirt | Farm soil |
+| Grass | Lush green field |
+| Grass (Fall) | Autumn grassland |
+| Sand | Beach / desert |
+| Snow | Winter landscape |
+| Wood (Broken) | Weathered planks (tiled) |
+| Wood (Dark) | Dark timber (tiled) |
+| Wood (Light) | Light planks (tiled) |
+| Wood (Orange) | Warm wood (tiled) |
+
+<!-- TODO: Insert backgrounds preview image here -->
+<!-- ![Backgrounds](images/backgrounds.png) -->
+
+## Installation
+
+### From Community Plugins (Recommended)
+
+1. Open Obsidian and go to **Settings > Community Plugins**
+2. Click **Browse** and search for **"Stardew Valley in Obsidian"**
+3. Click **Install**, then **Enable**
+
+### Manual Installation
+
+1. Download the latest release from the [Releases page](https://github.com/miaowuduck/stardew-valley-pets/releases)
+2. Extract the folder into your vault's `.obsidian/plugins/` directory
+3. In Obsidian, go to **Settings > Community Plugins** and click **Reload plugins**
+4. Enable **Stardew Valley in Obsidian**
 
 ## Getting Started
-### Installation
-#### Method 1: Community Plugins (Recommended)
-1. In Obsidian, go to **Settings > Community Plugins**.
-2. Click **Browse** and search for **"Pixel Pets"**.
-3. Click **Install**, then **Enable** the plugin.
 
-#### Method 2: Manual Installation
-1. Download or clone this repository.
-2. Copy the entire folder into your vault's `.obsidian/plugins/` directory.
-3. In Obsidian, go to **Settings > Community Plugins** and click **Reload plugins**.
-4. Enable **Pixel Pets** in the list of installed plugins.
+1. Enable the plugin
+2. Use the **"Add a pet"** command (or click the `+` button in the pet panel) to choose a species and give it a name
+3. The pet panel will open automatically — your new friend will start wandering around
+4. Use **"Choose pet view background"** to set the scene
+5. (Optional) Configure AI speech in **Settings** to let your pets talk
 
-### Adding Your First Pet
-1. Enable the **Pixel Pets** plugin.
-2. Once enabled, select the command `Add a pet`. Choose the pet's species and give it a name.
-    - This will automatically open the pet view.
-3. Select a background using the `Choose pet view background` command.
-4. Continue to experiment with different backgrounds and pets, or just vibe along with your pets while you take notes, plan out RPGs, and more.
+Click the cat ribbon icon to toggle the pet view on and off.
 
-## UI Previews
-Toggle the cat ribbon icon to open and close the view.
+<!-- TODO: Insert getting started GIF/screenshot here -->
+<!-- ![Getting Started](images/getting-started.png) -->
 
-![Indicator of which ribbon icon to press.](images/ribbon-preview.png)
+## Commands
 
-Here is a preview of what the plugin could look like (*Selected background: "Summer #1", added pet: "Christmas cat"*).
+| Command | Description |
+|---|---|
+| `Add a pet` | Choose a species/NPC and name it |
+| `Remove a specific pet` | Pick a pet to remove from the list |
+| `Remove all pets` | Clear all pets at once |
+| `Choose pet view background` | Change the background scene |
 
-![Default layout for the plugin.](images/full-preview-1.png)
+## Settings
 
-You can click and drag on the highlighted icon above the view to drag it into other views, as well as change the width and height of the view to customize your layout as desired. (See a couple of sample layouts below)
+| Setting | Description |
+|---|---|
+| **Overlay mode** | Toggle full-window overlay vs panel mode |
+| **Background** | Select the background scene (panel mode only) |
+| **Pet size** | Scale pets from 0.5x to 3.0x |
+| **Movement speed** | Adjust how fast pets move (0.5x to 3.0x) |
+| **API key** | Your OpenAI-compatible API key for speech bubbles |
+| **API endpoint** | Base URL for the chat API (supports OpenAI, Gemini, DeepSeek, Bailian) |
+| **Chat model** | Model name to use (e.g., `gpt-4o-mini`, `gemini-2.5-flash`) |
+| **Chinese prompt** | Use Chinese-language AI prompts |
+| **Pet speech bubbles** | Enable/disable speech for pets |
+| **NPC speech bubbles** | Enable/disable speech for NPCs |
+| **Random page rants** | Enable periodic auto-speech from pets |
+| **Only rant when focused** | Suppress rants when Obsidian is in the background |
+| **Rant interval (min/max)** | Range for random speech timer (1–180 minutes) |
+| **Page context length** | Characters of note content sent as AI context (100–10000) |
 
-![A second possible layout for the plugin.](images/full-preview-2.png)
-![A third possible layout for the plugin.](images/full-preview-3.png)
+## AI Setup
 
-Here is what it looks like if you enable the full vault overlay.
+To enable speech bubbles, configure an API provider in settings:
 
-![Overlaying the plugin on your Obsidian vault.](images/full-preview-4.png)
+1. Get an API key from your preferred provider:
+   - [OpenAI](https://platform.openai.com/api-keys)
+   - [Google Gemini](https://aistudio.google.com/)
+   - [DeepSeek](https://api-docs.deepseek.com/)
+   - [Alibaba Bailian](https://bailian.console.aliyun.com/)
+2. Set the **API endpoint** (the "Use Gemini URL" button pre-fills the Gemini-compatible endpoint)
+3. Enter the **chat model** name for your provider
+4. Enable pet/NPC speech bubbles and optionally random page rants
 
-## Available Commands
-- Adding pets
-    - `Add a pet`: Select the species and provide it with a name. Added pets will immediately appear in the view.
-- Removing pets
-    - `Remove a specific pet`: Remove a specific pet. Provides a list of all the pets with their name and species.
-    - `Remove all pets`: Removes all pets from the view.
-- Interacting with pets
-    - `Add a ball`: Chooses a random ball and launches it in the view for a pet to chase after.
-    - `Cat toy mouse toggle`: Changes your mouse to a cat toy for your cats to follow.
-- Background
-    - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
-- Chatting with pets
-    - `Chat with your pets`: Opens up a chat modal for you to ask your pet questions.
-        - **NOTE:** Set the API key for the provider you want to use.
-            - Further instructions can be found here -> [OpenAI](https://platform.openai.com/api-keys), [Gemini](https://aistudio.google.com/), [Alibaba Bailian model list](https://bailian.console.aliyun.com/cn-beijing?tab=model#/model-market), [DeepSeek docs](https://api-docs.deepseek.com/zh-cn/)
-        - *Usecases include*: Chatting for fun, studying/reviewing your notes, and learning new concepts.
+Pets will now comment in-character on your notes based on their species personality.
 
-## AI Language Options
-- Enable **Chinese prompt** to send Chinese instructions and Chinese query reformulation to the selected model.
-
-## Contacts
-If you have any kind of feedback or questions, feel free to reach out via GitHub issues or @hi.bye_2025 on the [Obsidian Discord server](https://discord.gg/obsidianmd).
+<!-- TODO: Insert AI settings screenshot here -->
+<!-- ![AI Settings](images/ai-settings.png) -->
 
 ## Credits
-| Link| Description|
-|--------------|---------------------------------|
-|https://free-game-assets.itch.io/free-winter-nature-pixel-game-backgrounds| All winter backgrounds |
-|https://ko-fi.com/s/8ffe7d812e| Snow animation for winter backgrounds |
-|https://free-game-assets.itch.io/free-summer-pixel-art-backgrounds| All summer backgrounds |
-|https://free-game-assets.itch.io/free-ancient-temple-pixel-game-backgrounds| All temple backgrounds |
-|https://free-game-assets.itch.io/free-castle-interior-pixel-game-backgrounds| All castle backgrounds |
-|https://toffeecraft.itch.io/cat-pixel-mega-pack| All cat sprites |
+
+### Origin Projects
+- [stardew-pet-farm](https://github.com/PROF0UND/stardew-pet-farm) — Original Stardew Valley pet concept and sprites
+- [obsidian-pets](https://github.com/hiden2000/obsidian-pets) — Original Obsidian plugin implementation
+
+### Art Assets
+All pet sprites, NPC character sprites, and background images are sourced from [StardewValley-Assets](https://github.com/Huu-Yuu/StardewValley-Assets) by Huu-Yuu, which provides extracted Stardew Valley game assets.
+
+### Inspiration
+- [vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets) — The original VSCode pets extension
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
+
+## Feedback
+
+Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/miaowuduck/stardew-valley-pets/issues).
