@@ -126,17 +126,25 @@ export class PetView extends ItemView {
 		if (background !== "none") {
 			try {
 				const backgroundUrl = getBackgroundAsset(background);
-				wrapper.createEl("img", {
-					attr: {
-						src: backgroundUrl,
-						alt: "Background",
-					},
-					cls: "pet-view-background",
-				});
+				const isWoodTile = ["wood_dark", "wood_light", "wood_orange"].includes(background);
+
+				if (isWoodTile) {
+					wrapper.createEl("div", {
+						cls: "pet-view-background pet-view-background-tiled",
+					}).style.backgroundImage = `url('${backgroundUrl}')`;
+				} else {
+					wrapper.createEl("img", {
+						attr: {
+							src: backgroundUrl,
+							alt: "Background",
+						},
+						cls: "pet-view-background",
+					});
+				}
 			} catch (error) {
 				console.error(`Failed to load background: ${background}`, error);
 			}
-		} 
+		}
 
 		this.updateAllPetVerticalPositions(background);
 	}
