@@ -24,3 +24,4 @@ data.json
 .env
 FIXES.md
 .claude/
+.venv/

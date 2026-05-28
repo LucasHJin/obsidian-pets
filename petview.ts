@@ -1,22 +1,18 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin, { PetInstance } from "./main";
-import { Pet } from "./pet-utils/pet";
-import { Cat } from "./pet-utils/cat";
-import { Bunny } from "./pet-utils/bunny";
-import { Ghost } from "./pet-utils/ghost";
-import { Ball } from "./pet-utils/ball";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "./pet-utils/pet-animations";
+import { RenderablePet, createRenderablePet } from "./pet-utils/pet-factory";
+import { SelectorModal } from "./modals";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
 	plugin: PetPlugin;
-	pets: { id: string; pet: Pet }[] = []; // Property for list of existing pets (their id and the instance of the class)
-	balls: { id: string; ball: Ball }[] = []; // Property for list of existing balls (their id and the instance of the class)
+	pets: { id: string; type: string; pet: RenderablePet }[] = []; // Property for list of existing pets (their id and the instance of the class)
 	private resizeObserver?: ResizeObserver;
 	private resizeTimeout?: number;
+	private rantLoopTimeout: ReturnType<typeof activeWindow.setTimeout> | null = null;
 
 	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -37,7 +33,7 @@ export class PetView extends ItemView {
 
 	// Decides icon for view
 	getIcon() {
-		return "cat";
+		return "leaf";
 	}
 
 	// Builds content of view when it is opened
@@ -48,10 +44,6 @@ export class PetView extends ItemView {
 			return;
 		}
 
-		this.addAction("paw-print", "Cat toy toggle", () => {
-			this.plugin.changeMouseCommand();
-		})
-		
 		this.addAction("image", "Choose a background", () => {
 			this.plugin.showChooseBackgroundCommand();
 		})
@@ -59,9 +51,22 @@ export class PetView extends ItemView {
 		this.addAction("minus", "Remove all pets", async () => {
 			await this.plugin.clearAllPets();
 		});
-		
-		this.addAction("circle-dashed", "Throw a ball", () => {
-			this.plugin.throwBallCommand();
+
+		this.addAction("x", "Remove a specific pet", () => {
+			if (this.plugin.instanceData.pets.length === 0) {
+				return;
+			}
+			const options = this.plugin.instanceData.pets.map((pet) => ({
+				value: pet.id,
+				label: `${pet.name} (${this.plugin.getCleanLabel(pet.id)})`,
+			}));
+			new SelectorModal(
+				this.app,
+				options,
+				async (value: string, _name: string) => {
+					await this.plugin.removePetById(value);
+				}
+			).open();
 		});
 
 		this.addAction("plus", "Add a pet", () => {
@@ -69,6 +74,7 @@ export class PetView extends ItemView {
 		});
 		this.updateView();
 		this.setupResizeObserver();
+		this.startRantLoop();
 	}
 
 	updateView() {
@@ -96,6 +102,9 @@ export class PetView extends ItemView {
 				this.addPetToView(wrapper, pet);
 			}
 		}
+
+		// Show empty state when no pets are present
+		this.updateEmptyState(wrapper);
 	}
 
 	updateBackground(wrapper: HTMLElement) {
@@ -120,55 +129,72 @@ export class PetView extends ItemView {
 		if (background !== "none") {
 			try {
 				const backgroundUrl = getBackgroundAsset(background);
-				wrapper.createEl("img", {
-					attr: {
-						src: backgroundUrl,
-						alt: "Background",
-					},
-					cls: "pet-view-background",
-				});
+				const isWoodTile = ["wood_dark", "wood_light", "wood_orange"].includes(background);
+
+				if (isWoodTile) {
+					wrapper.createEl("div", {
+						cls: "pet-view-background pet-view-background-tiled",
+					}).style.backgroundImage = `url('${backgroundUrl}')`;
+				} else {
+					wrapper.createEl("img", {
+						attr: {
+							src: backgroundUrl,
+							alt: "Background",
+						},
+						cls: "pet-view-background",
+					});
+				}
 			} catch (error) {
 				console.error(`Failed to load background: ${background}`, error);
 			}
-		} 
-	
-		if (background.includes("snow") && this.plugin.instanceData.animatedBackground) {
-			try {
-				const snowUrl = getBackgroundAsset("snow.gif");
-				wrapper.createEl("img", {
-					attr: {
-						src: snowUrl,
-						alt: "Snow falling animation",
-					},
-					cls: "pet-view-background-animation",
-				});
-			} catch (error) {
-				console.error("Failed to load snow animation", error);
-			}
 		}
 
-		this.updateAllCatVerticalPositions(background);
+		this.updateAllPetVerticalPositions(background);
+	}
+
+	private updateEmptyState(wrapper: HTMLElement) {
+		const existingEmpty = wrapper.querySelector('.pet-empty-state');
+		const petCount = this.pets.length;
+
+		if (petCount === 0) {
+			if (!existingEmpty) {
+				const emptyState = wrapper.createDiv({ cls: 'pet-empty-state' });
+				emptyState.createDiv({ cls: 'pet-empty-state-icon', text: '🐾' });
+				emptyState.createDiv({
+					cls: 'pet-empty-state-title',
+					text: 'No pets yet!',
+				});
+				emptyState.createDiv({
+					cls: 'pet-empty-state-desc',
+					text: 'Click the + button in the header or use the "Add a pet" command to bring in your first companion.',
+				});
+				const addButton = emptyState.createEl('button', {
+					cls: 'pet-empty-state-button',
+					text: 'Add a pet',
+				});
+				addButton.addEventListener('click', () => {
+					this.plugin.showAddPetCommand();
+				});
+			}
+		} else {
+			if (existingEmpty) {
+				existingEmpty.remove();
+			}
+		}
 	}
 
 	updatePetSize() {
 		for (const { pet } of this.pets) {
-			// Update the internal scale property
 			pet.scale = this.plugin.instanceData.petSize;
-
-			// Immediately reflect change in CSS
 			pet.petEl?.setCssProps({
 				"--scale": `${this.plugin.instanceData.petSize}`,
 			});
 		}
+	}
 
-		// Also update balls if you want them scaled too (optional)
-		for (const { ball } of this.balls) {
-			if (ball.ballEl) {
-				ball.scale = this.plugin.instanceData.petSize;
-				ball.ballEl.setCssProps({
-					"--scale": `${this.plugin.instanceData.petSize}`,
-				});
-			}
+	updatePetSpeed() {
+		for (const { pet } of this.pets) {
+			pet.speedMultiplier = this.plugin.instanceData.petSpeed;
 		}
 	}
 
@@ -176,22 +202,19 @@ export class PetView extends ItemView {
 		try {	
 			const background = this.plugin.getSelectedBackground();
 			const cleanPetId = singlePet.id.replace(/^pets\//, "");
-
-			if (singlePet.type.includes("cat")) {
-				const catAnimations = getCatAnimations(singlePet.type);
-				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize,singlePet.name, singlePet.type.includes("witch"));
-				this.pets.push({ id: singlePet.id, pet: cat });
-			} else if (singlePet.type.includes("bunny")) {
-				const bunnyAnimations = getBunnyAnimations(singlePet.type);
-				const moveDist = Math.floor(Math.random() * 30) + 45;
-				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
-				this.pets.push({ id: singlePet.id, pet: bunny });
-			} else if (singlePet.type.includes("ghost")) {
-				const ghostAnimations = getGhostAnimations(singlePet.type);
-				const moveDist = Math.floor(Math.random() * 20) + 20;
-				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
-				this.pets.push({ id: singlePet.id, pet: ghost });
+			const pet = createRenderablePet(
+				wrapper,
+				singlePet.type,
+				background,
+				cleanPetId,
+				this.plugin.instanceData.petSize,
+				singlePet.name,
+				() => this.plugin.getPageRantText("rightclick", singlePet.type),
+				this.plugin.instanceData.petSpeed,
+				(isNPC: boolean) => isNPC ? (this.plugin.instanceData.npcSpeechEnabled ?? true) : (this.plugin.instanceData.petSpeechEnabled ?? true),
+			);
+			if (pet) {
+				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });
 			}
 		} catch (error) {
 			console.error(`Failed to create pet ${singlePet.id}:`, error);
@@ -206,6 +229,7 @@ export class PetView extends ItemView {
 			void this.pets[index].pet.destroy();
 			this.pets.splice(index, 1);
 		}
+		this.updateEmptyState(this.getWrapper());
 	}
 
 	removeAllPets() {
@@ -215,64 +239,19 @@ export class PetView extends ItemView {
 		}
 		// Empty list
 		this.pets = [];
+		this.updateEmptyState(this.getWrapper());
 	}
 
-	startCursorFollow(getCursorX: () => number) {
-		for (const { pet } of this.pets) {
-			if (pet instanceof Cat) {
-				pet.startFollowingCursor(getCursorX);
-			}
-		}
-	}
-
-	stopCursorFollow() {
-		for (const { pet } of this.pets) {
-			if (pet instanceof Cat) {
-				pet.stopFollowingCursor();
-			}
-		}
-	}
-
-	updateAllCatVerticalPositions(newBackground: string) {
+	updateAllPetVerticalPositions(newBackground: string) {
 		// Update the position for all of them
 		for (const { pet } of this.pets) {
 			pet.updateVerticalPosition(newBackground);
 		}
 	}
 
-	addBallToView(wrapper: Element, type: string) {
-		try {
-			const background = this.plugin.getSelectedBackground();
-			const cleanBallId = type.replace(/^toys\//, "");
-
-			// Add the ball to the view
-			const ballAnimation = getBallAnimations(cleanBallId);
-			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background, this.plugin.instanceData.petSize);
-			this.balls.push({ id: cleanBallId, ball });
-
-			// Choose a random cat to chase after the ball
-			const cats = this.pets.filter(p => p.pet instanceof Cat);
-			if (cats.length > 0) {
-				const randomCat = cats[Math.floor(Math.random() * cats.length)].pet as Cat;
-				randomCat.startChasingBall(ball);
-				// Sets the callback function for on destroy (DOES NOT RUN IT YET)
-				ball.onDestroy = () => {
-					// Stop chasing + remove ball from array
-					randomCat.stopChasingBall();
-					const index = this.balls.findIndex(b => b.id === cleanBallId);
-					if (index !== -1) {
-						this.balls.splice(index, 1);
-					}
-				};
-			}
-		} catch (error) {
-			console.error("Failed to add ball to view:", error);
-		}
-	}
-
 	// Getter function to get wrapper of entire pet view
-	getWrapper() {
-		const wrapper = this.containerEl.querySelector(".pet-view-wrapper");
+	getWrapper(): HTMLElement {
+		const wrapper = this.containerEl.querySelector(".pet-view-wrapper") as HTMLElement;
 		if (!wrapper) {
 			throw new Error("pet-view-wrapper not found");
 		}
@@ -285,10 +264,6 @@ export class PetView extends ItemView {
 			pet.destroyImmediate(); // Destroy immediately to avoid death animation + id overlaps
 		}
 		this.pets = [];
-		for (const { ball } of this.balls) {
-			ball.destroy();
-		}
-		this.balls = [];
 		this.updateView();
 	}
 
@@ -339,9 +314,51 @@ export class PetView extends ItemView {
 			activeWindow.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;
 		}
-		await Promise.all(this.pets.map(({ pet }) => pet.destroy()));
-		for (const { ball } of this.balls) {
-			ball.destroy();
+		if (this.rantLoopTimeout !== null) {
+			activeWindow.clearTimeout(this.rantLoopTimeout);
+			this.rantLoopTimeout = null;
 		}
+		await Promise.all(this.pets.map(({ pet }) => pet.destroy()));
+	}
+
+	private startRantLoop() {
+		const scheduleNext = () => {
+			const minMinutes = Math.min(
+				this.plugin.instanceData.pageRantMinMinutes || 5,
+				this.plugin.instanceData.pageRantMaxMinutes || 20
+			);
+			const maxMinutes = Math.max(
+				this.plugin.instanceData.pageRantMinMinutes || 5,
+				this.plugin.instanceData.pageRantMaxMinutes || 20
+			);
+			const minMs = minMinutes * 60 * 1000;
+			const maxMs = maxMinutes * 60 * 1000;
+			const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+
+			this.rantLoopTimeout = activeWindow.setTimeout(() => {
+				if (this.plugin.instanceData.pageRantEnabled) {
+					// If configured, suppress rants when Obsidian window is not focused/backgrounded
+					if (this.plugin.instanceData.pageRantOnlyWhenFocused && !activeDocument.hasFocus()) {
+						scheduleNext();
+						return;
+					}
+					const target = this.pets[Math.floor(Math.random() * this.pets.length)];
+					if (target) {
+						const isNPC = target.type.startsWith("stardew/npc/");
+						const speechEnabled = isNPC ? (this.plugin.instanceData.npcSpeechEnabled ?? true) : (this.plugin.instanceData.petSpeechEnabled ?? true);
+						if (speechEnabled) {
+							void this.plugin.getPageRantText("timer", target.type).then((text) => {
+								if (text) {
+									target.pet.showSpeechBubble(text);
+								}
+							});
+						}
+					}
+				}
+				scheduleNext();
+			}, delay);
+		};
+
+		scheduleNext();
 	}
 }

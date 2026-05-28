@@ -1,15 +1,11 @@
-import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
+import { Plugin, Notice, WorkspaceLeaf, MarkdownView } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./petview";
 import { OverlayPetView } from "./overlay";
-import { CatToyOverlay } from "./pet-utils/cat-toy";
 import { PetSettingTab } from "./settings";
-import { SelectorModal, SelectorOption, ChatModal } from "./modals";
-import { askModel, reformulateQuery } from "./chatmodels";
-import { GoogleGenAI } from "@google/genai";
-import { VectorDB } from "./chat-utils/vector-db";
-import { indexVault } from "./chat-utils/indexer";
-import { answerQuery } from "./chat-utils/retriever";
+import { SelectorModal, SelectorOption } from "./modals";
+import { generatePageRantText } from "./chatmodels";
 import { initModel } from "./chatmodels";
+import { STARDEW_SPECIES_OPTIONS, getStardewSpeciesPersona } from "./pet-utils/stardew-species";
 import OpenAI from "openai";
 
 export interface PetInstance {
@@ -23,13 +19,21 @@ interface PetPluginData {
 	selectedBackground: string;
 	pets: PetInstance[]; // To keep track of all pet instances
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
-	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
+	petSpeed: number; // Movement speed multiplier (1 = normal speed)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
-	geminiApiKey: string; // Gemini API key for chat feature
-	openAiApiKey: string; // OpenAI API key for RAG
-	indexedFiles?: Record<string, number>; // To track already indexed files in vault
+	openAiApiKey: string; // OpenAI API key
+	openAiBaseUrl: string; // OpenAI-compatible base URL
+	pageRantEnabled: boolean;
+	pageRantMinMinutes: number;
+	pageRantMaxMinutes: number;
+	pageRantContextChars: number;
+	pageRantOnlyWhenFocused?: boolean;
 	selectedModel?: string; // Selected model for chat
+	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
+	petSpeechEnabled: boolean; // Whether regular pets can show speech bubbles
+	npcSpeechEnabled: boolean; // Whether NPCs can show speech bubbles
+	firstRunComplete?: boolean; // Whether the user has seen the welcome notice
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -37,148 +41,54 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pets: [],
 	nextPetIdCounters: {},
 	overlayMode: false,
+	petSpeed: 1,
+	useChinesePrompt: false,
+	openAiBaseUrl: "https://api.openai.com/v1",
+	pageRantEnabled: false,
+	pageRantMinMinutes: 5,
+	pageRantMaxMinutes: 20,
+	pageRantContextChars: 1200,
+	pageRantOnlyWhenFocused: true,
+	petSpeechEnabled: true,
+	npcSpeechEnabled: true,
+	petSize: 1,
+	firstRunComplete: false,
 };
-
-export interface ConversationMessage {
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
-}
 
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
-	ragDb!: VectorDB;
-	private chatmodel: GoogleGenAI | OpenAI | null = null;
+	// Recent activity log (in-memory). Each entry: {ts, type, file}
+	recentActivity: { ts: number; type: "modify" | "create" | "open"; path: string }[] = [];
+	private chatmodel: OpenAI | null = null;
 	private overlayView: OverlayPetView | null = null;
-	private catToyActive = false;
-	private catToyOverlay: CatToyOverlay | null = null;
-	private currentMouseX = 0;
-	protected BALLS: string[] = [
-		"toys/blue-ball",
-		"toys/cyan-ball",
-		"toys/green-ball",
-		"toys/orange-ball",
-		"toys/pink-ball",
-		"toys/purple-ball",
-		"toys/red-ball",
-		"toys/yellow-ball",
-	];
-	protected PETS: SelectorOption[] = [
-		{
-			value: "pets/batman-black-cat",
-			label: "Black batman cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/batman-blue-cat",
-			label: "Blue batman cat",
-			requiresName: true,
-		},
-		{ value: "pets/black-cat", label: "Black cat", requiresName: true },
-		{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
-		{
-			value: "pets/xmas-cat",
-			label: "Christmas cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/xmas-v2-cat",
-			label: "Christmas cat v2",
-			requiresName: true,
-		},
-		{
-			value: "pets/xmas-v3-cat",
-			label: "Christmas cat v3",
-			requiresName: true,
-		},
-		{
-			value: "pets/classic-cat",
-			label: "Classic cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/deer-cat",
-			label: "Deer cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/demon-cat",
-			label: "Demonic cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/egypt-cat",
-			label: "Egyptian cat",
-			requiresName: true,
-		},
-		{ value: "pets/ghost", label: "Ghost", requiresName: true },
-		{
-			value: "pets/grey-bunny",
-			label: "Grey bunny",
-			requiresName: true,
-		},
-		{
-			value: "pets/pirate-cat",
-			label: "Pirate cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/pirate-v2-cat",
-			label: "Pirate cat v2",
-			requiresName: true,
-		},
-		{
-			value: "pets/pirate-v3-cat",
-			label: "Pirate cat v3",
-			requiresName: true,
-		},
-		{
-			value: "pets/siamese-cat",
-			label: "Siamese cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/three-cat",
-			label: "Tri-colored cat",
-			requiresName: true,
-		},
-		{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
-		{
-			value: "pets/vampire-cat",
-			label: "Vampire cat",
-			requiresName: true,
-		},
-		{ value: "pets/white-cat", label: "White cat", requiresName: true },
-		{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
-	];
+	protected PETS: SelectorOption[] = STARDEW_SPECIES_OPTIONS;
 
 	protected BACKGROUNDS: SelectorOption[] = [
 		{ value: "none", label: "None" },
-		{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
-		{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
-		{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
-		{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
-		{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
-		{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
-		{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
-		{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
-		{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
+		{ value: "dirt", label: "Dirt" },
+		{ value: "grass", label: "Grass" },
+		{ value: "grass_fall", label: "Grass (Fall)" },
+		{ value: "sand", label: "Sand" },
+		{ value: "snow", label: "Snow" },
+		{ value: "wood_broken", label: "Wood (Broken)" },
+		{ value: "wood_dark", label: "Wood (Dark)" },
+		{ value: "wood_light", label: "Wood (Light)" },
+		{ value: "wood_orange", label: "Wood (Orange)" },
 	];
 
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
-			// NEED TO HANDLE ERROR BETTER IF NO API KEY
 			if (
 				this.instanceData.selectedModel &&
 				this.instanceData.selectedModel !== "none"
 			) {
 				try {
 					this.chatmodel = initModel(
-						this.instanceData.selectedModel,
-						this.instanceData.geminiApiKey,
-						this.instanceData.openAiApiKey
+						this.instanceData.openAiApiKey,
+						this.instanceData.openAiBaseUrl,
+						this.instanceData.selectedModel || "gpt-5-mini"
 					);
 				} catch (e) {
 					console.warn("Failed to initialize chat model:", e);
@@ -191,11 +101,42 @@ export default class PetPlugin extends Plugin {
 			console.error("Failed to load pet plugin data:", err);
 		}
 
-		// Initialize the vector database
-		this.ragDb = new VectorDB();
+		// First-run welcome
+		if (!this.instanceData.firstRunComplete) {
+			this.instanceData.firstRunComplete = true;
+			await this.saveData(this.instanceData);
+
+			// Show a welcome notice after layout is ready for better visibility
+			this.app.workspace.onLayoutReady(() => {
+				new Notice(
+					'Welcome to Stardew Valley in Obsidian! Use the ribbon icon or the "Add a pet" command to bring in your first companion.',
+					8000
+				);
+			});
+		}
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
+
+		// Track recent activity for page rants (kept in-memory, pruned periodically)
+		this.registerEvent(
+			this.app.vault.on("modify", (file) => {
+				this.recordActivity("modify", file.path);
+			})
+		);
+		this.registerEvent(
+			this.app.vault.on("create", (file) => {
+				this.recordActivity("create", file.path);
+			})
+		);
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (activeFile) {
+					this.recordActivity("open", activeFile.path);
+				}
+			})
+		);
 
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
@@ -206,6 +147,7 @@ export default class PetPlugin extends Plugin {
 				for (const pet of this.instanceData.pets) {
 					this.overlayView.addPet(pet);
 				}
+				this.overlayView.startRantLoop();
 			} else {
 				const isOpen =
 					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
@@ -247,21 +189,6 @@ export default class PetPlugin extends Plugin {
 			callback: () => this.showAddPetCommand(),
 		});
 
-		// Command to add a ball
-		this.addCommand({
-			id: "add-ball-dropdown",
-			name: "Add a ball",
-			callback: async () => this.throwBallCommand(),
-		});
-
-
-		// Command to change mouse to a cat toy
-		this.addCommand({
-			id: "add-cat-toy-dropdown",
-			name: "Cat toy mouse toggle",
-			callback: async () => this.changeMouseCommand(),
-		});
-
 		// Command to remove all pets
 		this.addCommand({
 			id: "clear-all-pets",
@@ -291,78 +218,23 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		this.addCommand({
-			id: "chat-with-pets",
-			name: "Chat with your pets",
-			callback: () => {
-				if (!this.instanceData.selectedModel || this.instanceData.selectedModel === "none") {
-					new Notice("Please select a chat model in settings first.");
-					return;
-				}
-				if (!this.chatmodel) {
-					new Notice("Please set your API key(s) in settings first.");
-					return;
-				}
-
-				new ChatModal(this.app, this, (msg, history) => this.chatWithPet(msg, history)).open(); // Pass reference to this plugin to use the markdown
-			},
-		});
-
-		// Add command to manually index vault (also do this onload if not indexed yet)
-		this.addCommand({
-			id: "manual-index-vault",
-			name: "Index Vault for RAG",
-			callback: async () => {
-				if (!this.instanceData.openAiApiKey) {
-					new Notice("Set your OpenAI API key first.");
-					return;
-				}
-
-				await indexVault(
-					this.app,
-					this.ragDb,
-					this.instanceData.openAiApiKey,
-					this.instanceData.indexedFiles
-				);
-				await this.saveData(this.instanceData);
-				new Notice("Vault indexed successfully.");
-			},
-		});
-
 		// Add settings
 		this.addSettingTab(new PetSettingTab(this.app, this));
 
-		// Add initial indexing if vault not indexed yet
-		if (this.instanceData.openAiApiKey && this.ragDb) {
-			if (
-				!this.instanceData.indexedFiles ||
-				Object.keys(this.instanceData.indexedFiles).length === 0
-			) {
-				// console.log("Indexing all vault files for the first time...");
-				await indexVault(
-					this.app,
-					this.ragDb,
-					this.instanceData.openAiApiKey,
-					this.instanceData.indexedFiles
-				);
-				await this.saveData(this.instanceData);
-			}
-		}
-
 		const NEW_NOTE_MESSAGES = [
-			"Meow! A new note! 😸",
-			"Purr-fect time to write! 🐱",
-			"I'm feline creative! 😻",
-			"Note-hing can stop you now!",
-			"Paws and write! 🐾",
-			"Cat-ch those ideas!",
-			"Whisker up some brilliance! 🐈",
-			"You've cat to be kitten - another note?",
-			"Fur real, you're productive!",
-			"Meow-velous note-taking!",
-			"Meow meow! 😺",
-			"*purrs contentedly* 🐱",
-			"Mew mew!",
+			"A fresh note has appeared!",
+			"Perfect time to write something down.",
+			"New ideas are ready to grow.",
+			"Nothing can stop this note now!",
+			"Pause and jot it down.",
+			"Fresh inspiration, right on time.",
+			"This one feels worth keeping.",
+			"Another note, another good start.",
+			"You're moving fast today.",
+			"Nice work, keep the momentum going.",
+			"A little burst of inspiration!",
+			"*quietly pleased*",
+			"Keep it going.",
 					
 			"Woof! New note detected! 🐕",
 			"Bark bark! Time to write! 🐶",
@@ -380,13 +252,12 @@ export default class PetPlugin extends Plugin {
 			"*tail wagging intensifies*",
 			
 			"Hop into a new note! 🐰",
-			"Some-bunny's productive!",
 			"Lettuce write! 🥬",
 			"Hare-brained ideas welcome!",
 			"Note-hopping along nicely!",
 			"Carrot-ch all your thoughts! 🥕",
 			"Hop-timistic about this note!",
-			"Bunny-lievable productivity!",
+			"A bright little note just landed.",
 
 			"Write on, hooman! ✍️",
 		];
@@ -414,53 +285,6 @@ export default class PetPlugin extends Plugin {
 		).open();
 	}
 
-	public changeMouseCommand(): void {
-		this.catToyActive = !this.catToyActive;
-		if (this.catToyActive) {
-			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize ?? 1, (x) => { this.currentMouseX = x; });
-			this.startCursorFollowMode();
-		} else {
-			this.catToyOverlay?.destroy();
-			this.catToyOverlay = null;
-			this.stopCursorFollowMode();
-		}
-	}
-
-	private startCursorFollowMode() {
-		if (this.instanceData.overlayMode) {
-			const getCursorX = () => this.currentMouseX;
-			this.overlayView?.startCursorFollow(getCursorX);
-		} else {
-			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
-				if (leaf.view instanceof PetView) {
-					const containerEl = leaf.view.getWrapper() as HTMLElement;
-					const getCursorX = () => {
-						const rect = containerEl.getBoundingClientRect();
-						return this.currentMouseX - rect.left;
-					};
-					leaf.view.startCursorFollow(getCursorX);
-				}
-			}
-		}
-	}
-
-	private stopCursorFollowMode() {
-		if (this.instanceData.overlayMode) {
-			this.overlayView?.stopCursorFollow();
-		} else {
-			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
-				if (leaf.view instanceof PetView) {
-					leaf.view.stopCursorFollow();
-				}
-			}
-		}
-	}
-
-	public throwBallCommand() {
-		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
-		void this.addBall(randomBall);
-	}
-
 	public showChooseBackgroundCommand() {
 		new SelectorModal(
 			this.app,
@@ -471,98 +295,310 @@ export default class PetPlugin extends Plugin {
 		).open();
 	}
 
-	// Function to handle chat messages
-	async chatWithPet(question: string, conversationHistory: ConversationMessage[] = []): Promise<string> {
-		// Need a chat model to exist
-		if (!this.chatmodel) {
-			return "Please set your API key(s) in settings first.";
-		}
-
-		let searchQuery = question;
-
-		// Reformulate follow up questions with context from previous questions (so that semantic searching works better)
-		if (conversationHistory.length > 0) {
-			const recentContext = conversationHistory
-				.slice(-6)
-				.map(msg => `${msg.role}: ${msg.content}`)
-				.join("\n");
-			
-			searchQuery = await reformulateQuery(question, recentContext, this.chatmodel, this.instanceData.selectedModel || "none");
-		}
-
-		// If OpenAI key exists -> fetch context (retrieval)
-		let context = "";
-		if (this.instanceData.openAiApiKey && this.ragDb) {
-			try {
-				context = await answerQuery(
-					searchQuery,
-					this.instanceData.openAiApiKey,
-					this.ragDb
-				);
-			} catch (e) {
-				console.error("RAG error:", e);
-				new Notice("Failed to retrieve context from vault");
-				// Continue without context
-			}
-		}
-
-		// Try to get response from Model
-		try {
-			return await askModel(
-				context || "No context available.",
-				question,
-				this.chatmodel,
-				this.instanceData.selectedModel || "none",
-				conversationHistory
-			);
-		} catch (e) {
-			console.error("Chat model error:", e);
-			return "Sorry, I couldn't process your request. Please check your selected model and API key.";
-		}
-	}
-
-	public updateGeminiApiKey(geminiApiKey: string): void {
-		this.instanceData.geminiApiKey = geminiApiKey;
-		void this.saveData(this.instanceData);
-	}
-
 	public updateOpenAiApiKey(openAiApiKey: string): void {
 		this.instanceData.openAiApiKey = openAiApiKey;
 		void this.saveData(this.instanceData);
 	}
 
+	public updateOpenAiBaseUrl(openAiBaseUrl: string): void {
+		this.instanceData.openAiBaseUrl = openAiBaseUrl;
+		void this.saveData(this.instanceData);
+	}
+
+	public updateChinesePrompt(useChinesePrompt: boolean): void {
+		this.instanceData.useChinesePrompt = useChinesePrompt;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantEnabled(pageRantEnabled: boolean): void {
+		this.instanceData.pageRantEnabled = pageRantEnabled;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePetSpeechEnabled(petSpeechEnabled: boolean): void {
+		this.instanceData.petSpeechEnabled = petSpeechEnabled;
+		void this.saveData(this.instanceData);
+	}
+
+	public updateNpcSpeechEnabled(npcSpeechEnabled: boolean): void {
+		this.instanceData.npcSpeechEnabled = npcSpeechEnabled;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantMinMinutes(pageRantMinMinutes: number): void {
+		this.instanceData.pageRantMinMinutes = pageRantMinMinutes;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantMaxMinutes(pageRantMaxMinutes: number): void {
+		this.instanceData.pageRantMaxMinutes = pageRantMaxMinutes;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantContextChars(pageRantContextChars: number): void {
+		this.instanceData.pageRantContextChars = pageRantContextChars;
+		void this.saveData(this.instanceData);
+	}
+
+	public updatePageRantOnlyWhenFocused(pageRantOnlyWhenFocused: boolean): void {
+		this.instanceData.pageRantOnlyWhenFocused = pageRantOnlyWhenFocused;
+		void this.saveData(this.instanceData);
+	}
+
+	private recordActivity(type: "modify" | "create" | "open", path: string) {
+		const ts = Date.now();
+		this.recentActivity.push({ ts, type, path });
+		// prune entries older than 15 minutes to keep memory small
+		const cutoff = Date.now() - 15 * 60 * 1000;
+		this.recentActivity = this.recentActivity.filter((e) => e.ts >= cutoff);
+	}
+
+	/**
+	 * Returns a concise human-readable summary of activity in the last `minutes` minutes.
+	 */
+	public getRecentActivitySummary(minutes = 10): string {
+		const cutoff = Date.now() - minutes * 60 * 1000;
+		const recent = this.recentActivity.filter((e) => e.ts >= cutoff);
+		if (recent.length === 0) {
+			return this.instanceData.useChinesePrompt
+				? `过去 ${minutes} 分钟内没有可见的编辑或打开记录。`
+				: `No edits or file opens detected in the last ${minutes} minutes.`;
+		}
+
+		// Group by type and file (basename)
+		const map = new Map<string, Set<string>>();
+		for (const ev of recent) {
+			const name = ev.path.split("/").pop() || ev.path;
+			const key = ev.type;
+			if (!map.has(key)) map.set(key, new Set());
+			map.get(key)!.add(name);
+		}
+
+		const parts: string[] = [];
+		if (map.has("modify")) {
+			const files = Array.from(map.get("modify")!).slice(0, 6).join(", ");
+			parts.push(this.instanceData.useChinesePrompt ? `修改了：${files}` : `modified: ${files}`);
+		}
+		if (map.has("create")) {
+			const files = Array.from(map.get("create")!).slice(0, 6).join(", ");
+			parts.push(this.instanceData.useChinesePrompt ? `新建：${files}` : `created: ${files}`);
+		}
+		if (map.has("open")) {
+			const files = Array.from(map.get("open")!).slice(0, 6).join(", ");
+			parts.push(this.instanceData.useChinesePrompt ? `打开了：${files}` : `opened: ${files}`);
+		}
+
+		// If there are more events than listed, append a short note
+		if (recent.length > 6) {
+			parts.push(this.instanceData.useChinesePrompt ? `以及其他活动` : `and other activity`);
+		}
+
+		return parts.join(this.instanceData.useChinesePrompt ? "；" : "; ");
+	}
+
+	public getCurrentPageLabel(): string {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (activeFile) {
+			return activeFile.basename;
+		}
+
+		const activeLeaf = this.app.workspace.getMostRecentLeaf();
+		return activeLeaf?.view?.getDisplayText?.() ?? "当前页面";
+	}
+
+	private getFallbackPageRantText(trigger: "timer" | "rightclick", petType?: string): string {
+		const pageLabel = this.getCurrentPageLabel();
+		const isNPC = petType ? petType.startsWith("stardew/npc/") : false;
+
+		if (isNPC) {
+			const npcTimerTemplates = this.instanceData.useChinesePrompt
+				? [
+					`《${pageLabel}》？嗯……看起来挺有意思的。`,
+					`我刚路过看到了《${pageLabel}》，这让我想起了星露谷的日子。`,
+					`《${pageLabel}》这篇东西不错，比 Joja 的广告强多了。`,
+				]
+				: [
+					`${pageLabel}? Hmm... looks interesting.`,
+					`I just passed by ${pageLabel}. Reminds me of something back in the valley.`,
+					`${pageLabel} is definitely more interesting than Joja's pamphlets.`,
+				];
+
+			const npcRightClickTemplates = this.instanceData.useChinesePrompt
+				? [
+					`哦？有什么事吗？我正盯着《${pageLabel}》呢。`,
+					`你好啊，${pageLabel} 这篇笔记我也在看。`,
+				]
+				: [
+					`Oh? Need something? I was just looking at ${pageLabel}.`,
+					`Hey there, I was reading through ${pageLabel} myself.`,
+				];
+
+			const templates = trigger === "timer" ? npcTimerTemplates : npcRightClickTemplates;
+			return templates[Math.floor(Math.random() * templates.length)];
+		}
+
+		const timerTemplates = this.instanceData.useChinesePrompt
+			? [
+				`这个页面《${pageLabel}》看起来很忙，但我怀疑它其实在偷偷摸鱼。`,
+				`《${pageLabel}》正在努力工作，我看得出来，只是效率像在打盹。`,
+				`我盯着《${pageLabel}》半天了，它的进度条好像一直在原地散步。`,
+				`《${pageLabel}》今天也在认真营业，不过节奏有点像慢动作回放。`,
+			]
+			: [
+				`This page, ${pageLabel}, looks busy, but I suspect it's secretly taking snack breaks.`,
+				`${pageLabel} is working hard. The pace just feels like a slow afternoon in the valley.`,
+				`I've been watching ${pageLabel} for a while now, and its progress bar seems to be power-napping.`,
+				`${pageLabel} is clearly on the job, but the workflow has a very relaxed rhythm.`,
+			];
+
+		const rightClickTemplates = this.instanceData.useChinesePrompt
+			? [
+				`你点我干嘛？我刚想吐槽《${pageLabel}》呢。`,
+				`右键我也没用，${pageLabel} 这页的工作量还是很可疑。`,
+				`《${pageLabel}》看起来很忙，我正准备帮你吐槽它。`,
+			]
+			: [
+				`Hey, why the right click? I was just about to roast ${pageLabel}.`,
+				`Right-click noted. ${pageLabel} still looks suspiciously overworked.`,
+				`I can explain this page's job, but first: ${pageLabel} is giving me busy-but-not-that-busy vibes.`,
+			];
+
+		const templates = trigger === "timer" ? timerTemplates : rightClickTemplates;
+		return templates[Math.floor(Math.random() * templates.length)];
+	}
+
+	private async getCurrentPageContextSnippet(maxChars: number): Promise<string> {
+		// Prefer extracting context from the active Markdown editor around selection/cursor
+		const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (mdView && (mdView as any).editor) {
+			try {
+				const editor = (mdView as any).editor;
+				const sel = editor.getSelection();
+				const lineCount = typeof editor.lineCount === "function" ? editor.lineCount() : (editor.lineCount ?? 10000);
+
+				if (sel && sel.trim().length > 0) {
+					// Include a few lines of context around the selection
+					const cursor = editor.getCursor();
+					const startLine = Math.max(0, cursor.line - 5);
+					const endLine = Math.min(lineCount - 1, cursor.line + 5);
+					const lines: string[] = [];
+					for (let i = startLine; i <= endLine; i++) {
+						lines.push(editor.getLine(i) || "");
+					}
+					const joined = lines.join("\n") + "\n" + sel;
+					return joined.length > maxChars ? `${joined.slice(0, maxChars)}\n...[内容已截断]` : joined;
+				} else {
+					// No selection: focus on cursor line and nearby lines
+					const cursor = editor.getCursor();
+					const startLine = Math.max(0, cursor.line - 8);
+					const endLine = Math.min(lineCount - 1, cursor.line + 8);
+					const lines: string[] = [];
+					for (let i = startLine; i <= endLine; i++) {
+						lines.push(editor.getLine(i) || "");
+					}
+					const snippet = lines.join("\n");
+					return snippet.length > maxChars ? `${snippet.slice(0, maxChars)}\n...[内容已截断]` : snippet;
+				}
+			} catch (error) {
+				console.error("Failed to read editor content for context snippet:", error);
+				// fallthrough to vault read below
+			}
+		}
+
+		// Fallback: read from vault start as before
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			return "";
+		}
+
+		try {
+			const rawContent = await this.app.vault.cachedRead(activeFile);
+			const normalized = rawContent.replace(/\r\n/g, "\n").trim();
+			if (!normalized) {
+				return "";
+			}
+
+			if (normalized.length <= maxChars) {
+				return normalized;
+			}
+
+			return `${normalized.slice(0, maxChars)}\n...[内容已截断]`;
+		} catch (error) {
+			console.error("Failed to read current page content:", error);
+			return "";
+		}
+	}
+
+	public async getPageRantText(trigger: "timer" | "rightclick", petType?: string): Promise<string> {
+		const pageLabel = this.getCurrentPageLabel();
+		// Capture selected text or caret vicinity from active editor (if available)
+		let selectedText = "";
+		const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (mdView && (mdView as any).editor) {
+			try {
+				const editor = (mdView as any).editor;
+				const sel = editor.getSelection();
+				if (sel && sel.trim().length > 0) {
+					selectedText = sel.length > 1000 ? `${sel.slice(0, 1000)}\n...[已截断]` : sel;
+				} else {
+					const cursor = editor.getCursor();
+					const prev = cursor.line > 0 ? editor.getLine(cursor.line - 1) : "";
+					const line = editor.getLine(cursor.line) || "";
+					const next = editor.getLine(cursor.line + 1) || "";
+					const contextSnippet = [prev, line, next].filter(Boolean).join("\n");
+					selectedText = contextSnippet.length > 1000 ? `${contextSnippet.slice(0, 1000)}\n...[已截断]` : contextSnippet;
+				}
+			} catch (e) {
+				console.warn("Failed to read editor selection for page rant:", e);
+			}
+		}
+		const pageContext = await this.getCurrentPageContextSnippet(this.instanceData.pageRantContextChars || 1200);
+		const activitySummary = this.getRecentActivitySummary(10);
+		let generated = "";
+		try {
+			generated = await generatePageRantText(
+				pageLabel,
+				trigger,
+				selectedText,
+				pageContext,
+				this.instanceData.pageRantContextChars || 1200,
+				activitySummary,
+				petType ? getStardewSpeciesPersona(petType) : undefined,
+				this.chatmodel,
+				this.instanceData.selectedModel || "gpt-5-mini",
+				this.instanceData.useChinesePrompt ?? false,
+				petType ? petType.startsWith("stardew/npc/") : false
+			);
+		} catch (e: any) {
+			const errMsg = e?.message || String(e);
+			console.error("Page rant generation failed:", e);
+			new Notice(`AI 模型调用失败，使用离线吐槽: ${errMsg}`, 5000);
+		}
+
+		return generated || this.getFallbackPageRantText(trigger, petType);
+	}
+
 	public updateChosenModel(selectedModel: string): void {
-		this.instanceData.selectedModel = selectedModel;
+		this.instanceData.selectedModel = selectedModel.trim() || "gpt-5-mini";
 		void this.saveData(this.instanceData);
 
 		try {
-			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
-				new Notice("Set your Gemini API key first.");
-				this.chatmodel = null;
-				return;
-			}
-			if (selectedModel === "openai" && !this.instanceData.openAiApiKey) {
+			if (!this.instanceData.openAiApiKey) {
 				new Notice("Set your OpenAI API key first.");
 				this.chatmodel = null;
 				return;
 			}
 
 			this.chatmodel = initModel(
-				selectedModel,
-				this.instanceData.geminiApiKey,
-				this.instanceData.openAiApiKey
+				this.instanceData.openAiApiKey,
+				this.instanceData.openAiBaseUrl,
+				this.instanceData.selectedModel || "gpt-5-mini"
 			);
 
-			if (selectedModel === "gemini") {
-				new Notice(`Model set to Gemini.`);
-			} else if (selectedModel === "openai") {
-				new Notice(`Model set to OpenAI.`);
-			} else {
-				new Notice("No model selected.");
-			}
+			new Notice(`Model set to ${this.instanceData.selectedModel}.`);
 		} catch (e) {
 			console.error("Failed to initialize model after selection:", e);
-			new Notice("Could not initialize model. Check API keys.");
+			new Notice("Could not initialize model. Check API key, endpoint, and model.");
 			this.chatmodel = null;
 		}
 	}
@@ -590,10 +626,6 @@ export default class PetPlugin extends Plugin {
 	}
 
 	onunload() {
-		if (this.catToyOverlay) {
-			this.catToyOverlay.destroy();
-			this.catToyOverlay = null;
-		}
 		if (this.overlayView) {
 			this.overlayView.destroy();
 			this.overlayView = null;
@@ -609,14 +641,59 @@ export default class PetPlugin extends Plugin {
 			await this.loadData()
 		);
 
+		const legacyBackgroundMap: Record<string, string> = {
+			"backgrounds/snowbg-1.png": "snow",
+			"backgrounds/snowbg-2.png": "snow",
+			"backgrounds/summerbg-1.png": "grass",
+			"backgrounds/summerbg-2.png": "grass",
+			"backgrounds/summerbg-3.png": "grass",
+			"backgrounds/templebg-1.png": "sand",
+			"backgrounds/templebg-2.png": "sand",
+			"backgrounds/castlebg-1.png": "wood_dark",
+			"backgrounds/castlebg-2.png": "wood_light",
+			"snow.gif": "snow",
+		};
+		if (this.instanceData.selectedBackground in legacyBackgroundMap) {
+			this.instanceData.selectedBackground = legacyBackgroundMap[this.instanceData.selectedBackground];
+		}
+
 		// Make sure id counter exists
 		if (!this.instanceData.nextPetIdCounters) {
 			this.instanceData.nextPetIdCounters = {};
 		}
 
-		// Make sure indexedFiles exists
-		if (!this.instanceData.indexedFiles) {
-			this.instanceData.indexedFiles = {};
+		if (this.instanceData.openAiApiKey === undefined) {
+			this.instanceData.openAiApiKey = "";
+		}
+		if (this.instanceData.openAiBaseUrl === undefined) {
+			this.instanceData.openAiBaseUrl = "https://api.openai.com/v1";
+		}
+		if (!this.instanceData.selectedModel) {
+			this.instanceData.selectedModel = "gpt-5-mini";
+		}
+		if (this.instanceData.useChinesePrompt === undefined) {
+			this.instanceData.useChinesePrompt = false;
+		}
+		if (this.instanceData.pageRantEnabled === undefined) {
+			this.instanceData.pageRantEnabled = false;
+		}
+		if (this.instanceData.pageRantMinMinutes === undefined) {
+			this.instanceData.pageRantMinMinutes = 5;
+		}
+		if (this.instanceData.pageRantMaxMinutes === undefined) {
+			this.instanceData.pageRantMaxMinutes = 20;
+		}
+		if (this.instanceData.pageRantContextChars === undefined) {
+			this.instanceData.pageRantContextChars = 1200;
+		}
+		if (this.instanceData.pageRantOnlyWhenFocused === undefined) {
+			this.instanceData.pageRantOnlyWhenFocused = true;
+		}
+		if (this.instanceData.petSpeed === undefined) {
+			this.instanceData.petSpeed = 1;
+		}
+		if (this.instanceData.petSize === undefined) {
+			this.instanceData.petSize = 1;
 		}
 	}
 
@@ -625,7 +702,6 @@ export default class PetPlugin extends Plugin {
 
 		// Make sure not already selected background
 		if (this.instanceData.selectedBackground === backgroundFile) {
-			// console.log("Same picked");
 			return;
 		}
 
@@ -654,26 +730,9 @@ export default class PetPlugin extends Plugin {
 		return this.instanceData.selectedBackground;
 	}
 
-	public toggleBackgroundAnimation(value: boolean): void {
-		this.instanceData.animatedBackground = value;
-		void this.saveData(this.instanceData);
-
-		// Update all open PetViews
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			// if is a PetView
-			if (view instanceof PetView) {
-				view.updateView();
-			}
-		}
-	}
-
 	public updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
 		void this.saveData(this.instanceData);
-
-		this.catToyOverlay?.updateSize(value);
 
 		// Update pet size in overlay mode as well
 		if (this.instanceData.overlayMode) {
@@ -688,6 +747,26 @@ export default class PetPlugin extends Plugin {
 			// if is a PetView
 			if (view instanceof PetView) {
 				view.updatePetSize();
+			}
+		}
+	}
+
+	public updatePetSpeed(value: number): void {
+		this.instanceData.petSpeed = value;
+		void this.saveData(this.instanceData);
+
+		// Update pet speed in overlay mode as well
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.updatePetSpeed();
+			return;
+		}
+
+		// Update all open PetViews
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.updatePetSpeed();
 			}
 		}
 	}
@@ -721,25 +800,6 @@ export default class PetPlugin extends Plugin {
 			const view = leaf.view;
 			if (view instanceof PetView) {
 				view.addPetToView(view.getWrapper(), { id, type, name });
-			}
-		}
-	}
-
-	public async addBall(type: string): Promise<void> {
-		if (this.instanceData.overlayMode) {
-			this.overlayView?.spawnBall(type);
-			return;
-		}
-
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		if (leaves.length === 0) {
-			await this.openView();
-		}
-
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (view instanceof PetView) {
-				view.addBallToView(view.getWrapper(), type);
 			}
 		}
 	}
@@ -805,6 +865,7 @@ export default class PetPlugin extends Plugin {
 		if (enabled) {
 			await this.closeView();
 			this.overlayView = new OverlayPetView(this);
+				this.overlayView.startRantLoop();
 			for (const pet of this.instanceData.pets) {
 				this.overlayView.addPet(pet);
 			}

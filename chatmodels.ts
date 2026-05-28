@@ -1,146 +1,171 @@
-import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
-import { ConversationMessage } from "./main";
+import { StardewPersona } from "./pet-utils/stardew-species";
 
-// Note -> File links cannot be clicked
-// ADD CONTEXT OF PREVIOUS MESSAGES -> need to do this before searching for context?
+function buildPageRantPrompt(
+	pageLabel: string,
+	trigger: "timer" | "rightclick",
+	selectedText: string,
+	pageContext: string,
+	contextCharLimit: number,
+	activitySummary: string,
+	petPersona: StardewPersona | undefined,
+	useChinesePrompt: boolean,
+	isNPC: boolean
+): string {
+	const contextSection = pageContext
+		? `\n页面内容摘录（最多约 ${contextCharLimit} 字）：\n${pageContext}`
+		: "\n页面内容摘录：无可用内容";
 
-export function initModel(
-	selectedModel: string,
-	geminiKey: string,
-	openAiKey: string
-) {
-	if (selectedModel === "gemini") {
-		return new GoogleGenAI({ apiKey: geminiKey });
-	} else if (selectedModel === "openai") {
-		return new OpenAI({
-			apiKey: openAiKey,
-			baseURL: "https://api.openai.com/v1",
-			dangerouslyAllowBrowser: true,
-		}); // Can allow because lowkey
-	} else {
-		return null;
+	const activitySection = activitySummary
+		? `\n最近活动摘要（最近约 10 分钟）：\n${activitySummary}`
+		: "\n最近活动摘要：无可用活动";
+
+	const selectionSection = selectedText
+		? `\n选中内容（已截断，供参考）：\n${selectedText}`
+		: "\n选中内容：无";
+	const personaSection = petPersona
+		? `\n角色身份：${petPersona.identity}\n角色性格：${petPersona.temperament}\n说话风格：${petPersona.rantStyle}`
+		: "";
+
+	if (useChinesePrompt) {
+		if (isNPC) {
+			return `你是星露谷（鹈鹕镇）的一个居民，正在 Obsidian 笔记旁边闲逛，偶尔会对看到的内容吐槽、感慨或给出建议。
+
+页面标题：${pageLabel}
+触发方式：${trigger === "timer" ? "你路过瞥了一眼" : "被右键点了一下"}
+${contextSection}
+${selectionSection}
+${activitySection}
+${personaSection}
+
+提示：
+- 如果有选中内容，请把吐槽的焦点放在选中内容上
+- 用这个角色独有的口吻和性格说话，像游戏中他们真正会说出来的台词
+- 可以提到星露谷的世界（农场、矿洞、酒吧、社区中心、季节、节日等）
+- 重要：不要每句话都重复角色的"标志性标签"（如水晶、Joja、矿洞、诗歌等）——根据页面内容灵活反应，角色背景只是调味料，不是每句话的必备元素
+
+要求：
+- 输出恰好 1 句话
+- 10 到 28 个汉字左右
+- 用这个角色的第一人称说话，符合角色性格和说话风格
+- 明确围绕选中内容（如果有），否则针对页面进行吐槽
+- 不要刻薄或说教（除非角色本身爱吐槽）
+- 不要解释，不要加前缀，不要加引号`;
+		}
+
+		return `你是一只从星露谷农场溜出来的小动物，正在当前页面附近闲逛，偶尔会对看到的内容吐槽两句。
+页面标题：${pageLabel}
+触发方式：${trigger === "timer" ? "路过瞧了一眼" : "被你右键戳了一下"}
+${contextSection}
+${selectionSection}
+${activitySection}
+${personaSection}
+
+提示：如果有选中内容，请把吐槽的焦点放在选中内容上，而不是仅针对页面整体进行笼统点评。不要总是提到同一种农场事物——根据页面内容灵活变化，角色身份只是调味料。
+
+请生成一句自然、鲜活、像星露谷日常对话一样的吐槽。
+要求：
+	- 只输出 1 句
+	- 10 到 28 个汉字左右
+	- 像星露谷 NPC 那样说话，温暖、有点 quirky，偶尔提到农场、季节、天气或社区中心
+	- 明确围绕选中内容（如果有），否则针对页面进行吐槽
+	- 不要刻薄、冒犯或说教
+	- 不要解释，不要加前缀，不要加引号`;
 	}
+
+	if (isNPC) {
+		return `You are a resident of Pelican Town (Stardew Valley), hanging around an Obsidian note and occasionally reacting to what you see.
+
+Page title: ${pageLabel}
+Trigger: ${trigger === "timer" ? "you glanced at it while passing by" : "someone right-clicked you"}
+${contextSection}
+${selectionSection}
+${activitySection}
+${personaSection}
+
+Notes:
+- If there is selected text, focus your reaction on that selected content.
+- Speak in this character's unique voice and personality, as if it were an actual line from the game.
+- You may reference the Stardew Valley world (the farm, mines, saloon, community center, seasons, festivals, etc.)
+- Important: Don't reach for the character's most obvious "signature topic" every time — react to the actual page content. The character's interests are seasoning, not a checklist.
+
+Requirements:
+- Output exactly 1 sentence
+- Keep it around 8 to 18 words
+- Speak in first person as this character, matching their personality and speech style
+- Focus on selected text if available, otherwise react to the page
+- Stay in character — don't break the fourth wall
+- Do not explain, do not add a prefix, do not use quotation marks`;
+	}
+
+	return `You are a little creature that wandered out from Stardew Valley, strolling around the current page and occasionally commenting on what you see.
+Page title: ${pageLabel}
+Trigger: ${trigger === "timer" ? "wandered by for a look" : "poked by right-click"}
+${contextSection}
+${selectionSection}
+${activitySection}
+${personaSection}
+
+Note: If there is selected text, focus the roast on that selected content rather than a generic page-level comment. Vary what you comment on — don't always mention the same farm thing. React to the actual page content.
+
+Write one natural, vivid line that sounds like a Stardew Valley NPC talking.
+Requirements:
+- Output exactly 1 sentence
+- Keep it around 8 to 18 words
+- Warm, a little quirky, like a villager from Pelican Town — mention the farm, seasons, or the valley if it feels right
+- Be playful and vivid, but not mean or preachy
+- Do not explain, do not add a prefix, do not use quotation marks`;
 }
 
-export async function askModel(
-	context: string,
-	question: string,
-	model: GoogleGenAI | OpenAI,
-	selectedModel: string,
-	conversationHistory: ConversationMessage[]
-) {
-	const prompt = `You are a helpful AI assistant with access to the user's Obsidian vault.
-**Context from vault** (relevant notes retrieved via semantic search):
-${context}
----
-
-**Conversation History**: 
-${conversationHistory
-	.map((msg) => `\n- ${msg.role}: \n  - ${msg.content}`)
-	.join("")}
----
-
-**User's question**: ${question}
----
-
-**Instructions**:
-1. **Answer the question** using the context provided above
-2. **Reference sources** using *italics* instead of wikilinks (e.g., *Note Title* or *Folder/Note Title*)
-3. **Formatting**:
-   - Use Markdown formatting
-   - Use LaTeX for math (e.g., $x^2$ or $$\\int x dx$$)
-   - Keep responses well-structured with headers where appropriate
-   - No extra blank lines between regular paragraphs
-4. **Tone**: Be helpful and clear, with a playful catlike personality
-   - Use puns and cute expressions where fitting
-   - Keep it fun but informative!
-5. **If context is insufficient**: You can supplement with your own knowledge, but:
-   - Clearly distinguish between vault content and your general knowledge
-   - Prioritize information from the vault when available (without repeating already provided context/information)
-
-**Remember**: The user wants to learn, so explain concepts clearly as if teaching a smart beginner!`;
-
-	// console.log("Prompt to model:", prompt);
-
-	if (selectedModel === "gemini") {
-		const response = await (model as GoogleGenAI).models.generateContent({
-			model: "gemini-2.5-flash",
-			contents: [{ role: "user", parts: [{ text: prompt }] }],
-		});
-		return response.text || "Sorry, I couldn't generate a response.";
-	}
-
-	if (selectedModel === "openai") {
-		const response = await (model as OpenAI).chat.completions.create({
-			model: "gpt-5-mini",
-			messages: [{ role: "user", content: prompt }],
-		});
-		return response.choices[0].message.content || "No response generated.";
-	}
-
-	return "No valid model selected.";
+function cleanSingleLine(text: string): string {
+	return text
+		.replace(/^[\s>*`"'【\[]+/, "")
+		.replace(/[\s>*`"'】\]]+$/, "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.find((line) => line.length > 0) || "";
 }
 
-// Helper function to reformulate follow-up questions into standalone queries (for better semantic searching)
-export async function reformulateQuery(
-	question: string,
-	recentContext: string,
-	model: GoogleGenAI | OpenAI | null,
-	selectedModel: string
+export async function generatePageRantText(
+	pageLabel: string,
+	trigger: "timer" | "rightclick",
+	selectedText: string,
+	pageContext: string,
+	contextCharLimit: number,
+	activitySummary: string,
+	petPersona: StardewPersona | undefined,
+	model: OpenAI | null,
+	selectedModel: string,
+	useChinesePrompt: boolean,
+	isNPC: boolean
 ): Promise<string> {
 	if (!model) {
-		return question;
+		return "";
 	}
+
+	const prompt = buildPageRantPrompt(pageLabel, trigger, selectedText, pageContext, contextCharLimit, activitySummary, petPersona, useChinesePrompt, isNPC);
 
 	try {
-		const prompt = `You are a helpful AI assistant with access to the user's Obsidian vault in the middle of a conversation with the user.
-Given this recent conversation:
-${recentContext}
-
-The user now asks: "${question}"
-
-Determine whether the question is standalone or a follow-up to a previous question.
-- If the question is standalone, return it as is. 
-- If it's a follow up question, rewrite it based on the recent conversation to be a complete, standalone question that captures the full intent of the question.
-
-Examples:
-- If they asked about "chemistry" then said "explain it" -> output "explain chemistry"
-- If they asked about "Einstein" then said "tell me more" -> output "tell me more about Einstein"
-- If they asked about "photosynthesis" then said "what are examples" -> output "examples of photosynthesis"
-- If they asked "what is the capital of France" -> output "what is the capital of France"
-
-Reformulated query:`;
-
-		if (selectedModel === "gemini") {
-			const response = await (
-				model as GoogleGenAI
-			).models.generateContent({
-				model: "gemini-2.5-flash",
-				contents: [{ role: "user", parts: [{ text: prompt }] }],
-			});
-			return response.text?.trim() || question;
-		}
-
-		if (selectedModel === "openai") {
-			const response = await (
-				model as OpenAI
-			).chat.completions.create({
-				model: "gpt-5-mini",
-				messages: [{ role: "user", content: prompt }],
-			});
-			return response.choices[0].message.content?.trim() || question;
-		}
-	} catch (e) {
-		console.error("Query reformulation failed:", e);
-		// Fallback: simple concatenation
-		const lastUserMsg = recentContext
-			.split("\n")
-			.find((line) => line.startsWith("user:"));
-		if (lastUserMsg) {
-			return `${lastUserMsg.replace("user:", "").trim()} ${question}`;
-		}
+		const response = await model.chat.completions.create({
+			model: selectedModel,
+			messages: [{ role: "user", content: prompt }],
+		});
+		return cleanSingleLine(response.choices[0].message.content || "");
+	} catch (e: any) {
+		const msg = e?.message || String(e);
+		console.error("Page rant generation failed:", e);
+		throw new Error(`AI 模型调用失败: ${msg}`);
 	}
+}
 
-	return question; // Fallback to original
+export function initModel(
+	openAiKey: string,
+	openAiBaseUrl: string,
+	selectedModel: string
+) {
+	return new OpenAI({
+		apiKey: openAiKey,
+		baseURL: openAiBaseUrl,
+		dangerouslyAllowBrowser: true,
+	});
 }
