@@ -116,8 +116,9 @@ export class StardewPet {
 	}
 
 	private applyFrame(frame: [number, number]) {
-		const x = -(frame[0] * this.spriteFrameSize) * this.definition.scale;
-		const y = -(frame[1] * this.spriteFrameSize) * this.definition.scale;
+		const [ox, oy] = this.definition.variantOffset ?? [0, 0];
+		const x = -((frame[0] + ox) * this.spriteFrameSize) * this.definition.scale;
+		const y = -((frame[1] + oy) * this.spriteFrameSize) * this.definition.scale;
 		this.petEl.setCssStyles({ backgroundPosition: `${x}px ${y}px` });
 	}
 
