@@ -31,6 +31,7 @@ export class StardewPet {
 	private readonly rightClickTextProvider: (() => string | Promise<string>) | null;
 	private isDragging = false;
 	private dragThreshold = 3;
+	private readonly isNPC: boolean;
 
 	constructor(
 		private container: Element,
@@ -46,6 +47,7 @@ export class StardewPet {
 		this.petName = petName;
 		this.rightClickTextProvider = rightClickTextProvider;
 		this.spritesheetUrl = getStardewSpeciesSprite(definition.id);
+		this.isNPC = definition.id.startsWith("stardew/npc/");
 
 		requestAnimationFrame(() => {
 			const containerWidth = (this.container as HTMLElement).offsetWidth || 400;
@@ -60,7 +62,11 @@ export class StardewPet {
 			this.setupHoverListeners();
 			void this.initializeSprite().then(() => {
 				void this.playAnimation("idle");
-				void this.startActionLoop();
+				if (this.isNPC) {
+					void this.startNPCWanderLoop();
+				} else {
+					void this.startPetBehaviorLoop();
+				}
 			});
 		});
 	}
@@ -347,76 +353,204 @@ export class StardewPet {
 		this.currentY = parseFloat(computedTop);
 	}
 
-	private async move(duration: number, directionName: "left" | "right" | "up" | "down") {
-		if (this.actionLoopPaused || this.isDestroyed) return;
-		const petWidth = this.spriteFrameWidth * this.definition.scale;
-		const petHeight = this.spriteFrameHeight * this.definition.scale;
-		const containerWidth = (this.container as HTMLElement).offsetWidth;
-		const containerHeight = (this.container as HTMLElement).offsetHeight;
-		const maxLeft = containerWidth - petWidth / 2;
-		const minLeft = petWidth / 2;
-		const maxTop = containerHeight - petHeight / 2;
-		const minTop = petHeight / 2;
-		let targetX = this.currentX;
-		let targetY = this.currentY;
-		if (directionName === "left") {
-			targetX = this.currentX - this.definition.moveDist;
-			this.direction = -1;
-		} else if (directionName === "right") {
-			targetX = this.currentX + this.definition.moveDist;
-			this.direction = 1;
-		} else if (directionName === "up") {
-			targetY = this.currentY - this.definition.moveDist;
-		} else {
-			targetY = this.currentY + this.definition.moveDist;
+	// ===== Redesigned Wander Strategy (modeled after Stardew Valley) =====
+	//
+	// Pets: Behavior state machine with persistent direction walking.
+	//   Walk continuously in one direction until hitting a boundary,
+	//   then pick a new direction. Occasionally pause to sit/sleep.
+	//   Modeled after Pet.RunState / Cat.RunState / Dog.RunState.
+	//
+	// NPCs: Target-based wandering (like NPC.randomSquareMovement).
+	//   Pick a random destination within a wander radius, walk toward it
+	//   along the primary axis, pause on arrival, then pick a new target.
+
+	private getContainerBounds() {
+		const pw = this.spriteFrameWidth * this.definition.scale;
+		const ph = this.spriteFrameHeight * this.definition.scale;
+		const cw = (this.container as HTMLElement).offsetWidth;
+		const ch = (this.container as HTMLElement).offsetHeight;
+		return {
+			minX: pw / 2,
+			maxX: cw - pw / 2,
+			minY: ph / 2,
+			maxY: ch - ph / 2,
+		};
+	}
+
+	/** Move one step in a direction. Returns true if the pet actually moved. */
+	private async moveOneStep(dir: "left" | "right" | "up" | "down"): Promise<boolean> {
+		if (this.actionLoopPaused || this.isDestroyed) return false;
+
+		const bounds = this.getContainerBounds();
+		let tx = this.currentX;
+		let ty = this.currentY;
+
+		switch (dir) {
+			case "left":  tx = this.currentX - this.definition.moveDist; this.direction = -1; break;
+			case "right": tx = this.currentX + this.definition.moveDist; this.direction = 1; break;
+			case "up":    ty = this.currentY - this.definition.moveDist; break;
+			case "down":  ty = this.currentY + this.definition.moveDist; break;
 		}
-		targetX = Math.max(minLeft, Math.min(maxLeft, targetX));
-		targetY = Math.max(minTop, Math.min(maxTop, targetY));
-		if (targetX === this.currentX && targetY === this.currentY) return;
-		const animationName = directionName === "left"
-			? "moveLeft"
-			: directionName === "right"
-				? "moveRight"
-				: directionName === "up"
-					? "moveUp"
-					: "moveDown";
-		void this.playAnimation(animationName);
+
+		tx = Math.max(bounds.minX, Math.min(bounds.maxX, tx));
+		ty = Math.max(bounds.minY, Math.min(bounds.maxY, ty));
+
+		if (tx === this.currentX && ty === this.currentY) return false;
+
+		const animName = `move${dir.charAt(0).toUpperCase() + dir.slice(1)}`;
+		void this.playAnimation(animName);
+
+		const duration = Math.max(200, (this.definition.moveDist / 50) * 1000);
+
 		this.petEl.setCssProps({
-			"--left": `${targetX}px`,
-			"--top": `${targetY}px`,
+			"--left": `${tx}px`,
+			"--top": `${ty}px`,
 			"--scale-x": `${this.direction}`,
 			"--move-duration": `${duration}ms`,
 		});
 		this.speechBubbleEl?.setCssProps({ "--bubble-scale-x": `${1 / this.direction}` });
-		this.currentX = targetX;
-		this.currentY = targetY;
+		this.currentX = tx;
+		this.currentY = ty;
 		await wait(duration);
+		return true;
 	}
 
-	private async startActionLoop() {
-		const actionNames = ["idle", "sleep", "special"].filter((name) => Boolean(this.definition.animations[name]));
-		const moveDirections: Array<"left" | "right" | "up" | "down"> = ["left", "right", "up", "down"];
+	private pickDirection(avoid?: "left" | "right" | "up" | "down"): "left" | "right" | "up" | "down" {
+		const all: Array<"left" | "right" | "up" | "down"> = ["left", "right", "up", "down"];
+		const pool = avoid ? all.filter((d) => d !== avoid) : all;
+		return pool[Math.floor(Math.random() * pool.length)];
+	}
+
+	// ---------- Pet (animal) behavior loop ----------
+
+	private async startPetBehaviorLoop() {
+		type PetBehavior = "walking" | "sitting" | "sleeping";
+		let behavior: PetBehavior = "walking";
+		let facing: "left" | "right" | "up" | "down" = this.pickDirection();
+		let blockedDir: "left" | "right" | "up" | "down" | null = null;
+
 		while (!this.isDestroyed) {
-			while (this.actionLoopPaused && !this.isDestroyed) {
-				await wait(100);
-			}
+			while (this.actionLoopPaused && !this.isDestroyed) await wait(100);
 			if (this.isDestroyed) break;
 
-			const randomAction = actionNames[Math.floor(Math.random() * actionNames.length)] ?? "idle";
-			void this.playAnimation(randomAction);
-			const animation = toAnimation(this.definition.animations[randomAction]);
-			const duration = animation ? Math.max(200, Math.ceil((animation.frames.length / animation.fps) * 1000)) : 1000;
-			await wait(randomAction === "sleep" ? duration * 2 : duration);
+			if (behavior === "walking") {
+				facing = this.pickDirection(blockedDir ?? undefined);
+				blockedDir = null;
 
-			while (this.actionLoopPaused && !this.isDestroyed) {
-				await wait(100);
+				// Walk 4–12 steps in the chosen direction (SV-style persistent movement)
+				const maxSteps = 4 + Math.floor(Math.random() * 9);
+				let moved = false;
+
+				for (let i = 0; i < maxSteps; i++) {
+					if (this.actionLoopPaused || this.isDestroyed) break;
+					const ok = await this.moveOneStep(facing);
+					if (!ok) {
+						blockedDir = facing;
+						break;
+					}
+					moved = true;
+
+					// ~2 % chance per step to interrupt walking with a behavior change
+					if (Math.random() < 0.02) break;
+				}
+
+				if (!moved) continue; // stuck — retry with new direction
+
+				// After a walk sequence, decide what to do next
+				const rand = Math.random();
+				const hasSpecial = Boolean(this.definition.animations.special);
+				const hasSleep = Boolean(this.definition.animations.sleep);
+
+				if (hasSleep && rand < 0.12) {
+					behavior = "sleeping";
+				} else if (hasSpecial && rand < 0.28) {
+					behavior = "sitting";
+				} else {
+					// Brief idle, then keep walking
+					void this.playAnimation("idle");
+					await wait(300 + Math.random() * 700);
+				}
+			} else if (behavior === "sitting") {
+				void this.playAnimation("special");
+				// Sit for 2–6 seconds
+				const sitTime = 2000 + Math.random() * 4000;
+				const started = Date.now();
+				while (Date.now() - started < sitTime && !this.actionLoopPaused && !this.isDestroyed) {
+					await wait(Math.min(500, sitTime - (Date.now() - started)));
+				}
+				behavior = "walking";
+			} else if (behavior === "sleeping") {
+				void this.playAnimation("sleep");
+				const sleepTime = 4000 + Math.random() * 8000;
+				const started = Date.now();
+				while (Date.now() - started < sleepTime && !this.actionLoopPaused && !this.isDestroyed) {
+					await wait(Math.min(500, sleepTime - (Date.now() - started)));
+				}
+				behavior = "walking";
 			}
-			if (this.isDestroyed) break;
-
-			const directionName = moveDirections[Math.floor(Math.random() * moveDirections.length)] ?? "right";
-			await this.move(Math.max(800, duration), directionName);
-			void this.playAnimation("idle");
 		}
+	}
+
+	// ---------- NPC wander loop (target-based, like randomSquareMovement) ----------
+
+	private async startNPCWanderLoop() {
+		while (!this.isDestroyed) {
+			while (this.actionLoopPaused && !this.isDestroyed) await wait(100);
+			if (this.isDestroyed) break;
+
+			// Pick a random destination within wander radius (150–350 px)
+			const bounds = this.getContainerBounds();
+			const radius = 150 + Math.random() * 200;
+			const rawTx = this.currentX + (Math.random() - 0.5) * radius * 2;
+			const rawTy = this.currentY + (Math.random() - 0.5) * radius * 2;
+			const targetX = Math.max(bounds.minX, Math.min(bounds.maxX, rawTx));
+			const targetY = Math.max(bounds.minY, Math.min(bounds.maxY, rawTy));
+
+			// Walk toward the target (primary-axis-first, creating L-shaped paths)
+			const arrived = await this.walkToward(targetX, targetY);
+			if (!arrived) continue;
+
+			// Pause at destination (3–8 seconds, like SV's squarePauseTotal)
+			void this.playAnimation("idle");
+			const pauseTime = 3000 + Math.random() * 5000;
+			const started = Date.now();
+			while (Date.now() - started < pauseTime && !this.actionLoopPaused && !this.isDestroyed) {
+				await wait(500);
+			}
+		}
+	}
+
+	/** Walk toward a target position. Returns true when the target is reached. */
+	private async walkToward(tx: number, ty: number): Promise<boolean> {
+		const maxSteps = 60;
+		for (let i = 0; i < maxSteps; i++) {
+			if (this.actionLoopPaused || this.isDestroyed) return false;
+
+			const dx = tx - this.currentX;
+			const dy = ty - this.currentY;
+
+			if (Math.abs(dx) < this.definition.moveDist && Math.abs(dy) < this.definition.moveDist) {
+				return true;
+			}
+
+			// Move along the axis with the larger gap (SV-style primary-axis movement)
+			const primaryDir: "left" | "right" | "up" | "down" =
+				Math.abs(dx) > Math.abs(dy)
+					? (dx > 0 ? "right" : "left")
+					: (dy > 0 ? "down" : "up");
+
+			const ok = await this.moveOneStep(primaryDir);
+			if (!ok) {
+				// Try the secondary axis
+				const secondaryDir: "left" | "right" | "up" | "down" =
+					Math.abs(dx) > Math.abs(dy)
+						? (dy > 0 ? "down" : "up")
+						: (dx > 0 ? "right" : "left");
+				const ok2 = await this.moveOneStep(secondaryDir);
+				if (!ok2) return false; // completely stuck
+			}
+		}
+		return false;
 	}
 
 	public startFollowingCursor(_getCursorX: () => number): void {
