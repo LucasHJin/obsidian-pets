@@ -4,8 +4,6 @@ import { OverlayPetView } from "./overlay";
 import { PetSettingTab } from "./settings";
 import { SelectorModal, SelectorOption } from "./modals";
 import { generatePageRantText } from "./chatmodels";
-import { VectorDB } from "./chat-utils/vector-db";
-import { indexVault } from "./chat-utils/indexer";
 import { initModel } from "./chatmodels";
 import { STARDEW_SPECIES_OPTIONS, getStardewSpeciesPersona } from "./pet-utils/stardew-species";
 import OpenAI from "openai";
@@ -24,14 +22,13 @@ interface PetPluginData {
 	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
-	openAiApiKey: string; // OpenAI API key for RAG
+	openAiApiKey: string; // OpenAI API key
 	openAiBaseUrl: string; // OpenAI-compatible base URL
 	pageRantEnabled: boolean;
 	pageRantMinMinutes: number;
 	pageRantMaxMinutes: number;
 	pageRantContextChars: number;
 	pageRantOnlyWhenFocused?: boolean;
-	indexedFiles?: Record<string, number>; // To track already indexed files in vault
 	selectedModel?: string; // Selected model for chat
 	useChinesePrompt?: boolean; // Use Chinese prompt wording for AI features
 }
@@ -58,7 +55,6 @@ export interface ConversationMessage {
 
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
-	ragDb!: VectorDB;
 	// Recent activity log (in-memory). Each entry: {ts, type, file}
 	recentActivity: { ts: number; type: "modify" | "create" | "open"; path: string }[] = [];
 	private chatmodel: OpenAI | null = null;
@@ -103,9 +99,6 @@ export default class PetPlugin extends Plugin {
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
 		}
-
-		// Initialize the vector database
-		this.ragDb = new VectorDB();
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
@@ -210,48 +203,8 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		// Add command to manually index vault (also do this onload if not indexed yet)
-		this.addCommand({
-			id: "manual-index-vault",
-			name: "Index Vault for RAG",
-			callback: async () => {
-				if (!this.instanceData.openAiApiKey) {
-					new Notice("Set your OpenAI API key first.");
-					return;
-				}
-
-				await indexVault(
-					this.app,
-					this.ragDb,
-					this.instanceData.openAiApiKey,
-					this.instanceData.openAiBaseUrl,
-					this.instanceData.indexedFiles
-				);
-				await this.saveData(this.instanceData);
-				new Notice("Vault indexed successfully.");
-			},
-		});
-
 		// Add settings
 		this.addSettingTab(new PetSettingTab(this.app, this));
-
-		// Add initial indexing if vault not indexed yet
-		if (this.instanceData.openAiApiKey && this.ragDb) {
-			if (
-				!this.instanceData.indexedFiles ||
-				Object.keys(this.instanceData.indexedFiles).length === 0
-			) {
-				// console.log("Indexing all vault files for the first time...");
-				await indexVault(
-					this.app,
-					this.ragDb,
-					this.instanceData.openAiApiKey,
-					this.instanceData.openAiBaseUrl,
-					this.instanceData.indexedFiles
-				);
-				await this.saveData(this.instanceData);
-			}
-		}
 
 		const NEW_NOTE_MESSAGES = [
 			"A fresh note has appeared!",
@@ -647,10 +600,6 @@ export default class PetPlugin extends Plugin {
 			this.instanceData.nextPetIdCounters = {};
 		}
 
-		// Make sure indexedFiles exists
-		if (!this.instanceData.indexedFiles) {
-			this.instanceData.indexedFiles = {};
-		}
 		if (this.instanceData.openAiApiKey === undefined) {
 			this.instanceData.openAiApiKey = "";
 		}

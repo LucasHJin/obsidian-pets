@@ -68,7 +68,7 @@ Here is what it looks like if you enable the full vault overlay.
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
 - Chatting with pets
     - `Chat with your pets`: Opens up a chat modal for you to ask your pet questions.
-        - **NOTE:** Set the API key for the provider you want to use. OpenAI is still used for optional vault indexing / RAG context.
+        - **NOTE:** Set the API key for the provider you want to use.
             - Further instructions can be found here -> [OpenAI](https://platform.openai.com/api-keys), [Gemini](https://aistudio.google.com/), [Alibaba Bailian model list](https://bailian.console.aliyun.com/cn-beijing?tab=model#/model-market), [DeepSeek docs](https://api-docs.deepseek.com/zh-cn/)
         - *Usecases include*: Chatting for fun, studying/reviewing your notes, and learning new concepts.
 
