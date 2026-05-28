@@ -62,7 +62,7 @@ Pets and NPCs can comment on your notes using AI, with configurable persona-base
 
 ### Manual Installation
 
-1. Download the latest release from the [Releases page](https://github.com/miaowuduck/stardew-valley-pets/releases)
+1. Download the latest release from the [Releases page](https://github.com/miaowuduck/stardew-valley-in-obsidian/releases)
 2. Extract the folder into your vault's `.obsidian/plugins/` directory
 3. In Obsidian, go to **Settings > Community Plugins** and click **Reload plugins**
 4. Enable **Stardew Valley in Obsidian**
@@ -160,4 +160,4 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ## Feedback
 
-Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/miaowuduck/stardew-valley-pets/issues).
+Found a bug or have a suggestion? Open an issue on [GitHub](https://github.com/miaowuduck/stardew-valley-in-obsidian/issues).

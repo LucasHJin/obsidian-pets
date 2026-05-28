@@ -211,14 +211,14 @@ export class PetSettingTab extends PluginSettingTab {
 						const client = initModel(key, baseUrl, model);
 						const response = await client.chat.completions.create({
 							model: model,
-							messages: [{ role: "user", content: "Hello! Respond with just the word 'ok'." }],
-							max_tokens: 10,
+							messages: [{ role: "user", content: "Say 'ok'" }],
+							max_tokens: 20,
 						});
 						const reply = response.choices[0]?.message?.content?.trim() || "";
 						if (reply) {
-							new Notice(`Connection successful! Model response: "${reply}"`, 6000);
+							new Notice(`Connection successful! Response: "${reply}"`, 6000);
 						} else {
-							new Notice("Connection succeeded but the model returned an empty response.", 6000);
+							new Notice("Connection successful! API key, endpoint, and model are configured correctly.", 6000);
 						}
 					} catch (e: any) {
 						const errMsg = e?.message || String(e);
