@@ -15,6 +15,7 @@ function wait(ms: number): Promise<void> {
 export class StardewPet {
 	public petEl!: HTMLElement;
 	public scale: number;
+	public speedMultiplier: number;
 	private spriteFrameWidth = 16;
 	private spriteFrameHeight = 16;
 	private currentX!: number;
@@ -41,9 +42,11 @@ export class StardewPet {
 		scale: number,
 		petName: string,
 		rightClickTextProvider: (() => string | Promise<string>) | null = null,
+		speedMultiplier = 1,
 	) {
 		this.definition = definition;
 		this.scale = scale;
+		this.speedMultiplier = speedMultiplier;
 		this.petName = petName;
 		this.rightClickTextProvider = rightClickTextProvider;
 		this.spritesheetUrl = getStardewSpeciesSprite(definition.id);
@@ -382,14 +385,15 @@ export class StardewPet {
 		if (this.actionLoopPaused || this.isDestroyed) return false;
 
 		const bounds = this.getContainerBounds();
+		const stepDist = this.definition.moveDist * this.speedMultiplier;
 		let tx = this.currentX;
 		let ty = this.currentY;
 
 		switch (dir) {
-			case "left":  tx = this.currentX - this.definition.moveDist; this.direction = -1; break;
-			case "right": tx = this.currentX + this.definition.moveDist; this.direction = 1; break;
-			case "up":    ty = this.currentY - this.definition.moveDist; break;
-			case "down":  ty = this.currentY + this.definition.moveDist; break;
+			case "left":  tx = this.currentX - stepDist; this.direction = -1; break;
+			case "right": tx = this.currentX + stepDist; this.direction = 1; break;
+			case "up":    ty = this.currentY - stepDist; break;
+			case "down":  ty = this.currentY + stepDist; break;
 		}
 
 		tx = Math.max(bounds.minX, Math.min(bounds.maxX, tx));

@@ -21,6 +21,7 @@ interface PetPluginData {
 	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
 	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
+	petSpeed: number; // Movement speed multiplier (1 = normal speed)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
 	openAiApiKey: string; // OpenAI API key
 	openAiBaseUrl: string; // OpenAI-compatible base URL
@@ -38,6 +39,7 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pets: [],
 	nextPetIdCounters: {},
 	overlayMode: false,
+	petSpeed: 1,
 	useChinesePrompt: false,
 	openAiBaseUrl: "https://api.openai.com/v1",
 	pageRantEnabled: false,
@@ -650,6 +652,9 @@ export default class PetPlugin extends Plugin {
 		if (this.instanceData.pageRantOnlyWhenFocused === undefined) {
 			this.instanceData.pageRantOnlyWhenFocused = true;
 		}
+		if (this.instanceData.petSpeed === undefined) {
+			this.instanceData.petSpeed = 1;
+		}
 	}
 
 	public async chooseBackground(backgroundFile: string): Promise<void> {
@@ -717,6 +722,26 @@ export default class PetPlugin extends Plugin {
 			// if is a PetView
 			if (view instanceof PetView) {
 				view.updatePetSize();
+			}
+		}
+	}
+
+	public updatePetSpeed(value: number): void {
+		this.instanceData.petSpeed = value;
+		void this.saveData(this.instanceData);
+
+		// Update pet speed in overlay mode as well
+		if (this.instanceData.overlayMode) {
+			this.overlayView?.updatePetSpeed();
+			return;
+		}
+
+		// Update all open PetViews
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
+		for (const leaf of leaves) {
+			const view = leaf.view;
+			if (view instanceof PetView) {
+				view.updatePetSpeed();
 			}
 		}
 	}

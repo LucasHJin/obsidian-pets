@@ -143,13 +143,16 @@ export class PetView extends ItemView {
 
 	updatePetSize() {
 		for (const { pet } of this.pets) {
-			// Update the internal scale property
 			pet.scale = this.plugin.instanceData.petSize;
-
-			// Immediately reflect change in CSS
 			pet.petEl?.setCssProps({
 				"--scale": `${this.plugin.instanceData.petSize}`,
 			});
+		}
+	}
+
+	updatePetSpeed() {
+		for (const { pet } of this.pets) {
+			pet.speedMultiplier = this.plugin.instanceData.petSpeed;
 		}
 	}
 
@@ -164,7 +167,8 @@ export class PetView extends ItemView {
 				cleanPetId,
 				this.plugin.instanceData.petSize,
 				singlePet.name,
-				() => this.plugin.getPageRantText("rightclick", singlePet.type)
+				() => this.plugin.getPageRantText("rightclick", singlePet.type),
+				this.plugin.instanceData.petSpeed,
 			);
 			if (pet) {
 				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });

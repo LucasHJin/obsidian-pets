@@ -95,13 +95,30 @@ export class PetSettingTab extends PluginSettingTab {
 			.then((setting) =>
 				addLabeledSlider(
 					setting,
-					this.plugin.instanceData.petSize,
-					1,
-					2,
+					this.plugin.instanceData.petSize ?? 1,
+					0.5,
+					3,
 					0.1,
 					(value) => value.toFixed(1),
 					(value) => {
 						this.plugin.updatePetSize(value);
+					}
+				)
+			);
+
+		new Setting(containerEl)
+			.setName("Movement speed")
+			.setDesc("Adjust how fast pets move around.")
+			.then((setting) =>
+				addLabeledSlider(
+					setting,
+					this.plugin.instanceData.petSpeed ?? 1,
+					0.5,
+					3,
+					0.1,
+					(value) => `${value.toFixed(1)}x`,
+					(value) => {
+						this.plugin.updatePetSpeed(value);
 					}
 				)
 			);
@@ -189,7 +206,7 @@ export class PetSettingTab extends PluginSettingTab {
 					setting,
 					this.plugin.instanceData.pageRantMinMinutes ?? 5,
 					1,
-					60,
+					180,
 					1,
 					(value) => `${value}`,
 					(value) => {
@@ -206,7 +223,7 @@ export class PetSettingTab extends PluginSettingTab {
 					setting,
 					this.plugin.instanceData.pageRantMaxMinutes ?? 20,
 					1,
-					60,
+					180,
 					1,
 					(value) => `${value}`,
 					(value) => {
@@ -222,8 +239,8 @@ export class PetSettingTab extends PluginSettingTab {
 				addLabeledSlider(
 					setting,
 					this.plugin.instanceData.pageRantContextChars ?? 1200,
-					200,
-					5000,
+					100,
+					10000,
 					100,
 					(value) => `${value}`,
 					(value) => {

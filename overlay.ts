@@ -59,7 +59,8 @@ export class OverlayPetView {
 				cleanPetId,
 				this.plugin.instanceData.petSize,
 				singlePet.name,
-				() => this.plugin.getPageRantText("rightclick", singlePet.type)
+				() => this.plugin.getPageRantText("rightclick", singlePet.type),
+				this.plugin.instanceData.petSpeed,
 			);
 			if (pet) {
 				this.pets.push({ id: singlePet.id, type: singlePet.type, pet });
@@ -90,6 +91,12 @@ export class OverlayPetView {
 			pet.petEl?.setCssProps({
 				"--scale": `${this.plugin.instanceData.petSize}`,
 			});
+		}
+	}
+
+	updatePetSpeed() {
+		for (const { pet } of this.pets) {
+			pet.speedMultiplier = this.plugin.instanceData.petSpeed;
 		}
 	}
 
