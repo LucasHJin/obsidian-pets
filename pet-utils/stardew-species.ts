@@ -120,11 +120,11 @@ const catBase: StardewSpeciesDefinition = {
 };
 const catVariants = [
 	catBase,
-	createVariantSpecies(catBase, 1, "Black", [4, 0]),
-	createVariantSpecies(catBase, 2, "Gray", [8, 0]),
-	createVariantSpecies(catBase, 3, "Orange", [12, 0]),
-	createVariantSpecies(catBase, 4, "White", [16, 0]),
-	createVariantSpecies(catBase, 5, "Siamese", [20, 0]),
+	createVariantSpecies(catBase, 1, "Gray", [4, 0]),
+	createVariantSpecies(catBase, 2, "Orange", [8, 0]),
+	createVariantSpecies(catBase, 3, "White", [12, 0]),
+	createVariantSpecies(catBase, 4, "Yellow", [16, 0]),
+	createVariantSpecies(catBase, 5, "Purple", [20, 0]),
 ];
 
 // Chicken: 8种，横向排列，frameSize=16，单个体 4列×7行
@@ -143,13 +143,13 @@ const chickenBase: StardewSpeciesDefinition = {
 };
 const chickenVariants = [
 	chickenBase,
-	createVariantSpecies(chickenBase, 1, "Brown", [4, 0]),
+	createVariantSpecies(chickenBase, 1, "Small-Yellow", [4, 0]),
 	createVariantSpecies(chickenBase, 2, "Blue", [8, 0]),
-	createVariantSpecies(chickenBase, 3, "White", [12, 0]),
-	createVariantSpecies(chickenBase, 4, "Void", [16, 0]),
-	createVariantSpecies(chickenBase, 5, "Golden", [20, 0]),
-	createVariantSpecies(chickenBase, 6, "Duck", [24, 0]),
-	createVariantSpecies(chickenBase, 7, "Rabbit", [28, 0]),
+	createVariantSpecies(chickenBase, 3, "Small-Blue", [12, 0]),
+	createVariantSpecies(chickenBase, 4, "Orange", [16, 0]),
+	createVariantSpecies(chickenBase, 5, "Small-Orange", [20, 0]),
+	createVariantSpecies(chickenBase, 6, "Brown", [24, 0]),
+	createVariantSpecies(chickenBase, 7, "Small-Brown", [28, 0]),
 ];
 
 // Dog: 6种，横向排列，frameSize=32，单个体 4列×9行
@@ -169,11 +169,11 @@ const dogBase: StardewSpeciesDefinition = {
 };
 const dogVariants = [
 	dogBase,
-	createVariantSpecies(dogBase, 1, "Shepherd", [4, 0]),
-	createVariantSpecies(dogBase, 2, "Dark", [8, 0]),
-	createVariantSpecies(dogBase, 3, "Husky", [12, 0]),
-	createVariantSpecies(dogBase, 4, "Golden", [16, 0]),
-	createVariantSpecies(dogBase, 5, "Spotty", [20, 0]),
+	createVariantSpecies(dogBase, 1, "Black", [4, 0]),
+	createVariantSpecies(dogBase, 2, "Orange", [8, 0]),
+	createVariantSpecies(dogBase, 3, "Brown", [12, 0]),
+	createVariantSpecies(dogBase, 4, "Yellow", [16, 0]),
+	createVariantSpecies(dogBase, 5, "Purple", [20, 0]),
 ];
 
 // Parrot: 5种，竖向排列，frameSize=24，单个体 11列×1行
@@ -193,10 +193,10 @@ const parrotBase: StardewSpeciesDefinition = {
 };
 const parrotVariants = [
 	parrotBase,
-	createVariantSpecies(parrotBase, 1, "Red", [0, 1]),
-	createVariantSpecies(parrotBase, 2, "Blue", [0, 2]),
-	createVariantSpecies(parrotBase, 3, "Green", [0, 3]),
-	createVariantSpecies(parrotBase, 4, "Purple", [0, 4]),
+	createVariantSpecies(parrotBase, 1, "Small", [0, 1]),
+	createVariantSpecies(parrotBase, 2, "Colourful", [0, 2]),
+	createVariantSpecies(parrotBase, 3, "Small-Colourful", [0, 3]),
+	createVariantSpecies(parrotBase, 4, "Golden", [0, 4]),
 ];
 
 // Junimo: 11种有效（4×3排列，最后一格透明），frameSize=16，单个体 8列×6行
@@ -216,16 +216,16 @@ const junimoBase: StardewSpeciesDefinition = {
 };
 const junimoVariants = [
 	junimoBase,
-	createVariantSpecies(junimoBase, 1, "Red", [8, 0]),
-	createVariantSpecies(junimoBase, 2, "Purple", [16, 0]),
-	createVariantSpecies(junimoBase, 3, "Yellow", [24, 0]),
-	createVariantSpecies(junimoBase, 4, "Blue", [0, 6]),
-	createVariantSpecies(junimoBase, 5, "White", [8, 6]),
-	createVariantSpecies(junimoBase, 6, "Black", [16, 6]),
-	createVariantSpecies(junimoBase, 7, "Pink", [24, 6]),
-	createVariantSpecies(junimoBase, 8, "Orange", [0, 12]),
-	createVariantSpecies(junimoBase, 9, "Teal", [8, 12]),
-	createVariantSpecies(junimoBase, 10, "Gray", [16, 12]),
+	createVariantSpecies(junimoBase, 1, "Black", [8, 0]),
+	createVariantSpecies(junimoBase, 2, "Gray", [16, 0]),
+	createVariantSpecies(junimoBase, 3, "Pink", [24, 0]),
+	createVariantSpecies(junimoBase, 4, "Red", [0, 6]),
+	createVariantSpecies(junimoBase, 5, "Orange", [8, 6]),
+	createVariantSpecies(junimoBase, 6, "Yellow", [16, 6]),
+	createVariantSpecies(junimoBase, 7, "Green", [24, 6]),
+	createVariantSpecies(junimoBase, 8, "Cyan", [0, 12]),
+	createVariantSpecies(junimoBase, 9, "Purple", [8, 12]),
+	createVariantSpecies(junimoBase, 10, "Brown", [16, 12]),
 	// 第12个 [24, 12] 全透明，跳过
 ];
 
