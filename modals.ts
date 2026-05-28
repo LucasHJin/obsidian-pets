@@ -1,17 +1,10 @@
-import { Modal, App, Component } from "obsidian";
-import { MarkdownRenderer } from "obsidian"; // For rendering markdown in chat messages
-import { ConversationMessage } from "./main";
+import { Modal, App } from "obsidian";
 
 // Type for selectable option
 export interface SelectorOption {
 	value: string;
 	label: string;
 	requiresName?: boolean;
-}
-
-export interface ChatMessage {
-	sender: "user" | "bot";
-	text: string;
 }
 
 export class SelectorModal extends Modal {
@@ -103,152 +96,6 @@ export class SelectorModal extends Modal {
 
 	// Clean up DOM on modal close
 	onClose() {
-		this.contentEl.empty();
-	}
-}
-
-export class ChatModal extends Modal {
-	messages: ChatMessage[] = [];
-	plugin: Component;
-	private conversationHistory: ConversationMessage[] = [];
-	private activeTypingInterval: ReturnType<typeof activeWindow.setInterval> | null = null;
-	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
-
-	constructor(app: App, plugin: Component, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
-		super(app);
-		this.plugin = plugin;
-		this.onMessage = onMessage;
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.empty();
-        this.conversationHistory = [];
-
-		contentEl.addClass("pp-chat-modal-content");
-
-		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
-		
-		void this.addMessage(
-			"bot",
-			"Welcome to the chat!\nAsk me anything about your vault, notes, or setup.",
-			chatContainer
-		);
-
-		const form = contentEl.createEl("form", { cls: "chat-form" });
-
-		const textarea = form.createEl("textarea", {
-			placeholder: "Type your message...",
-			cls: "chat-input",
-		});
-		textarea.rows = 1;
-		textarea.focus();
-
-		form.createEl("button", {
-			type: "submit",
-			text: "Send",
-			cls: "chat-send-button",
-		});
-
-		// Handle message being sent
-		form.addEventListener("submit", (e) => {
-			e.preventDefault();
-			const text = textarea.value.trim();
-			if (!text) {
-				return;
-			}
-			void (async () => {
-				await this.addMessage("user", text, chatContainer);
-
-				textarea.value = "";
-
-				// Typing
-				const typingAnimation = this.showTypingIndicator(chatContainer);
-				const response = await this.onMessage(text, this.conversationHistory);
-				this.removeTypingIndicator(typingAnimation);
-
-				// Context of the conversation
-				this.conversationHistory.push({
-					role: "user",
-					content: text,
-					timestamp: Date.now()
-				});
-				this.conversationHistory.push({
-					role: "assistant",
-					content: response,
-					timestamp: Date.now()
-				});
-
-				// Keep recent 8 messages max (avoid overflow context window)
-				if (this.conversationHistory.length > 8) {
-					this.conversationHistory = this.conversationHistory.slice(-8);
-				}
-
-				await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
-
-				// Scroll to bottom
-				activeWindow.setTimeout(() => {
-					chatContainer.scrollTop = chatContainer.scrollHeight;
-				}, 0);
-			})();
-		});
-	}
-
-	private async addMessage(sender: "user" | "bot", text: string, container: HTMLElement) {
-		this.messages.push({ sender, text });
-
-		const messageBox = container.createDiv({
-			cls: `chat-message ${sender}`,
-		});
-
-		// Different font styling for bot
-		if (sender === "bot" && text.includes(">^.^<")) {
-			const pre = messageBox.createEl("pre"); // So that line width isn't affected afterwards
-			pre.setText(text);
-		} else if (sender === "bot" && !text.includes(">^.^<")){
-			await MarkdownRenderer.render(
-				this.app,
-				text,
-				messageBox,
-				"", 
-				this.plugin 
-			);
-		} else {
-			messageBox.setText(text);
-		}
-
-		messageBox.scrollIntoView({ behavior: "smooth" });
-	}
-
-	// Function to show typing indicator while waiting for bot response
-	private showTypingIndicator(container: HTMLElement): HTMLElement {
-		const typingBox = container.createDiv({
-			cls: "chat-message bot",
-		});
-
-		const span = typingBox.createSpan();
-		let dots = 0;
-		this.activeTypingInterval = activeWindow.setInterval(() => {
-			dots = (dots + 1) % 3;
-			span.setText("meow." + ".".repeat(dots));
-		}, 400);
-		return typingBox;
-	}
-
-	private removeTypingIndicator(typingBox: HTMLElement) {
-		if (this.activeTypingInterval) {
-			activeWindow.clearInterval(this.activeTypingInterval); // Clean up the interval animation
-		}
-		this.activeTypingInterval = null;
-		typingBox.remove();
-	}
-
-	onClose() {
-		if (this.activeTypingInterval) {
-			activeWindow.clearInterval(this.activeTypingInterval);
-			this.activeTypingInterval = null;
-		}
-
 		this.contentEl.empty();
 	}
 }

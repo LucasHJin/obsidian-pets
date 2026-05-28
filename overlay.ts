@@ -84,14 +84,6 @@ export class OverlayPetView {
 		this.pets = [];
 	}
 
-	startCursorFollow(getCursorX: () => number) {
-		void getCursorX;
-	}
-
-	stopCursorFollow() {
-		return;
-	}
-
 	updatePetSize() {
 		for (const { pet } of this.pets) {
 			pet.scale = this.plugin.instanceData.petSize;

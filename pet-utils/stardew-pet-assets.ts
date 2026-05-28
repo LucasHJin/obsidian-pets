@@ -20,16 +20,6 @@ import woodDarkBackground from "../assets/stardew/backgrounds/wood_dark.png";
 import woodLightBackground from "../assets/stardew/backgrounds/wood_light.png";
 import woodOrangeBackground from "../assets/stardew/backgrounds/wood_orange.png";
 
-import axeUi from "../assets/stardew/ui/axe.png";
-import ballUi from "../assets/stardew/ui/ball.png";
-import giftUi from "../assets/stardew/ui/gift.png";
-import houseUi from "../assets/stardew/ui/house.png";
-import menuUi from "../assets/stardew/ui/menu.png";
-import pickaxeUi from "../assets/stardew/ui/pickaxe.png";
-import treeUi from "../assets/stardew/ui/tree.png";
-
-import decorationSprite from "../assets/stardew/decoration.png";
-
 export const stardewPetSprites = {
 	cat: catSprite,
 	chicken: chickenSprite,
@@ -56,18 +46,6 @@ export const stardewBackgrounds = {
 	wood_orange: woodOrangeBackground,
 };
 
-export const stardewUiSprites = {
-	axe: axeUi,
-	ball: ballUi,
-	gift: giftUi,
-	house: houseUi,
-	menu: menuUi,
-	pickaxe: pickaxeUi,
-	tree: treeUi,
-};
-
-export const stardewDecorationAsset = decorationSprite;
-
 export type StardewPetSpriteKey = keyof typeof stardewPetSprites;
 
 export function getStardewPetAsset(petType: StardewPetSpriteKey): string {
@@ -82,14 +60,6 @@ export function getStardewBackgroundAsset(backgroundName: keyof typeof stardewBa
 	const asset = stardewBackgrounds[backgroundName];
 	if (!asset) {
 		throw new Error(`Unknown Stardew background asset: ${backgroundName}`);
-	}
-	return asset;
-}
-
-export function getStardewUiAsset(name: keyof typeof stardewUiSprites): string {
-	const asset = stardewUiSprites[name];
-	if (!asset) {
-		throw new Error(`Unknown Stardew UI asset: ${name}`);
 	}
 	return asset;
 }

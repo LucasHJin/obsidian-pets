@@ -378,10 +378,6 @@ export function isStardewSpecies(type: string): boolean {
 	return speciesById.has(type);
 }
 
-export function getStardewSpeciesLabel(type: string): string {
-	return speciesById.get(type)?.label ?? type;
-}
-
 export function getStardewSpeciesPersona(type: string) {
 	return speciesById.get(type)?.persona;
 }

@@ -47,12 +47,6 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pageRantOnlyWhenFocused: true,
 };
 
-export interface ConversationMessage {
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
-}
-
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
 	// Recent activity log (in-memory). Each entry: {ts, type, file}
@@ -78,7 +72,6 @@ export default class PetPlugin extends Plugin {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
-			// NEED TO HANDLE ERROR BETTER IF NO API KEY
 			if (
 				this.instanceData.selectedModel &&
 				this.instanceData.selectedModel !== "none"
@@ -634,7 +627,6 @@ export default class PetPlugin extends Plugin {
 
 		// Make sure not already selected background
 		if (this.instanceData.selectedBackground === backgroundFile) {
-			// console.log("Same picked");
 			return;
 		}
 

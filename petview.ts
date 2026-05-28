@@ -2,6 +2,7 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin, { PetInstance } from "./main";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
 import { RenderablePet, createRenderablePet } from "./pet-utils/pet-factory";
+import { SelectorModal } from "./modals";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -50,7 +51,24 @@ export class PetView extends ItemView {
 		this.addAction("minus", "Remove all pets", async () => {
 			await this.plugin.clearAllPets();
 		});
-		
+
+		this.addAction("x", "Remove a specific pet", () => {
+			if (this.plugin.instanceData.pets.length === 0) {
+				return;
+			}
+			const options = this.plugin.instanceData.pets.map((pet) => ({
+				value: pet.id,
+				label: `${pet.name} (${this.plugin.getCleanLabel(pet.id)})`,
+			}));
+			new SelectorModal(
+				this.app,
+				options,
+				async (value: string, _name: string) => {
+					await this.plugin.removePetById(value);
+				}
+			).open();
+		});
+
 		this.addAction("plus", "Add a pet", () => {
 			this.plugin.showAddPetCommand();
 		});
@@ -173,14 +191,6 @@ export class PetView extends ItemView {
 		}
 		// Empty list
 		this.pets = [];
-	}
-
-	startCursorFollow(getCursorX: () => number) {
-		void getCursorX;
-	}
-
-	stopCursorFollow() {
-		return;
 	}
 
 	updateAllPetVerticalPositions(newBackground: string) {
