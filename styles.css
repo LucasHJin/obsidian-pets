@@ -73,7 +73,7 @@
 	background-image: var(--sprite-url);
 	background-size: var(--sprite-size);
 	image-rendering: pixelated;
-	transition: left var(--move-duration, 300ms) linear;
+	transition: left var(--move-duration, 300ms) linear, top var(--move-duration, 300ms) linear;
 	z-index: 100;
 }
 

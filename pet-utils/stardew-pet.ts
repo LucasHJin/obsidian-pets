@@ -28,6 +28,8 @@ export class StardewPet {
 	private readonly definition: StardewSpeciesDefinition;
 	private readonly petName: string;
 	private readonly rightClickTextProvider: (() => string | Promise<string>) | null;
+	private isDragging = false;
+	private dragThreshold = 3;
 
 	constructor(
 		private container: Element,
@@ -187,8 +189,8 @@ export class StardewPet {
 			this.actionLoopPaused = false;
 		});
 
-		this.petEl.addEventListener("click", () => {
-			this.showHeart();
+		this.petEl.addEventListener("mousedown", (event) => {
+			this.handleMouseDown(event);
 		});
 
 		this.petEl.addEventListener("contextmenu", (event) => {
@@ -210,6 +212,52 @@ export class StardewPet {
 				})
 				.catch(() => this.showHeart());
 		});
+	}
+
+	private handleMouseDown(event: MouseEvent) {
+		if (event.button !== 0) return;
+		event.preventDefault();
+
+		let hasDragged = false;
+		const startX = event.clientX;
+		const startY = event.clientY;
+		const startPetX = this.currentX;
+		const startPetY = this.currentY;
+
+		const onMouseMove = (ev: MouseEvent) => {
+			const dx = ev.clientX - startX;
+			const dy = ev.clientY - startY;
+
+			if (!hasDragged && (Math.abs(dx) > this.dragThreshold || Math.abs(dy) > this.dragThreshold)) {
+				hasDragged = true;
+				this.actionLoopPaused = true;
+				this.petEl.setCssStyles({ transition: "none" });
+			}
+
+			if (hasDragged) {
+				this.currentX = startPetX + dx;
+				this.currentY = startPetY + dy;
+				this.petEl.setCssProps({
+					"--left": `${this.currentX}px`,
+					"--top": `${this.currentY}px`,
+				});
+			}
+		};
+
+		const onMouseUp = () => {
+			document.removeEventListener("mousemove", onMouseMove);
+			document.removeEventListener("mouseup", onMouseUp);
+
+			if (hasDragged) {
+				this.actionLoopPaused = false;
+				this.petEl.setCssStyles({ transition: "" });
+			} else {
+				this.showHeart();
+			}
+		};
+
+		document.addEventListener("mousemove", onMouseMove);
+		document.addEventListener("mouseup", onMouseUp);
 	}
 
 	private showHeart() {
