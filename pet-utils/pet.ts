@@ -134,8 +134,11 @@ export class Pet {
 
 		this.petEl.addEventListener("click", () => {
 			this.showHeart();
+			this.playSound();
 		})
 	}
+
+	protected playSound(): void {}
 
 	protected showHeart() {
 		const heart = this.petEl.createDiv({ cls: "pet-heart" });

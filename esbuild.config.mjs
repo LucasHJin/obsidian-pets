@@ -43,6 +43,35 @@ const imagePlugin = {
 	}
 };
 
+// Plugin to bundle audio as base64 data URLs
+const audioPlugin = {
+	name: 'audio',
+	setup(build) {
+		build.onResolve({ filter: /\.(mp3|wav|ogg)$/ }, args => {
+			return {
+				path: path.resolve(args.resolveDir, args.path),
+				namespace: 'audio'
+			};
+		});
+
+		build.onLoad({ filter: /.*/, namespace: 'audio' }, args => {
+			const audioBuffer = readFileSync(args.path);
+			const base64 = audioBuffer.toString('base64');
+			const ext = path.extname(args.path).slice(1);
+			const mimeType = {
+				'mp3': 'audio/mpeg',
+				'wav': 'audio/wav',
+				'ogg': 'audio/ogg'
+			}[ext] || 'application/octet-stream';
+
+			return {
+				contents: `export default "data:${mimeType};base64,${base64}"`,
+				loader: 'js'
+			};
+		});
+	}
+};
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
@@ -71,7 +100,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
-	plugins: [imagePlugin],
+	plugins: [imagePlugin, audioPlugin],
 });
 
 if (prod) {
