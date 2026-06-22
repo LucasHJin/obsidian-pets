@@ -1,6 +1,6 @@
 import { Pet } from "./pet";
 import { AnimationConfig } from "./pet";
-import { playSound } from "./sounds";
+import { playPetSound } from "./sounds";
 
 export class Ghost extends Pet {
 	constructor(
@@ -24,7 +24,7 @@ export class Ghost extends Pet {
 	}
 
 	protected override playSound(): void {
-		playSound("ghost");
+		playPetSound("ghost");
 	}
 
 	// Only need to setup idle action

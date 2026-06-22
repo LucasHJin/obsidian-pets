@@ -1,5 +1,5 @@
 import { Pet, AnimationConfig } from "./pet";
-import { playSound } from "./sounds";
+import { playPetSound } from "./sounds";
 
 export class Bunny extends Pet {
     constructor(
@@ -15,7 +15,7 @@ export class Bunny extends Pet {
     }
 
     protected override playSound(): void {
-        playSound("bunny");
+        playPetSound("bunny");
     }
 
     protected setupActions() {
