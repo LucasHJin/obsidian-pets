@@ -78,6 +78,17 @@ export class PetSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Sound")
+			.setDesc("Enable sounds for your pets and actions.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.instanceData.soundEnabled ?? false)
+					.onChange((value) => {
+						this.plugin.toggleSound(value);
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Chatbot API keys")
 			.setHeading()
 
