@@ -2,19 +2,42 @@ import catSound from '../assets/sounds/cat.mp3';
 import bunnySound from '../assets/sounds/bunny.mp3';
 import ghostSound from '../assets/sounds/ghost.mp3';
 import bounceSound from '../assets/sounds/bounce.mp3';
+import jingleSound from '../assets/sounds/jingle.mp3';
+import spawnSound from '../assets/sounds/spawn.mp3';
 
 const SOUNDS: Record<string, string> = {
 	cat: catSound,
 	bunny: bunnySound,
 	ghost: ghostSound,
+	spawn: spawnSound,
 };
 
 const BALL_MAX_SPEED = 10;
 
 let soundEnabled = false;
+let toyAudio: HTMLAudioElement | null = null;
 
 export function setSoundEnabled(enabled: boolean): void {
 	soundEnabled = enabled;
+	if (!enabled) stopToySound();
+}
+
+export function startToySound(): void {
+	if (!soundEnabled || toyAudio) return;
+	try {
+		toyAudio = new Audio(jingleSound);
+		toyAudio.loop = true;
+		toyAudio.volume = 0.85;
+		void toyAudio.play();
+	} catch (error) {
+		console.error("Failed to play jingle sound", error);
+	}
+}
+
+export function stopToySound(): void {
+	if (!toyAudio) return;
+	toyAudio.pause();
+	toyAudio = null;
 }
 
 export function playPetSound(sound: string): void {

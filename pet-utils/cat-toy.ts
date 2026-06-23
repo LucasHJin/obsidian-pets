@@ -1,4 +1,5 @@
 import { catToyAsset } from "./pet-assets";
+import { startToySound, stopToySound } from "./sounds";
 
 const FRAME_COUNT = 6;
 const FRAME_WIDTH = 32;
@@ -30,6 +31,8 @@ export class CatToyOverlay {
 			onMouseMove(e.clientX);
 		};
 		activeDocument.addEventListener("mousemove", this.mouseMoveHandler);
+
+		startToySound();
 	}
 
 	updateSize(petSize: number) {
@@ -39,6 +42,7 @@ export class CatToyOverlay {
 	}
 
 	destroy() {
+		stopToySound();
 		activeDocument.removeEventListener("mousemove", this.mouseMoveHandler);
 		activeDocument.body.removeClass("cat-toy-hide-cursor");
 		this.cursorEl.remove();

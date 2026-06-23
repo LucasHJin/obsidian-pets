@@ -2,7 +2,7 @@ import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./petview";
 import { OverlayPetView } from "./overlay";
 import { CatToyOverlay } from "./pet-utils/cat-toy";
-import { setSoundEnabled } from "./pet-utils/sounds";
+import { setSoundEnabled, playPetSound, startToySound } from "./pet-utils/sounds";
 import { PetSettingTab } from "./settings";
 import { SelectorModal, SelectorOption, ChatModal } from "./modals";
 import { askModel, reformulateQuery } from "./chatmodels";
@@ -678,6 +678,7 @@ export default class PetPlugin extends Plugin {
 		this.instanceData.soundEnabled = value;
 		void this.saveData(this.instanceData);
 		setSoundEnabled(value);
+		if (value && this.catToyActive) startToySound();
 	}
 
 	public updatePetSize(value: number): void {
@@ -715,6 +716,8 @@ export default class PetPlugin extends Plugin {
 		// Add to list of pets
 		this.instanceData.pets.push({ id, type, name });
 		await this.saveData(this.instanceData);
+
+		playPetSound("spawn");
 
 		if (this.instanceData.overlayMode) {
 			this.overlayView?.addPet({ id, type, name });
