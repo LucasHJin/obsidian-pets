@@ -45,6 +45,7 @@ export class Pet {
 	protected tooltipEl!: HTMLElement;
 	protected isHovered = false;
 	protected actionLoopPaused = false;
+	private interruptMove: (() => void) | null = null;
 
 	constructor(
 		container: Element,
@@ -163,8 +164,7 @@ export class Pet {
 		const wasAlreadyPaused = this.actionLoopPaused;
 		if (!wasAlreadyPaused) {
 			this.actionLoopPaused = true;
-			await new Promise(resolve => activeWindow.setTimeout(resolve, 60));
-			if (this.isDestroyed) return;
+			this.freezeAtCurrentPosition();
 		}
 
 		// currentX is now the actual visual position (accurate post-freeze)
@@ -224,9 +224,12 @@ export class Pet {
 
 	protected freezeAtCurrentPosition() {
 		const computedLeft = window.getComputedStyle(this.petEl).left;
-		this.petEl.setCssStyles({ transition: "" });
+		this.petEl.setCssStyles({ transition: "none" });
 		this.petEl.setCssProps({ "--left": computedLeft });
+		this.petEl.offsetHeight;
+		this.petEl.setCssStyles({ transition: "" });
 		this.currentX = parseFloat(computedLeft);
+		this.interruptMove?.(); // directly stop on hover
 	}
 
 	// Moves the pet in x direction
@@ -266,33 +269,25 @@ export class Pet {
 
 		// Return a promise that is being awaited (to prevent moving on until this is finished)
 		return new Promise((res) => {
-			// Interval to constantly check if hovered (if so stop transition)
-			const hoverCheck = activeWindow.setInterval(() => {
-				if (this.actionLoopPaused) {
-					const computedLeft = window.getComputedStyle(this.petEl).left;
-					this.petEl.setCssStyles({ transition: "" });
-					this.petEl.setCssProps({ "--left": computedLeft });
-					
-					// Update current position to where it stopped
-					this.currentX = parseFloat(computedLeft);
-					
-					// Clean up
-					activeWindow.clearInterval(hoverCheck);
-					this.petEl.removeEventListener("transitionend", done);
-					
-					res();
-				}
-			}, 50);
-			
-			// Cleanup function for after transition
-			const done = () => {
-				activeWindow.clearInterval(hoverCheck); // Need to clear interval to prevent memory leak
+			let settled = false;
+
+			const settle = () => { // settle stops movement
+				if (settled) return;
+				settled = true;
 				this.petEl.removeEventListener("transitionend", done);
-				this.petEl.setCssStyles({ transition: "" }); // Remove the transition property
-				this.currentX = targetX;
-				res(); // Resolve the promise
+				this.interruptMove = null;
+				res();
 			};
-			this.petEl.addEventListener("transitionend", done, { once: true }); // Listen for transitionend event one time after the left transition finishes
+
+			const done = (e?: TransitionEvent) => {
+				if (e && (e.target !== this.petEl || e.propertyName !== "left")) return; // only explicitly stop for when style sets left of this specific pet
+				this.petEl.setCssStyles({ transition: "" });
+				this.currentX = targetX;
+				settle();
+			};
+			this.petEl.addEventListener("transitionend", done);
+
+			this.interruptMove = settle;
 
 			this.petEl.offsetWidth; // Reflow for new animation reset
 			// Show moving animation
