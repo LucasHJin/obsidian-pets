@@ -1,5 +1,6 @@
 import { Pet, AnimationConfig } from "./pet";
 import { Ball } from "./ball";
+import { playPetSound } from "./sounds";
 
 export class Cat extends Pet {
     private canFly: boolean;
@@ -54,6 +55,11 @@ export class Cat extends Pet {
             };
         }
     }
+
+	// Play a meow whenever the cat is clicked
+	protected override playSound(): void {
+		playPetSound("cat");
+	}
 
 	public override startFollowingCursor(getCursorX: () => number): void {
 		super.startFollowingCursor(getCursorX);

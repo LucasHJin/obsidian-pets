@@ -1,4 +1,5 @@
 import { Pet, AnimationConfig } from "./pet";
+import { playPetSound } from "./sounds";
 
 export class Bunny extends Pet {
     constructor(
@@ -12,6 +13,11 @@ export class Bunny extends Pet {
     ) {
         super(container, animations, moveDist, backgroundName, petId, scale, petName);
     }
+
+    protected override playSound(): void {
+        playPetSound("bunny");
+    }
+
     protected setupActions() {
 		for (const key in this.animations) {
 			this.animations[key].action = async (multiples = 1) => {

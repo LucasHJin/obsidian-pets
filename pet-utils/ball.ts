@@ -1,3 +1,5 @@
+import { playBallSound } from "./sounds";
+
 export class Ball {
 	private container: Element;
 	public ballEl: HTMLElement;
@@ -53,7 +55,7 @@ export class Ball {
 		this.frameId = requestAnimationFrame(this.update);
 
 		// Auto-destroy (longer in overlay mode since there's more space to bounce around)
-		const lifetime = this.backgroundName === "overlay" ? 4500 : 3500;
+		const lifetime = this.backgroundName === "overlay" ? 6000 : 5000;
 		activeWindow.setTimeout(() => this.destroy(), lifetime);
 	}
 
@@ -95,9 +97,11 @@ export class Ball {
 		// Bouncing off walls
 		if (this.x - this.radius < 0) {
 			this.x = this.radius;
+			playBallSound(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		} else if (this.x + this.radius > rect.width) {
 			this.x = rect.width - this.radius;
+			playBallSound(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		}
 		// Bouncing off bottom
@@ -107,6 +111,7 @@ export class Ball {
 			this.vy *= -this.damping;
 		} else if (this.y + this.radius > ground) {
 			this.y = ground - this.radius;
+			playBallSound(Math.abs(this.vy));
 			this.vy *= -this.damping;
 		}
 		// Apply air resistance

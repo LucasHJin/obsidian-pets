@@ -2,6 +2,7 @@ import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./petview";
 import { OverlayPetView } from "./overlay";
 import { CatToyOverlay } from "./pet-utils/cat-toy";
+import { setSoundEnabled, playPetSound, startToySound } from "./pet-utils/sounds";
 import { PetSettingTab } from "./settings";
 import { SelectorModal, SelectorOption, ChatModal } from "./modals";
 import { askModel, reformulateQuery } from "./chatmodels";
@@ -26,6 +27,7 @@ interface PetPluginData {
 	animatedBackground: boolean; // Whether background animations are on or off
 	petSize: number; // Overall size of pets (1 = normal size)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
+	soundEnabled: boolean; // Whether pet click sounds play
 	geminiApiKey: string; // Gemini API key for chat feature
 	openAiApiKey: string; // OpenAI API key for RAG
 	indexedFiles?: Record<string, number>; // To track already indexed files in vault
@@ -37,6 +39,7 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	pets: [],
 	nextPetIdCounters: {},
 	overlayMode: false,
+	soundEnabled: false,
 };
 
 export interface ConversationMessage {
@@ -190,6 +193,8 @@ export default class PetPlugin extends Plugin {
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
 		}
+
+		setSoundEnabled(this.instanceData.soundEnabled ?? false);
 
 		// Initialize the vector database
 		this.ragDb = new VectorDB();
@@ -669,6 +674,13 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
+	public toggleSound(value: boolean): void {
+		this.instanceData.soundEnabled = value;
+		void this.saveData(this.instanceData);
+		setSoundEnabled(value);
+		if (value && this.catToyActive) startToySound();
+	}
+
 	public updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
 		void this.saveData(this.instanceData);
@@ -704,6 +716,8 @@ export default class PetPlugin extends Plugin {
 		// Add to list of pets
 		this.instanceData.pets.push({ id, type, name });
 		await this.saveData(this.instanceData);
+
+		playPetSound("spawn");
 
 		if (this.instanceData.overlayMode) {
 			this.overlayView?.addPet({ id, type, name });
