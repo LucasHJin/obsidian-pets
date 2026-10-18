@@ -49,17 +49,17 @@ export class PetView extends ItemView {
 	// Builds content of view when it is opened
 	override async onOpen() {
 		// Detach if leaf was rendered while overlay is on
-		if (this.plugin.instanceData.overlayMode) {
+		if (this.plugin.data.overlayMode) {
 			window.setTimeout(() => this.leaf.detach(), 0);
 			return;
 		}
 
 		this.addAction("paw-print", "Cat toy toggle", () => {
-			this.plugin.changeMouseCommand();
+			this.plugin.toggleCatToy();
 		});
 
 		this.addAction("image", "Choose a background", () => {
-			this.plugin.showChooseBackgroundCommand();
+			this.plugin.openBackgroundPicker();
 		});
 
 		this.addAction("minus", "Remove all pets", async () => {
@@ -67,11 +67,11 @@ export class PetView extends ItemView {
 		});
 
 		this.addAction("circle-dashed", "Throw a ball", () => {
-			this.plugin.throwBallCommand();
+			this.plugin.throwRandomBall();
 		});
 
 		this.addAction("plus", "Add a pet", () => {
-			this.plugin.showAddPetCommand();
+			this.plugin.openAddPetPicker();
 		});
 		this.updateView();
 		this.setupResizeObserver();
@@ -134,7 +134,7 @@ export class PetView extends ItemView {
 			}
 		}
 
-		if (background.includes("snow") && this.plugin.instanceData.animatedBackground) {
+		if (background.includes("snow") && this.plugin.data.animatedBackground) {
 			try {
 				const snowUrl = getBackgroundAsset("snow.gif");
 				wrapper.createEl("img", {
@@ -155,20 +155,20 @@ export class PetView extends ItemView {
 	updatePetSize() {
 		for (const { pet } of this.pets) {
 			// Update the internal scale property
-			pet.scale = this.plugin.instanceData.petSize;
+			pet.scale = this.plugin.data.petSize;
 
 			// Immediately reflect change in CSS
 			pet.petEl?.setCssProps({
-				"--scale": `${this.plugin.instanceData.petSize}`,
+				"--scale": `${this.plugin.data.petSize}`,
 			});
 		}
 
 		// Also update balls if you want them scaled too (optional)
 		for (const { ball } of this.balls) {
 			if (ball.ballEl) {
-				ball.scale = this.plugin.instanceData.petSize;
+				ball.scale = this.plugin.data.petSize;
 				ball.ballEl.setCssProps({
-					"--scale": `${this.plugin.instanceData.petSize}`,
+					"--scale": `${this.plugin.data.petSize}`,
 				});
 			}
 		}
@@ -186,7 +186,7 @@ export class PetView extends ItemView {
 					catAnimations,
 					moveDist,
 					background,
-					this.plugin.instanceData.petSize,
+					this.plugin.data.petSize,
 					singlePet.name,
 					singlePet.type.includes("witch"),
 				);
@@ -199,7 +199,7 @@ export class PetView extends ItemView {
 					bunnyAnimations,
 					moveDist,
 					background,
-					this.plugin.instanceData.petSize,
+					this.plugin.data.petSize,
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
@@ -211,7 +211,7 @@ export class PetView extends ItemView {
 					ghostAnimations,
 					moveDist,
 					background,
-					this.plugin.instanceData.petSize,
+					this.plugin.data.petSize,
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
@@ -270,12 +270,7 @@ export class PetView extends ItemView {
 
 			// Add the ball to the view
 			const ballAnimation = getBallAnimations(cleanBallId);
-			const ball = new Ball(
-				wrapper,
-				ballAnimation,
-				background,
-				this.plugin.instanceData.petSize,
-			);
+			const ball = new Ball(wrapper, ballAnimation, background, this.plugin.data.petSize);
 			this.balls.push({ id: cleanBallId, ball });
 
 			// Choose a random cat to chase after the ball

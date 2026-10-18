@@ -8,7 +8,7 @@ import { SelectorModal, SelectorOption } from "./ui/selector-modal";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 
 export default class PetPlugin extends Plugin {
-	instanceData!: PetPluginData;
+	data!: PetPluginData;
 	private overlayView: OverlayPetView | null = null;
 	private catToyActive = false;
 	private catToyOverlay: CatToyOverlay | null = null;
@@ -132,18 +132,18 @@ export default class PetPlugin extends Plugin {
 	override async onload(): Promise<void> {
 		await this.loadSettings();
 
-		setSoundEnabled(this.instanceData.soundEnabled);
+		setSoundEnabled(this.data.soundEnabled);
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
 
 		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
-			if (this.instanceData.overlayMode) {
+			if (this.data.overlayMode) {
 				// Close any leafs if they appear from a restored layout
 				await this.closeView();
 				this.overlayView = new OverlayPetView(this, this.mainDocument);
-				for (const pet of this.instanceData.pets) {
+				for (const pet of this.data.pets) {
 					this.overlayView.addPet(pet);
 				}
 			} else {
@@ -175,28 +175,28 @@ export default class PetPlugin extends Plugin {
 		this.addCommand({
 			id: "choose-background-dropdown",
 			name: "Choose pet view background",
-			callback: () => this.showChooseBackgroundCommand(),
+			callback: () => this.openBackgroundPicker(),
 		});
 
 		// Command to add a pet
 		this.addCommand({
 			id: "add-pet-dropdown",
 			name: "Add a pet",
-			callback: () => this.showAddPetCommand(),
+			callback: () => this.openAddPetPicker(),
 		});
 
 		// Command to add a ball
 		this.addCommand({
 			id: "add-ball-dropdown",
 			name: "Add a ball",
-			callback: async () => this.throwBallCommand(),
+			callback: async () => this.throwRandomBall(),
 		});
 
 		// Command to change mouse to a cat toy
 		this.addCommand({
 			id: "add-cat-toy-dropdown",
 			name: "Cat toy mouse toggle",
-			callback: async () => this.changeMouseCommand(),
+			callback: async () => this.toggleCatToy(),
 		});
 
 		// Command to remove all pets
@@ -213,7 +213,7 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
 			callback: () => {
-				const options = this.instanceData.pets.map((pet) => {
+				const options = this.data.pets.map((pet) => {
 					const typeLabel = this.PETS.find((option) => option.value === pet.type)?.label;
 					return { value: pet.id, label: `${pet.name} (${typeLabel ?? pet.type})` };
 				});
@@ -280,22 +280,18 @@ export default class PetPlugin extends Plugin {
 		});
 	}
 
-	showAddPetCommand() {
+	openAddPetPicker() {
 		new SelectorModal(this.app, this.PETS, async (value: string, name: string) => {
 			await this.addPet(value, name);
 		}).open();
 	}
 
-	changeMouseCommand(): void {
+	toggleCatToy(): void {
 		this.catToyActive = !this.catToyActive;
 		if (this.catToyActive) {
-			this.catToyOverlay = new CatToyOverlay(
-				this.mainDocument,
-				this.instanceData.petSize,
-				(x) => {
-					this.currentMouseX = x;
-				},
-			);
+			this.catToyOverlay = new CatToyOverlay(this.mainDocument, this.data.petSize, (x) => {
+				this.currentMouseX = x;
+			});
 			this.startCursorFollowMode();
 		} else {
 			this.catToyOverlay?.destroy();
@@ -305,7 +301,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	private startCursorFollowMode() {
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			const getCursorX = () => this.currentMouseX;
 			this.overlayView?.startCursorFollow(getCursorX);
 		} else {
@@ -323,7 +319,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	private stopCursorFollowMode() {
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			this.overlayView?.stopCursorFollow();
 		} else {
 			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
@@ -334,14 +330,14 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	throwBallCommand() {
+	throwRandomBall() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
 		void this.addBall(randomBall);
 	}
 
-	showChooseBackgroundCommand() {
+	openBackgroundPicker() {
 		new SelectorModal(this.app, this.BACKGROUNDS, async (value: string, _name: string) => {
-			await this.chooseBackground(value); // Pass chooseBackground() function to modal
+			await this.setBackground(value);
 		}).open();
 	}
 
@@ -359,7 +355,7 @@ export default class PetPlugin extends Plugin {
 
 	async loadSettings() {
 		const { data, migrated } = resolveSavedData(await this.loadData());
-		this.instanceData = data;
+		this.data = data;
 
 		if (migrated) {
 			await this.saveSettings();
@@ -368,19 +364,19 @@ export default class PetPlugin extends Plugin {
 	}
 
 	async saveSettings(): Promise<void> {
-		await this.saveData(this.instanceData);
+		await this.saveData(this.data);
 	}
 
-	async chooseBackground(backgroundFile: string): Promise<void> {
-		if (this.instanceData.overlayMode) return;
+	async setBackground(backgroundFile: string): Promise<void> {
+		if (this.data.overlayMode) return;
 
 		// Make sure not already selected background
-		if (this.instanceData.selectedBackground === backgroundFile) {
+		if (this.data.selectedBackground === backgroundFile) {
 			// console.log("Same picked");
 			return;
 		}
 
-		this.instanceData.selectedBackground = backgroundFile;
+		this.data.selectedBackground = backgroundFile;
 		await this.saveSettings();
 
 		// If the view is not open yet -> open it
@@ -401,11 +397,11 @@ export default class PetPlugin extends Plugin {
 
 	// Getter function to get background in petview.ts
 	getSelectedBackground(): string {
-		return this.instanceData.selectedBackground;
+		return this.data.selectedBackground;
 	}
 
-	toggleBackgroundAnimation(value: boolean): void {
-		this.instanceData.animatedBackground = value;
+	setBackgroundAnimation(enabled: boolean): void {
+		this.data.animatedBackground = enabled;
 		void this.saveSettings();
 
 		// Update all open PetViews
@@ -419,21 +415,21 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	toggleSound(value: boolean): void {
-		this.instanceData.soundEnabled = value;
+	setSound(enabled: boolean): void {
+		this.data.soundEnabled = enabled;
 		void this.saveSettings();
-		setSoundEnabled(value);
-		if (value && this.catToyActive) startToySound();
+		setSoundEnabled(enabled);
+		if (enabled && this.catToyActive) startToySound();
 	}
 
-	updatePetSize(value: number): void {
-		this.instanceData.petSize = value;
+	setPetSize(size: number): void {
+		this.data.petSize = size;
 		void this.saveSettings();
 
-		this.catToyOverlay?.updateSize(value);
+		this.catToyOverlay?.updateSize(size);
 
 		// Update pet size in overlay mode as well
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			this.overlayView?.updatePetSize();
 			return;
 		}
@@ -450,21 +446,21 @@ export default class PetPlugin extends Plugin {
 	}
 
 	async addPet(type: string, name: string): Promise<void> {
-		if (!(type in this.instanceData.nextPetIdCounters)) {
-			this.instanceData.nextPetIdCounters[type] = 1;
+		if (!(type in this.data.nextPetIdCounters)) {
+			this.data.nextPetIdCounters[type] = 1;
 		}
 
 		// Create id (type format -> pets/petType)
-		const id = `${type}-${this.instanceData.nextPetIdCounters[type]}`;
-		this.instanceData.nextPetIdCounters[type]++;
+		const id = `${type}-${this.data.nextPetIdCounters[type]}`;
+		this.data.nextPetIdCounters[type]++;
 
 		// Add to list of pets
-		this.instanceData.pets.push({ id, type, name });
+		this.data.pets.push({ id, type, name });
 		await this.saveSettings();
 
 		playPetSound("spawn");
 
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			this.overlayView?.addPet({ id, type, name });
 			return;
 		}
@@ -485,7 +481,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	async addBall(type: string): Promise<void> {
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			this.overlayView?.spawnBall(type);
 			return;
 		}
@@ -504,15 +500,15 @@ export default class PetPlugin extends Plugin {
 
 	// Getter function to get pet list in petview.ts
 	getPetList(): PetInstance[] {
-		return this.instanceData.pets;
+		return this.data.pets;
 	}
 
 	async removePetById(id: string): Promise<void> {
 		// Filters out the one with the same id
-		this.instanceData.pets = this.instanceData.pets.filter((p) => p.id !== id);
+		this.data.pets = this.data.pets.filter((p) => p.id !== id);
 		await this.saveSettings();
 
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			this.overlayView?.removePet(id);
 			return;
 		}
@@ -529,14 +525,14 @@ export default class PetPlugin extends Plugin {
 
 	async clearAllPets(): Promise<void> {
 		// Empties out the entire pet list
-		this.instanceData.pets = [];
+		this.data.pets = [];
 		// Reset all counters back to 1
-		for (const type in this.instanceData.nextPetIdCounters) {
-			this.instanceData.nextPetIdCounters[type] = 1;
+		for (const type in this.data.nextPetIdCounters) {
+			this.data.nextPetIdCounters[type] = 1;
 		}
 		await this.saveSettings();
 
-		if (this.instanceData.overlayMode) {
+		if (this.data.overlayMode) {
 			this.overlayView?.removeAllPets();
 			return;
 		}
@@ -553,15 +549,15 @@ export default class PetPlugin extends Plugin {
 
 	// Switch between panel mode and overlay mode
 	async setOverlayMode(enabled: boolean): Promise<void> {
-		if (this.instanceData.overlayMode === enabled) return;
+		if (this.data.overlayMode === enabled) return;
 
-		this.instanceData.overlayMode = enabled;
+		this.data.overlayMode = enabled;
 		await this.saveSettings();
 
 		if (enabled) {
 			await this.closeView();
 			this.overlayView = new OverlayPetView(this, this.mainDocument);
-			for (const pet of this.instanceData.pets) {
+			for (const pet of this.data.pets) {
 				this.overlayView.addPet(pet);
 			}
 		} else {
@@ -575,7 +571,7 @@ export default class PetPlugin extends Plugin {
 
 	// Open the leaf view
 	async openView() {
-		if (this.instanceData.overlayMode) return;
+		if (this.data.overlayMode) return;
 
 		const { workspace } = this.app;
 
@@ -636,7 +632,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	private handleActiveLeafChange(active: WorkspaceLeaf | null): void {
-		if (this.instanceData.overlayMode) return;
+		if (this.data.overlayMode) return;
 		if (!active) return;
 		if (active.view.getViewType() === VIEW_TYPE_PET) return;
 

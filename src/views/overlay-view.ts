@@ -74,7 +74,7 @@ export class OverlayPetView {
 					catAnimations,
 					moveDist,
 					"overlay",
-					this.plugin.instanceData.petSize,
+					this.plugin.data.petSize,
 					singlePet.name,
 					singlePet.type.includes("witch"),
 				);
@@ -87,7 +87,7 @@ export class OverlayPetView {
 					bunnyAnimations,
 					moveDist,
 					"overlay",
-					this.plugin.instanceData.petSize,
+					this.plugin.data.petSize,
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
@@ -99,7 +99,7 @@ export class OverlayPetView {
 					ghostAnimations,
 					moveDist,
 					"overlay",
-					this.plugin.instanceData.petSize,
+					this.plugin.data.petSize,
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
@@ -132,7 +132,7 @@ export class OverlayPetView {
 				this.overlayEl,
 				ballAnimation,
 				"overlay",
-				this.plugin.instanceData.petSize,
+				this.plugin.data.petSize,
 			);
 			this.balls.push({ id: cleanBallId, ball });
 
@@ -171,16 +171,16 @@ export class OverlayPetView {
 
 	updatePetSize() {
 		for (const { pet } of this.pets) {
-			pet.scale = this.plugin.instanceData.petSize;
+			pet.scale = this.plugin.data.petSize;
 			pet.petEl?.setCssProps({
-				"--scale": `${this.plugin.instanceData.petSize}`,
+				"--scale": `${this.plugin.data.petSize}`,
 			});
 		}
 		for (const { ball } of this.balls) {
 			if (ball.ballEl) {
-				ball.scale = this.plugin.instanceData.petSize;
+				ball.scale = this.plugin.data.petSize;
 				ball.ballEl.setCssProps({
-					"--scale": `${this.plugin.instanceData.petSize}`,
+					"--scale": `${this.plugin.data.petSize}`,
 				});
 			}
 		}

@@ -53,7 +53,7 @@ export class PetSettingTab extends PluginSettingTab {
 			{
 				name: "Background",
 				desc: "Select a background for the pet view.",
-				visible: () => !this.plugin.instanceData.overlayMode,
+				visible: () => !this.plugin.data.overlayMode,
 				control: {
 					type: "dropdown",
 					key: "selectedBackground",
@@ -64,7 +64,7 @@ export class PetSettingTab extends PluginSettingTab {
 			{
 				name: "Animations",
 				desc: "Toggle the background's animation on or off.",
-				visible: () => !this.plugin.instanceData.overlayMode,
+				visible: () => !this.plugin.data.overlayMode,
 				control: {
 					type: "toggle",
 					key: "animatedBackground",
@@ -96,7 +96,7 @@ export class PetSettingTab extends PluginSettingTab {
 	}
 
 	override getControlValue(key: string): unknown {
-		return isSettingKey(key) ? this.plugin.instanceData[key] : undefined;
+		return isSettingKey(key) ? this.plugin.data[key] : undefined;
 	}
 
 	override async setControlValue(key: string, value: unknown): Promise<void> {
@@ -108,22 +108,22 @@ export class PetSettingTab extends PluginSettingTab {
 				break;
 			case "selectedBackground":
 				if (typeof value === "string") {
-					await this.plugin.chooseBackground(value);
+					await this.plugin.setBackground(value);
 				}
 				break;
 			case "animatedBackground":
 				if (typeof value === "boolean") {
-					this.plugin.toggleBackgroundAnimation(value);
+					this.plugin.setBackgroundAnimation(value);
 				}
 				break;
 			case "petSize":
 				if (typeof value === "number") {
-					this.plugin.updatePetSize(value);
+					this.plugin.setPetSize(value);
 				}
 				break;
 			case "soundEnabled":
 				if (typeof value === "boolean") {
-					this.plugin.toggleSound(value);
+					this.plugin.setSound(value);
 				}
 				break;
 		}
