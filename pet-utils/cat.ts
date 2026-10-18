@@ -66,6 +66,11 @@ export class Cat extends Pet {
 		this.interruptAction = true;
 	}
 
+	public override stopFollowingCursor(): void {
+		super.stopFollowingCursor();
+		this.interruptAction = false;
+	}
+
 	// Function to start chasing the ball
 	public startChasingBall(ball: Ball) {
 		this.chasingBall = ball;
@@ -132,6 +137,7 @@ export class Cat extends Pet {
 				await this.animations[movingAnimation].action?.(
 					Math.floor(delay / this.animations[movingAnimation].duration),
 				);
+				await new Promise((resolve) => window.setTimeout(resolve, 100));
 			}
 		}
 	}
