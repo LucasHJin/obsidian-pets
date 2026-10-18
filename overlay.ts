@@ -65,8 +65,6 @@ export class OverlayPetView {
 
 	addPet(singlePet: PetInstance) {
 		try {
-			const cleanPetId = singlePet.id.replace(/^pets\//, "");
-
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
@@ -75,7 +73,6 @@ export class OverlayPetView {
 					catAnimations,
 					moveDist,
 					"overlay",
-					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
 					singlePet.type.includes("witch"),
@@ -89,7 +86,6 @@ export class OverlayPetView {
 					bunnyAnimations,
 					moveDist,
 					"overlay",
-					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
 				);
@@ -102,7 +98,6 @@ export class OverlayPetView {
 					ghostAnimations,
 					moveDist,
 					"overlay",
-					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
 				);
@@ -135,7 +130,6 @@ export class OverlayPetView {
 			const ball = new Ball(
 				this.overlayEl,
 				ballAnimation,
-				cleanBallId,
 				"overlay",
 				this.plugin.instanceData.petSize,
 			);

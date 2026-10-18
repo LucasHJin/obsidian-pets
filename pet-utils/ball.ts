@@ -3,7 +3,6 @@ import { playBallSound } from "./sounds";
 export class Ball {
 	private container: Element;
 	public ballEl: HTMLElement;
-	private ballId: string;
 	private backgroundName: string;
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -33,15 +32,8 @@ export class Ball {
 
 	public onDestroy?: () => void; // Callback to tie cat to ball being deleted
 
-	constructor(
-		container: Element,
-		spriteUrl: string,
-		ballId: string,
-		backgroundImage: string,
-		scale: number,
-	) {
+	constructor(container: Element, spriteUrl: string, backgroundImage: string, scale: number) {
 		this.container = container;
-		this.ballId = ballId;
 		this.backgroundName = backgroundImage;
 		this.scale = scale;
 

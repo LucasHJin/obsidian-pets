@@ -33,7 +33,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "idle-cat.png"),
 			frameCount: 7,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(700, 100),
 		},
 		jump: {
@@ -41,7 +40,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "jump-cat.png"),
 			frameCount: 13,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1300, 100),
 		},
 		jump2: {
@@ -49,7 +47,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "jump2-cat.png"),
 			frameCount: 9,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(900, 100),
 		},
 		run: {
@@ -57,7 +54,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "run-cat.png"),
 			frameCount: 7,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(700, 100),
 		},
 		sit: {
@@ -65,7 +61,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "sitting-cat.png"),
 			frameCount: 3,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(750, 100),
 		},
 		sleep: {
@@ -73,7 +68,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "sleep-cat.png"),
 			frameCount: 3,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(750, 100),
 		},
 		die: {
@@ -81,7 +75,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "die-cat.png"),
 			frameCount: 15,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1500, 100),
 		},
 	};
@@ -92,7 +85,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "idle2-cat.png"),
 			frameCount: 14,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1400, 100),
 		};
 	}
@@ -106,7 +98,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "fly-cat.png"),
 			frameCount: 3,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(600, 100),
 		};
 	} else if (type === "pets/classic-cat") {
@@ -115,7 +106,6 @@ export function getCatAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "liking-cat.png"),
 			frameCount: 18,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1800, 100),
 		};
 	}
@@ -130,7 +120,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "idle-bunny.png"),
 			frameCount: 12,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1200, 150),
 		},
 		idle2: {
@@ -138,7 +127,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "liedown-bunny.png"),
 			frameCount: 6,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(600, 150),
 		},
 		jump: {
@@ -146,7 +134,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "jump-bunny.png"),
 			frameCount: 11,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1100, 150),
 		},
 		run: {
@@ -154,7 +141,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "run-bunny.png"),
 			frameCount: 8,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(800, 150),
 		},
 		sit: {
@@ -162,7 +148,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "like-bunny.png"),
 			frameCount: 5,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(500, 150),
 		},
 		sleep: {
@@ -170,7 +155,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "sleep-bunny.png"),
 			frameCount: 6,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(600, 150),
 		},
 		die: {
@@ -178,7 +162,6 @@ export function getBunnyAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "die-bunny.png"),
 			frameCount: 12,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1200, 150),
 		},
 	};
@@ -193,7 +176,6 @@ export function getGhostAnimations(type: string): PetAnimations {
 			spriteUrl: getPetAsset(type, "idle-ghost.png"),
 			frameCount: 8,
 			frameWidth: 32,
-			frameHeight: 32,
 			duration: alterDuration(1200, 150),
 		},
 	};

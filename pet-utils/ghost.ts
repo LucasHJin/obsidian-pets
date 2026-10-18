@@ -8,11 +8,10 @@ export class Ghost extends Pet {
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
-		petId: string,
 		scale: number,
 		petName: string,
 	) {
-		super(container, animations, moveDist, backgroundName, petId, scale, petName);
+		super(container, animations, moveDist, backgroundName, scale, petName);
 	}
 
 	protected override playSound(): void {

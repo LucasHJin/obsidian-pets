@@ -6,7 +6,6 @@ export type AnimationConfig = {
 	spriteUrl: string; // Link to the spritesheet
 	frameCount: number; // Number of frames in spritesheet
 	frameWidth: number;
-	frameHeight: number;
 	duration: number; // Of animation (ms)
 	action?: (multiples?: number) => Promise<void> | void;
 };
@@ -36,14 +35,12 @@ export class Pet {
 		"backgrounds/castlebg-1.png": "82.1%",
 		"backgrounds/castlebg-2.png": "74%",
 	};
-	protected petId: string; // For unique keyframes
 	public scale: number; // For different pet sizes
 	protected petName: string;
 	protected chasingCursor = false;
 	private getCursorX: (() => number) | null = null;
 	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
 	protected tooltipEl!: HTMLElement;
-	protected isHovered = false;
 	protected actionLoopPaused = false;
 	private interruptMove: (() => void) | null = null;
 
@@ -52,7 +49,6 @@ export class Pet {
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
-		petId: string,
 		scale: number,
 		petName: string,
 	) {
@@ -62,7 +58,6 @@ export class Pet {
 		// Randomize cursor follow speed per pet (±30%) so cats spread out instead of clumping
 		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 		this.backgroundName = backgroundName;
-		this.petId = petId;
 		this.scale = scale;
 		this.petName = petName;
 
@@ -122,14 +117,12 @@ export class Pet {
 	// Sets up the listeners on the pets
 	protected setupHoverListeners() {
 		this.petEl.addEventListener("mouseenter", () => {
-			this.isHovered = true;
 			this.actionLoopPaused = true;
 			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
 		});
 
 		this.petEl.addEventListener("mouseleave", () => {
-			this.isHovered = false;
 			this.actionLoopPaused = false;
 		});
 

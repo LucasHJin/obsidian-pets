@@ -12,12 +12,11 @@ export class Cat extends Pet {
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
-		petId: string,
 		scale: number,
 		petName: string,
 		canFly = false,
 	) {
-		super(container, animations, moveDist, backgroundName, petId, scale, petName);
+		super(container, animations, moveDist, backgroundName, scale, petName);
 		this.canFly = canFly;
 	}
 

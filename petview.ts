@@ -176,7 +176,6 @@ export class PetView extends ItemView {
 	addPetToView(wrapper: Element, singlePet: PetInstance) {
 		try {
 			const background = this.plugin.getSelectedBackground();
-			const cleanPetId = singlePet.id.replace(/^pets\//, "");
 
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
@@ -186,7 +185,6 @@ export class PetView extends ItemView {
 					catAnimations,
 					moveDist,
 					background,
-					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
 					singlePet.type.includes("witch"),
@@ -200,7 +198,6 @@ export class PetView extends ItemView {
 					bunnyAnimations,
 					moveDist,
 					background,
-					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
 				);
@@ -213,7 +210,6 @@ export class PetView extends ItemView {
 					ghostAnimations,
 					moveDist,
 					background,
-					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
 				);
@@ -276,7 +272,6 @@ export class PetView extends ItemView {
 			const ball = new Ball(
 				wrapper,
 				ballAnimation,
-				cleanBallId,
 				background,
 				this.plugin.instanceData.petSize,
 			);
