@@ -243,11 +243,10 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
 			callback: () => {
-				const options = this.instanceData.pets.map((pet) => ({
-					value: pet.id,
-					// Label of name and type
-					label: `${pet.name} (${this.getCleanLabel(pet.id)})`,
-				}));
+				const options = this.instanceData.pets.map((pet) => {
+					const typeLabel = this.PETS.find((option) => option.value === pet.type)?.label;
+					return { value: pet.id, label: `${pet.name} (${typeLabel ?? pet.type})` };
+				});
 				new SelectorModal(this.app, options, async (value: string, _name: string) => {
 					await this.removePetById(value);
 				}).open();
@@ -372,28 +371,6 @@ export default class PetPlugin extends Plugin {
 		new SelectorModal(this.app, this.BACKGROUNDS, async (value: string, _name: string) => {
 			await this.chooseBackground(value); // Pass chooseBackground() function to modal
 		}).open();
-	}
-
-	// Function to get a clean id label
-	getCleanLabel(id: string): string {
-		// Don't want the general /pets
-		const desired = id.split("/").pop() ?? "";
-
-		// Match everything before last dash before digit (ind 1), match a dash followed by 1+ digits (ind 2)
-		// Parentheses captures groups
-		const match = desired.match(/^(.*)-(\d+)$/);
-		if (!match) {
-			return desired;
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- _ is the full regex match, not needed
-		const [_, base, num] = match;
-		// Capitalize each word
-		const name = base
-			.split("-")
-			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-			.join(" ");
-
-		return name;
 	}
 
 	onunload() {
