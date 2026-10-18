@@ -1,9 +1,9 @@
-import catSound from '../assets/sounds/cat.mp3';
-import bunnySound from '../assets/sounds/bunny.mp3';
-import ghostSound from '../assets/sounds/ghost.mp3';
-import bounceSound from '../assets/sounds/bounce.mp3';
-import jingleSound from '../assets/sounds/jingle.mp3';
-import spawnSound from '../assets/sounds/spawn.mp3';
+import catSound from "../assets/sounds/cat.mp3";
+import bunnySound from "../assets/sounds/bunny.mp3";
+import ghostSound from "../assets/sounds/ghost.mp3";
+import bounceSound from "../assets/sounds/bounce.mp3";
+import jingleSound from "../assets/sounds/jingle.mp3";
+import spawnSound from "../assets/sounds/spawn.mp3";
 
 const SOUNDS: Record<string, string> = {
 	cat: catSound,

@@ -7,7 +7,7 @@ export async function indexVault(
 	app: App,
 	db: VectorDB,
 	apiKey: string,
-	indexedFiles: Record<string, number> = {} // Track all the indexed files (includes last modified timestamps)
+	indexedFiles: Record<string, number> = {}, // Track all the indexed files (includes last modified timestamps)
 ) {
 	// Get a set of all markdown file paths in the vault (faster lookup -> good for bigger vaults)
 	const files = app.vault.getMarkdownFiles();
@@ -25,9 +25,7 @@ export async function indexVault(
 	}
 
 	// Find files that need indexing (new or modified)
-	const filesToIndex = files.filter(
-		(f) => indexedFiles[f.path] !== f.stat.mtime
-	);
+	const filesToIndex = files.filter((f) => indexedFiles[f.path] !== f.stat.mtime);
 	if (filesToIndex.length === 0) {
 		new Notice("Vault is already up to date!");
 		return;

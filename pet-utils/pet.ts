@@ -136,7 +136,7 @@ export class Pet {
 		this.petEl.addEventListener("click", () => {
 			this.showHeart();
 			this.playSound();
-		})
+		});
 	}
 
 	protected playSound(): void {}
@@ -146,9 +146,9 @@ export class Pet {
 
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
-			"--heart-random-x": `${randomX}%`
+			"--heart-random-x": `${randomX}%`,
 		});
-	
+
 		activeWindow.setTimeout(() => {
 			heart.remove();
 		}, 1000);
@@ -209,7 +209,7 @@ export class Pet {
 
 		// No keyframe animation
 		this.petEl.setCssStyles({
-			animation: `pet-sprite ${animation.duration}ms steps(${animation.frameCount}) infinite`
+			animation: `pet-sprite ${animation.duration}ms steps(${animation.frameCount}) infinite`,
 		});
 
 		this.petEl.setCssProps({
@@ -243,13 +243,11 @@ export class Pet {
 		const minLeft = petWidth / 2;
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
-		const magnitude =
-			action?.includes("jump")
-				? this.moveDist * (Math.random() * 0.3 + 1.5)
-				: this.moveDist; // Diff distance based on jumping vs running
+		const magnitude = action?.includes("jump")
+			? this.moveDist * (Math.random() * 0.3 + 1.5)
+			: this.moveDist; // Diff distance based on jumping vs running
 		const bias = 0.9;
-		const direction =
-			Math.random() < bias ? this.direction : -this.direction;
+		const direction = Math.random() < bias ? this.direction : -this.direction;
 		let dx = magnitude * direction;
 		const possibleX = this.currentX + dx;
 
@@ -271,7 +269,8 @@ export class Pet {
 		return new Promise((res) => {
 			let settled = false;
 
-			const settle = () => { // settle stops movement
+			const settle = () => {
+				// settle stops movement
 				if (settled) return;
 				settled = true;
 				this.petEl.removeEventListener("transitionend", done);
@@ -303,24 +302,18 @@ export class Pet {
 	// Main loop -> picks random actions
 	protected async startActionLoop() {
 		// Gets random delay that is a multiple of the run animation time
-		function getRandDelay(
-			min: number,
-			max: number,
-			multiple: number
-		): number {
+		function getRandDelay(min: number, max: number, multiple: number): number {
 			const random = Math.random() * (max - min) + min;
 			return Math.round(random / multiple) * multiple;
 		}
 
 		// Possible actions excluding dieing and running
-		const ACTIONS = Object.keys(this.animations).filter(
-			(a) => a !== "die" && a !== "run"
-		);
+		const ACTIONS = Object.keys(this.animations).filter((a) => a !== "die" && a !== "run");
 
 		while (!this.isDestroyed) {
 			// Check if is hovered
 			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
+				await new Promise((resolve) => activeWindow.setTimeout(resolve, 100));
 			}
 
 			if (this.isDestroyed) {
@@ -328,12 +321,11 @@ export class Pet {
 			}
 
 			// Pick and run a random action
-			const randomAction =
-				ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+			const randomAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
 			await this.animations[randomAction].action?.();
 
 			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
+				await new Promise((resolve) => activeWindow.setTimeout(resolve, 100));
 			}
 
 			if (this.isDestroyed) {
@@ -341,13 +333,9 @@ export class Pet {
 			}
 
 			// Go back to the running action
-			const delay = getRandDelay(
-				3000,
-				8000,
-				this.animations["run"].duration
-			);
+			const delay = getRandDelay(3000, 8000, this.animations["run"].duration);
 			await this.animations["run"].action?.(
-				Math.floor(delay / this.animations["run"].duration)
+				Math.floor(delay / this.animations["run"].duration),
 			);
 		}
 	}
@@ -394,7 +382,7 @@ export class Pet {
 		// Death animation (wait for the animation to finish)
 		this.setAnimation("die");
 		await new Promise((resolve) =>
-			activeWindow.setTimeout(resolve, this.animations["die"].duration)
+			activeWindow.setTimeout(resolve, this.animations["die"].duration),
 		);
 		// Removes instance from DOM
 		this.petEl.remove();

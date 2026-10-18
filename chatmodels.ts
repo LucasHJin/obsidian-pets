@@ -5,11 +5,7 @@ import { ConversationMessage } from "./main";
 // Note -> File links cannot be clicked
 // ADD CONTEXT OF PREVIOUS MESSAGES -> need to do this before searching for context?
 
-export function initModel(
-	selectedModel: string,
-	geminiKey: string,
-	openAiKey: string
-) {
+export function initModel(selectedModel: string, geminiKey: string, openAiKey: string) {
 	if (selectedModel === "gemini") {
 		return new GoogleGenAI({ apiKey: geminiKey });
 	} else if (selectedModel === "openai") {
@@ -28,7 +24,7 @@ export async function askModel(
 	question: string,
 	model: GoogleGenAI | OpenAI,
 	selectedModel: string,
-	conversationHistory: ConversationMessage[]
+	conversationHistory: ConversationMessage[],
 ) {
 	const prompt = `You are a helpful AI assistant with access to the user's Obsidian vault.
 **Context from vault** (relevant notes retrieved via semantic search):
@@ -36,9 +32,7 @@ ${context}
 ---
 
 **Conversation History**: 
-${conversationHistory
-	.map((msg) => `\n- ${msg.role}: \n  - ${msg.content}`)
-	.join("")}
+${conversationHistory.map((msg) => `\n- ${msg.role}: \n  - ${msg.content}`).join("")}
 ---
 
 **User's question**: ${question}
@@ -87,7 +81,7 @@ export async function reformulateQuery(
 	question: string,
 	recentContext: string,
 	model: GoogleGenAI | OpenAI | null,
-	selectedModel: string
+	selectedModel: string,
 ): Promise<string> {
 	if (!model) {
 		return question;
@@ -113,9 +107,7 @@ Examples:
 Reformulated query:`;
 
 		if (selectedModel === "gemini") {
-			const response = await (
-				model as GoogleGenAI
-			).models.generateContent({
+			const response = await (model as GoogleGenAI).models.generateContent({
 				model: "gemini-2.5-flash",
 				contents: [{ role: "user", parts: [{ text: prompt }] }],
 			});
@@ -123,9 +115,7 @@ Reformulated query:`;
 		}
 
 		if (selectedModel === "openai") {
-			const response = await (
-				model as OpenAI
-			).chat.completions.create({
+			const response = await (model as OpenAI).chat.completions.create({
 				model: "gpt-5-mini",
 				messages: [{ role: "user", content: prompt }],
 			});
@@ -134,9 +124,7 @@ Reformulated query:`;
 	} catch (e) {
 		console.error("Query reformulation failed:", e);
 		// Fallback: simple concatenation
-		const lastUserMsg = recentContext
-			.split("\n")
-			.find((line) => line.startsWith("user:"));
+		const lastUserMsg = recentContext.split("\n").find((line) => line.startsWith("user:"));
 		if (lastUserMsg) {
 			return `${lastUserMsg.replace("user:", "").trim()} ${question}`;
 		}

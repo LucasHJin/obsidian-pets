@@ -10,17 +10,9 @@ export class Ghost extends Pet {
 		backgroundName: string,
 		petId: string,
 		scale: number,
-		petName: string
+		petName: string,
 	) {
-		super(
-			container,
-			animations,
-			moveDist,
-			backgroundName,
-			petId,
-			scale,
-			petName
-		);
+		super(container, animations, moveDist, backgroundName, petId, scale, petName);
 	}
 
 	protected override playSound(): void {
@@ -33,7 +25,7 @@ export class Ghost extends Pet {
 			this.setAnimation("idle");
 			// Delay for one cycle so it doesn't instantly switch again
 			await new Promise((res) =>
-				activeWindow.setTimeout(res, this.animations["idle"].duration)
+				activeWindow.setTimeout(res, this.animations["idle"].duration),
 			);
 		};
 	}
@@ -43,7 +35,7 @@ export class Ghost extends Pet {
 		while (!this.isDestroyed) {
 			// Random chance: either stay idle or move then idle again
 			const shouldMove = Math.random() < 0.9;
-		
+
 			if (shouldMove) {
 				const repeats = 3 + Math.floor(Math.random() * 6);
 				for (let i = 0; i < repeats; i++) {
@@ -65,7 +57,7 @@ export class Ghost extends Pet {
 		// Fade out and then remove (to replace death animation)
 		this.petEl.setCssProps({
 			transition: "opacity 1s ease",
-			opacity: "0"
+			opacity: "0",
 		});
 		activeWindow.setTimeout(() => {
 			this.petEl.remove();

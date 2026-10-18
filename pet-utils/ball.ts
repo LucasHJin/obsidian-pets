@@ -33,7 +33,13 @@ export class Ball {
 
 	public onDestroy?: () => void; // Callback to tie cat to ball being deleted
 
-	constructor(container: Element, spriteUrl: string, ballId: string, backgroundImage: string, scale: number) {
+	constructor(
+		container: Element,
+		spriteUrl: string,
+		ballId: string,
+		backgroundImage: string,
+		scale: number,
+	) {
 		this.container = container;
 		this.ballId = ballId;
 		this.backgroundName = backgroundImage;
@@ -81,7 +87,8 @@ export class Ball {
 		if (this.backgroundName === "overlay") {
 			return rect.height - this.radius - 1; // ball bottom edge exactly at screen bottom (found by testing)
 		}
-		const bgHeightPercent = this.backgroundHeights[this.backgroundName] || this.backgroundHeights["default"];
+		const bgHeightPercent =
+			this.backgroundHeights[this.backgroundName] || this.backgroundHeights["default"];
 		const fraction = parseFloat(bgHeightPercent) / 100;
 		return rect.height * fraction + 15; // 10.7 is half of sprite size of ball and pet
 	}

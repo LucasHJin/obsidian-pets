@@ -6,7 +6,12 @@ import { Bunny } from "./pet-utils/bunny";
 import { Ghost } from "./pet-utils/ghost";
 import { Ball } from "./pet-utils/ball";
 import { getBackgroundAsset } from "./pet-utils/pet-assets";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations, getBallAnimations } from "./pet-utils/pet-animations";
+import {
+	getCatAnimations,
+	getBunnyAnimations,
+	getGhostAnimations,
+	getBallAnimations,
+} from "./pet-utils/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -50,16 +55,16 @@ export class PetView extends ItemView {
 
 		this.addAction("paw-print", "Cat toy toggle", () => {
 			this.plugin.changeMouseCommand();
-		})
-		
+		});
+
 		this.addAction("image", "Choose a background", () => {
 			this.plugin.showChooseBackgroundCommand();
-		})
+		});
 
 		this.addAction("minus", "Remove all pets", async () => {
 			await this.plugin.clearAllPets();
 		});
-		
+
 		this.addAction("circle-dashed", "Throw a ball", () => {
 			this.plugin.throwBallCommand();
 		});
@@ -76,9 +81,7 @@ export class PetView extends ItemView {
 		const container = this.containerEl.children[1];
 
 		// Find/Create wrapper div for the view specifically
-		let wrapper = container.querySelector(
-			".pet-view-wrapper"
-		) as HTMLDivElement;
+		let wrapper = container.querySelector(".pet-view-wrapper") as HTMLDivElement;
 		if (!wrapper) {
 			wrapper = container.createDiv({ cls: "pet-view-wrapper" });
 		}
@@ -109,9 +112,7 @@ export class PetView extends ItemView {
 		}
 
 		// Remove existing snow gif
-		const existingSnow = wrapper.querySelector(
-			".pet-view-background-animation"
-		);
+		const existingSnow = wrapper.querySelector(".pet-view-background-animation");
 		if (existingSnow) {
 			existingSnow.remove();
 		}
@@ -130,8 +131,8 @@ export class PetView extends ItemView {
 			} catch (error) {
 				console.error(`Failed to load background: ${background}`, error);
 			}
-		} 
-	
+		}
+
 		if (background.includes("snow") && this.plugin.instanceData.animatedBackground) {
 			try {
 				const snowUrl = getBackgroundAsset("snow.gif");
@@ -173,24 +174,49 @@ export class PetView extends ItemView {
 	}
 
 	addPetToView(wrapper: Element, singlePet: PetInstance) {
-		try {	
+		try {
 			const background = this.plugin.getSelectedBackground();
 			const cleanPetId = singlePet.id.replace(/^pets\//, "");
 
 			if (singlePet.type.includes("cat")) {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(wrapper, catAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize,singlePet.name, singlePet.type.includes("witch"));
+				const cat = new Cat(
+					wrapper,
+					catAnimations,
+					moveDist,
+					background,
+					cleanPetId,
+					this.plugin.instanceData.petSize,
+					singlePet.name,
+					singlePet.type.includes("witch"),
+				);
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
-				const bunny = new Bunny(wrapper, bunnyAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
+				const bunny = new Bunny(
+					wrapper,
+					bunnyAnimations,
+					moveDist,
+					background,
+					cleanPetId,
+					this.plugin.instanceData.petSize,
+					singlePet.name,
+				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			} else if (singlePet.type.includes("ghost")) {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
-				const ghost = new Ghost(wrapper, ghostAnimations, moveDist, background, cleanPetId, this.plugin.instanceData.petSize, singlePet.name);
+				const ghost = new Ghost(
+					wrapper,
+					ghostAnimations,
+					moveDist,
+					background,
+					cleanPetId,
+					this.plugin.instanceData.petSize,
+					singlePet.name,
+				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
 		} catch (error) {
@@ -247,11 +273,17 @@ export class PetView extends ItemView {
 
 			// Add the ball to the view
 			const ballAnimation = getBallAnimations(cleanBallId);
-			const ball = new Ball(wrapper, ballAnimation, cleanBallId, background, this.plugin.instanceData.petSize);
+			const ball = new Ball(
+				wrapper,
+				ballAnimation,
+				cleanBallId,
+				background,
+				this.plugin.instanceData.petSize,
+			);
 			this.balls.push({ id: cleanBallId, ball });
 
 			// Choose a random cat to chase after the ball
-			const cats = this.pets.filter(p => p.pet instanceof Cat);
+			const cats = this.pets.filter((p) => p.pet instanceof Cat);
 			if (cats.length > 0) {
 				const randomCat = cats[Math.floor(Math.random() * cats.length)].pet as Cat;
 				randomCat.startChasingBall(ball);
@@ -259,7 +291,7 @@ export class PetView extends ItemView {
 				ball.onDestroy = () => {
 					// Stop chasing + remove ball from array
 					randomCat.stopChasingBall();
-					const index = this.balls.findIndex(b => b.id === cleanBallId);
+					const index = this.balls.findIndex((b) => b.id === cleanBallId);
 					if (index !== -1) {
 						this.balls.splice(index, 1);
 					}

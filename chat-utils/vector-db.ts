@@ -85,7 +85,7 @@ export class VectorDB {
 	}
 
 	// Wipes database completely (to be used if ever needing to re-index everything)
-		// WARNING: THIS SHOULD NOT BE USED UNLESS COMPLETE RESET IS NEEDED
+	// WARNING: THIS SHOULD NOT BE USED UNLESS COMPLETE RESET IS NEEDED
 	async clear(): Promise<void> {
 		const db = await this.dbPromise;
 		return new Promise((resolve, reject) => {
@@ -99,7 +99,7 @@ export class VectorDB {
 	// Finds the k most semantically similar chunks to the query vector
 	async search(
 		queryVector: number[],
-		topK: number
+		topK: number,
 	): Promise<Array<{ text: string; score: number }>> {
 		const items = await this.getAll();
 		const scored = items.map((item) => ({

@@ -43,9 +43,9 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 };
 
 export interface ConversationMessage {
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: number;
+	role: "user" | "assistant";
+	content: string;
+	timestamp: number;
 }
 
 export default class PetPlugin extends Plugin {
@@ -173,20 +173,17 @@ export default class PetPlugin extends Plugin {
 		try {
 			await this.loadSettings();
 			// NEED TO HANDLE ERROR BETTER IF NO API KEY
-			if (
-				this.instanceData.selectedModel &&
-				this.instanceData.selectedModel !== "none"
-			) {
+			if (this.instanceData.selectedModel && this.instanceData.selectedModel !== "none") {
 				try {
 					this.chatmodel = initModel(
 						this.instanceData.selectedModel,
 						this.instanceData.geminiApiKey,
-						this.instanceData.openAiApiKey
+						this.instanceData.openAiApiKey,
 					);
 				} catch (e) {
 					console.warn("Failed to initialize chat model:", e);
 					new Notice(
-						"Could not initialize AI model. Check API keys and model selection in settings."
+						"Could not initialize AI model. Check API keys and model selection in settings.",
 					);
 				}
 			}
@@ -212,8 +209,7 @@ export default class PetPlugin extends Plugin {
 					this.overlayView.addPet(pet);
 				}
 			} else {
-				const isOpen =
-					this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+				const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 				if (!isOpen) {
 					await this.openView();
 				}
@@ -222,15 +218,14 @@ export default class PetPlugin extends Plugin {
 			// Detach leaf when sibling sharing petview's tab group is opened
 			this.registerEvent(
 				this.app.workspace.on("active-leaf-change", (leaf) =>
-					this.handleActiveLeafChange(leaf)
-				)
+					this.handleActiveLeafChange(leaf),
+				),
 			);
 		});
 
 		// Adds icon on the ribbon (side panel) to open view
 		this.addRibbonIcon("cat", "Toggle pet view", async () => {
-			const isOpen =
-				this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+			const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 			if (isOpen) {
 				await this.closeView();
 			} else {
@@ -259,7 +254,6 @@ export default class PetPlugin extends Plugin {
 			callback: async () => this.throwBallCommand(),
 		});
 
-
 		// Command to change mouse to a cat toy
 		this.addCommand({
 			id: "add-cat-toy-dropdown",
@@ -286,13 +280,9 @@ export default class PetPlugin extends Plugin {
 					// Label of name and type
 					label: `${pet.name} (${this.getCleanLabel(pet.id)})`,
 				}));
-				new SelectorModal(
-					this.app,
-					options,
-					async (value: string, _name: string) => {
-						await this.removePetById(value);
-					}
-				).open();
+				new SelectorModal(this.app, options, async (value: string, _name: string) => {
+					await this.removePetById(value);
+				}).open();
 			},
 		});
 
@@ -300,7 +290,10 @@ export default class PetPlugin extends Plugin {
 			id: "chat-with-pets",
 			name: "Chat with your pets",
 			callback: () => {
-				if (!this.instanceData.selectedModel || this.instanceData.selectedModel === "none") {
+				if (
+					!this.instanceData.selectedModel ||
+					this.instanceData.selectedModel === "none"
+				) {
 					new Notice("Please select a chat model in settings first.");
 					return;
 				}
@@ -309,7 +302,9 @@ export default class PetPlugin extends Plugin {
 					return;
 				}
 
-				new ChatModal(this.app, this, (msg, history) => this.chatWithPet(msg, history)).open(); // Pass reference to this plugin to use the markdown
+				new ChatModal(this.app, this, (msg, history) =>
+					this.chatWithPet(msg, history),
+				).open(); // Pass reference to this plugin to use the markdown
 			},
 		});
 
@@ -327,7 +322,7 @@ export default class PetPlugin extends Plugin {
 					this.app,
 					this.ragDb,
 					this.instanceData.openAiApiKey,
-					this.instanceData.indexedFiles
+					this.instanceData.indexedFiles,
 				);
 				await this.saveData(this.instanceData);
 				new Notice("Vault indexed successfully.");
@@ -348,7 +343,7 @@ export default class PetPlugin extends Plugin {
 					this.app,
 					this.ragDb,
 					this.instanceData.openAiApiKey,
-					this.instanceData.indexedFiles
+					this.instanceData.indexedFiles,
 				);
 				await this.saveData(this.instanceData);
 			}
@@ -368,7 +363,7 @@ export default class PetPlugin extends Plugin {
 			"Meow meow! 😺",
 			"*purrs contentedly* 🐱",
 			"Mew mew!",
-					
+
 			"Woof! New note detected! 🐕",
 			"Bark bark! Time to write! 🐶",
 			"Paws-itively productive!",
@@ -383,7 +378,7 @@ export default class PetPlugin extends Plugin {
 			"Woof woof! 🐶",
 			"*excited bork*",
 			"*tail wagging intensifies*",
-			
+
 			"Hop into a new note! 🐰",
 			"Some-bunny's productive!",
 			"Lettuce write! 🥬",
@@ -401,28 +396,27 @@ export default class PetPlugin extends Plugin {
 			activeWindow.setTimeout(() => {
 				this.registerEvent(
 					this.app.vault.on("create", (file) => {
-						const randomMessage = NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
+						const randomMessage =
+							NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
 						new Notice(randomMessage);
-					})
+					}),
 				);
 			}, 1000); // Wait 1 second after layout is ready
 		});
 	}
 
 	public showAddPetCommand() {
-		new SelectorModal(
-			this.app,
-			this.PETS,
-			async (value: string, name: string) => {
-				await this.addPet(value, name);
-			}
-		).open();
+		new SelectorModal(this.app, this.PETS, async (value: string, name: string) => {
+			await this.addPet(value, name);
+		}).open();
 	}
 
 	public changeMouseCommand(): void {
 		this.catToyActive = !this.catToyActive;
 		if (this.catToyActive) {
-			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize ?? 1, (x) => { this.currentMouseX = x; });
+			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize ?? 1, (x) => {
+				this.currentMouseX = x;
+			});
 			this.startCursorFollowMode();
 		} else {
 			this.catToyOverlay?.destroy();
@@ -467,17 +461,16 @@ export default class PetPlugin extends Plugin {
 	}
 
 	public showChooseBackgroundCommand() {
-		new SelectorModal(
-			this.app,
-			this.BACKGROUNDS,
-			async (value: string, _name: string) => {
-				await this.chooseBackground(value); // Pass chooseBackground() function to modal
-			}
-		).open();
+		new SelectorModal(this.app, this.BACKGROUNDS, async (value: string, _name: string) => {
+			await this.chooseBackground(value); // Pass chooseBackground() function to modal
+		}).open();
 	}
 
 	// Function to handle chat messages
-	async chatWithPet(question: string, conversationHistory: ConversationMessage[] = []): Promise<string> {
+	async chatWithPet(
+		question: string,
+		conversationHistory: ConversationMessage[] = [],
+	): Promise<string> {
 		// Need a chat model to exist
 		if (!this.chatmodel) {
 			return "Please set your API key(s) in settings first.";
@@ -489,10 +482,15 @@ export default class PetPlugin extends Plugin {
 		if (conversationHistory.length > 0) {
 			const recentContext = conversationHistory
 				.slice(-6)
-				.map(msg => `${msg.role}: ${msg.content}`)
+				.map((msg) => `${msg.role}: ${msg.content}`)
 				.join("\n");
-			
-			searchQuery = await reformulateQuery(question, recentContext, this.chatmodel, this.instanceData.selectedModel || "none");
+
+			searchQuery = await reformulateQuery(
+				question,
+				recentContext,
+				this.chatmodel,
+				this.instanceData.selectedModel || "none",
+			);
 		}
 
 		// If OpenAI key exists -> fetch context (retrieval)
@@ -502,7 +500,7 @@ export default class PetPlugin extends Plugin {
 				context = await answerQuery(
 					searchQuery,
 					this.instanceData.openAiApiKey,
-					this.ragDb
+					this.ragDb,
 				);
 			} catch (e) {
 				console.error("RAG error:", e);
@@ -518,7 +516,7 @@ export default class PetPlugin extends Plugin {
 				question,
 				this.chatmodel,
 				this.instanceData.selectedModel || "none",
-				conversationHistory
+				conversationHistory,
 			);
 		} catch (e) {
 			console.error("Chat model error:", e);
@@ -555,7 +553,7 @@ export default class PetPlugin extends Plugin {
 			this.chatmodel = initModel(
 				selectedModel,
 				this.instanceData.geminiApiKey,
-				this.instanceData.openAiApiKey
+				this.instanceData.openAiApiKey,
 			);
 
 			if (selectedModel === "gemini") {
@@ -608,11 +606,7 @@ export default class PetPlugin extends Plugin {
 
 	// Merges current data with default data
 	async loadSettings() {
-		this.instanceData = Object.assign(
-			{},
-			DEFAULT_DATA,
-			await this.loadData()
-		);
+		this.instanceData = Object.assign({}, DEFAULT_DATA, await this.loadData());
 
 		// Make sure id counter exists
 		if (!this.instanceData.nextPetIdCounters) {
@@ -765,9 +759,7 @@ export default class PetPlugin extends Plugin {
 
 	public async removePetById(id: string): Promise<void> {
 		// Filters out the one with the same id
-		this.instanceData.pets = this.instanceData.pets.filter(
-			(p) => p.id !== id
-		);
+		this.instanceData.pets = this.instanceData.pets.filter((p) => p.id !== id);
 		await this.saveData(this.instanceData);
 
 		if (this.instanceData.overlayMode) {
@@ -877,10 +869,7 @@ export default class PetPlugin extends Plugin {
 		if (!parent) return false;
 		const iterate = (
 			this.app.workspace as unknown as {
-				iterateLeaves?: (
-					cb: (l: WorkspaceLeaf) => unknown,
-					item: unknown
-				) => unknown;
+				iterateLeaves?: (cb: (l: WorkspaceLeaf) => unknown, item: unknown) => unknown;
 			}
 		).iterateLeaves;
 		if (typeof iterate !== "function") return false;
@@ -891,7 +880,7 @@ export default class PetPlugin extends Plugin {
 			(l: WorkspaceLeaf) => {
 				if (l !== leaf) hasSibling = true;
 			},
-			parent
+			parent,
 		);
 		return hasSibling;
 	}

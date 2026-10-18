@@ -1,9 +1,6 @@
 import { requestUrl } from "obsidian";
 
-export async function fetchEmbedding(
-	apiKey: string,
-	input: string
-): Promise<number[]> {
+export async function fetchEmbedding(apiKey: string, input: string): Promise<number[]> {
 	try {
 		const res = await requestUrl({
 			url: "https://api.openai.com/v1/embeddings",

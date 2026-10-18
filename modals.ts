@@ -21,7 +21,7 @@ export class SelectorModal extends Modal {
 	constructor(
 		app: App,
 		options: SelectorOption[],
-		onSubmit: (value: string, name: string) => Promise<void>
+		onSubmit: (value: string, name: string) => Promise<void>,
 	) {
 		super(app);
 		this.options = options;
@@ -112,9 +112,13 @@ export class ChatModal extends Modal {
 	plugin: Component;
 	private conversationHistory: ConversationMessage[] = [];
 	private activeTypingInterval: ReturnType<typeof activeWindow.setInterval> | null = null;
-	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>
+	onMessage: (message: string, history: ConversationMessage[]) => Promise<string>;
 
-	constructor(app: App, plugin: Component, onMessage: (message: string, history: ConversationMessage[]) => Promise<string>) {
+	constructor(
+		app: App,
+		plugin: Component,
+		onMessage: (message: string, history: ConversationMessage[]) => Promise<string>,
+	) {
 		super(app);
 		this.plugin = plugin;
 		this.onMessage = onMessage;
@@ -123,13 +127,14 @@ export class ChatModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
-        this.conversationHistory = [];
+		this.conversationHistory = [];
 
 		contentEl.addClass("pp-chat-modal-content");
 
 		const chatContainer = contentEl.createDiv({ cls: "chat-messages" });
-		
-		void this.addMessage("bot",
+
+		void this.addMessage(
+			"bot",
 			`/\\_/\\ ♥
 >^.^<   ~meow~
 /   \\
@@ -139,7 +144,8 @@ export class ChatModal extends Modal {
 you're my meeeooooowwwwner~
 Cat (chat) with me anything about~
 (except about rats, I hate them)~`,
-			chatContainer);
+			chatContainer,
+		);
 
 		const form = contentEl.createEl("form", { cls: "chat-form" });
 
@@ -177,12 +183,12 @@ Cat (chat) with me anything about~
 				this.conversationHistory.push({
 					role: "user",
 					content: text,
-					timestamp: Date.now()
+					timestamp: Date.now(),
 				});
 				this.conversationHistory.push({
 					role: "assistant",
 					content: response,
-					timestamp: Date.now()
+					timestamp: Date.now(),
 				});
 
 				// Keep recent 8 messages max (avoid overflow context window)
@@ -211,14 +217,8 @@ Cat (chat) with me anything about~
 		if (sender === "bot" && text.includes(">^.^<")) {
 			const pre = messageBox.createEl("pre"); // So that line width isn't affected afterwards
 			pre.setText(text);
-		} else if (sender === "bot" && !text.includes(">^.^<")){
-			await MarkdownRenderer.render(
-				this.app,
-				text,
-				messageBox,
-				"", 
-				this.plugin 
-			);
+		} else if (sender === "bot" && !text.includes(">^.^<")) {
+			await MarkdownRenderer.render(this.app, text, messageBox, "", this.plugin);
 		} else {
 			messageBox.setText(text);
 		}

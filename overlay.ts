@@ -74,7 +74,7 @@ export class OverlayPetView {
 					cleanPetId,
 					this.plugin.instanceData.petSize,
 					singlePet.name,
-					singlePet.type.includes("witch")
+					singlePet.type.includes("witch"),
 				);
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (singlePet.type.includes("bunny")) {
@@ -87,7 +87,7 @@ export class OverlayPetView {
 					"overlay",
 					cleanPetId,
 					this.plugin.instanceData.petSize,
-					singlePet.name
+					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 			} else if (singlePet.type.includes("ghost")) {
@@ -100,7 +100,7 @@ export class OverlayPetView {
 					"overlay",
 					cleanPetId,
 					this.plugin.instanceData.petSize,
-					singlePet.name
+					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 			}
@@ -133,15 +133,13 @@ export class OverlayPetView {
 				ballAnimation,
 				cleanBallId,
 				"overlay",
-				this.plugin.instanceData.petSize
+				this.plugin.instanceData.petSize,
 			);
 			this.balls.push({ id: cleanBallId, ball });
 
 			const cats = this.pets.filter((p) => p.pet instanceof Cat);
 			if (cats.length > 0) {
-				const randomCat = cats[
-					Math.floor(Math.random() * cats.length)
-				].pet as Cat;
+				const randomCat = cats[Math.floor(Math.random() * cats.length)].pet as Cat;
 				randomCat.startChasingBall(ball);
 				ball.onDestroy = () => {
 					randomCat.stopChasingBall();

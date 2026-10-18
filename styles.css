@@ -30,7 +30,6 @@
 	pointer-events: auto;
 }
 
-
 /* ------------- Pet View Styles ------------- */
 
 .pet-view-wrapper {
@@ -79,7 +78,7 @@
 
 .pet-name-tooltip {
 	position: absolute;
-	bottom: 100%; 
+	bottom: 100%;
 	left: 50%;
 	transform: translateX(-50%) translateY(-2px) scaleX(var(--scale-x, 1));
 	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
@@ -88,7 +87,7 @@
 	border-radius: 4px;
 	font-size: 0.8em;
 	white-space: nowrap;
-	pointer-events: none; 
+	pointer-events: none;
 	opacity: 0;
 	transition: opacity 0.2s ease;
 	z-index: 1000;
@@ -145,17 +144,17 @@
 }
 
 .ball {
-  position: absolute;
-  transform: translate(calc(var(--x, 0)), calc(var(--y, 0))) scale(var(--scale, 1)); /* same as above */
-  width: var(--ballwidth);
-  height: var(--ballheight);
-  z-index: 200;
+	position: absolute;
+	transform: translate(calc(var(--x, 0)), calc(var(--y, 0))) scale(var(--scale, 1)); /* same as above */
+	width: var(--ballwidth);
+	height: var(--ballheight);
+	z-index: 200;
 }
 .ball img {
-  display: block;
-  image-rendering: pixelated;
-  width: 100%;
-  height: 100%;
+	display: block;
+	image-rendering: pixelated;
+	width: 100%;
+	height: 100%;
 }
 
 .pet-heart {
@@ -163,7 +162,7 @@
 	width: 13px;
 	height: 12px;
 	left: var(--heart-random-x);
-	top: -10px; 
+	top: -10px;
 	transform: translateX(-50%) scaleX(var(--scale-x, 1));
 	background-image: var(--heart-url);
 	background-size: cover;
@@ -212,17 +211,26 @@
 }
 
 @keyframes pet-sprite {
-	from { background-position: 0 0; }
-	to   { background-position: var(--sprite-total-width) 0; }
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: var(--sprite-total-width) 0;
+	}
 }
 
 @keyframes cat-toy-cursor {
-	from { background-position: 0 0; }
-	to   { background-position: calc(-1 * var(--cat-toy-sprite-width)) 0; }
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: calc(-1 * var(--cat-toy-sprite-width)) 0;
+	}
 }
 
 /* Chat Modal Styles */
-.modal:has(.pp-chat-modal-content) { /* Target this specific modal to change width + height */
+.modal:has(.pp-chat-modal-content) {
+	/* Target this specific modal to change width + height */
 	width: 65vw !important;
 	height: 75vh !important;
 	max-width: none !important;
@@ -239,15 +247,15 @@
 	flex: 1;
 	overflow-y: auto;
 	padding: 8px;
-	display: flex; 
+	display: flex;
 	flex-direction: column;
-	gap: 6px; 
+	gap: 6px;
 }
 
 .chat-message {
 	padding: 10px 20px;
 	border-radius: 6px;
-	max-width: 70%; 
+	max-width: 70%;
 	word-wrap: break-word;
 	white-space: pre-wrap;
 }
@@ -255,54 +263,54 @@
 .chat-message.user {
 	background-color: var(--interactive-accent);
 	color: white;
-	align-self: flex-end; 
+	align-self: flex-end;
 }
 
 .chat-message.bot {
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
-	align-self: flex-start; 
+	align-self: flex-start;
 }
 
 /* Reset margins and paddings for all elements inside bot messages (TIGHTER) */
 .chat-message.bot * {
-    margin: 0 !important;
-    padding: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 .chat-message.bot ul,
 .chat-message.bot ol {
-    padding-left: 1.5em !important;
-    margin: -1em 0 !important; 
+	padding-left: 1.5em !important;
+	margin: -1em 0 !important;
 }
 
 .chat-message.bot li {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.3 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	line-height: 1.3 !important;
 }
 
 .chat-message.bot li > p {
-    display: inline !important; 
-    margin: 0 !important;
-    padding: 0 !important;
+	display: inline !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 .chat-message.bot p {
-    margin: 0 !important;
-    padding: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 .chat-message.bot li {
-    margin-top: 0 !important;
+	margin-top: 0 !important;
 }
 
 .chat-message.bot *:first-child {
-    margin-top: 0 !important;
+	margin-top: 0 !important;
 }
 
 .chat-message.bot *:last-child {
-    margin-bottom: 0 !important;
+	margin-bottom: 0 !important;
 }
 
 .chat-form {
@@ -318,7 +326,7 @@
 .chat-input {
 	flex: 1;
 	resize: none;
-	min-height: 20px; 
+	min-height: 20px;
 	max-height: 120px;
 	padding: 6px;
 	line-height: 1.3;
@@ -335,55 +343,54 @@
 .chat-message pre {
 	margin: 0;
 	padding: 0;
-	white-space: pre; 
+	white-space: pre;
 }
 
 .chat-message.bot {
-  font-family: var(--font-monospace); /* ALL bot messages are diff font */
+	font-family: var(--font-monospace); /* ALL bot messages are diff font */
 }
-
 
 /* Make Pet View action buttons always visible */
 .workspace-leaf:has(.pet-view-wrapper) {
-    display: flex !important;
-    flex-direction: column-reverse !important; 
+	display: flex !important;
+	flex-direction: column-reverse !important;
 }
 
 .workspace-leaf:has(.pet-view-wrapper) .view-header {
-    display: flex !important;
-    min-height: 36px !important;
-    width: 100% !important;
-    order: 2 !important;
+	display: flex !important;
+	min-height: 36px !important;
+	width: 100% !important;
+	order: 2 !important;
 }
 
 .workspace-leaf:has(.pet-view-wrapper) .view-content {
-    order: 1 !important;
-    flex: 1 !important;
+	order: 1 !important;
+	flex: 1 !important;
 }
 
 .workspace-leaf:has(.pet-view-wrapper) .view-header-title {
-    display: flex !important;
-    order: -1 !important;
-    margin-right: auto !important;
+	display: flex !important;
+	order: -1 !important;
+	margin-right: auto !important;
 }
 
 .workspace-leaf:has(.pet-view-wrapper) .view-actions {
-    display: flex !important;
-    width: auto !important;
-    height: auto !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+	display: flex !important;
+	width: auto !important;
+	height: auto !important;
+	visibility: visible !important;
+	opacity: 1 !important;
 }
 
 .workspace-leaf:has(.pet-view-wrapper) .view-action {
-    display: flex !important;
-    width: 32px !important;
-    height: 32px !important;
-    opacity: 1 !important;
+	display: flex !important;
+	width: 32px !important;
+	height: 32px !important;
+	opacity: 1 !important;
 }
 
 .workspace-leaf:has(.pet-view-wrapper) .view-content {
-    padding: 8px !important;
+	padding: 8px !important;
 }
 
 /* Hide everything in the header except custom buttons */
@@ -391,5 +398,5 @@
 .workspace-leaf:has(.pet-view-wrapper) .view-header-icon,
 .workspace-leaf:has(.pet-view-wrapper) .view-action.mod-bookmark,
 .workspace-leaf:has(.pet-view-wrapper) .view-actions > .clickable-icon:last-child {
-    display: none !important;
+	display: none !important;
 }

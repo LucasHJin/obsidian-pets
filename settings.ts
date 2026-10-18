@@ -19,7 +19,7 @@ export class PetSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Overlay mode")
 			.setDesc(
-				"When enabled, pets treat the entire Obsidian window as their playground (using a transparent overlay)."
+				"When enabled, pets treat the entire Obsidian window as their playground (using a transparent overlay).",
 			)
 			.addToggle((toggle) => {
 				toggle
@@ -88,37 +88,39 @@ export class PetSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl)
-			.setName("Chatbot API keys")
-			.setHeading()
+		new Setting(containerEl).setName("Chatbot API keys").setHeading();
 
 		new Setting(containerEl)
-		.setName("Gemini API key")
-		.setDesc("Enter your Gemini API key to use the plugin's chat feature (this is optional given the OpenAI key).")
-		.addText((text) => {
-			text.setValue(this.plugin.instanceData.geminiApiKey)
-				.onChange(async (value) => {
+			.setName("Gemini API key")
+			.setDesc(
+				"Enter your Gemini API key to use the plugin's chat feature (this is optional given the OpenAI key).",
+			)
+			.addText((text) => {
+				text.setValue(this.plugin.instanceData.geminiApiKey).onChange(async (value) => {
 					this.plugin.updateGeminiApiKey(value);
 					if (!value.trim() && this.plugin.instanceData.selectedModel === "gemini") {
 						this.plugin.updateChosenModel("none");
 					}
 					this.display(); // Refresh to update available models
 				});
-		});
+			});
 
 		new Setting(containerEl)
-		.setName("OpenAI API key")
-		.setDesc("Enter your OpenAI API key to use the plugin's chat feature (this is mandatory).")
-		.addText((text) => {
-			text.setValue(this.plugin.instanceData.openAiApiKey || "")
-				.onChange(async (value) => {
-					this.plugin.updateOpenAiApiKey(value);
-					if (!value.trim() && this.plugin.instanceData.selectedModel === "openai") {
-						this.plugin.updateChosenModel("none");
-					}
-					this.display(); // Refresh to update available models
-				});
-		});
+			.setName("OpenAI API key")
+			.setDesc(
+				"Enter your OpenAI API key to use the plugin's chat feature (this is mandatory).",
+			)
+			.addText((text) => {
+				text.setValue(this.plugin.instanceData.openAiApiKey || "").onChange(
+					async (value) => {
+						this.plugin.updateOpenAiApiKey(value);
+						if (!value.trim() && this.plugin.instanceData.selectedModel === "openai") {
+							this.plugin.updateChosenModel("none");
+						}
+						this.display(); // Refresh to update available models
+					},
+				);
+			});
 
 		// Conditionally show model selector
 		const hasGemini = !!this.plugin.instanceData.geminiApiKey?.trim();

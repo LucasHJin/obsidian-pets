@@ -2,23 +2,23 @@ import { Pet, AnimationConfig } from "./pet";
 import { playPetSound } from "./sounds";
 
 export class Bunny extends Pet {
-    constructor(
-        container: Element,
-        animations: Record<string, AnimationConfig>,
-        moveDist: number,
-        backgroundName: string,
-        petId: string,
+	constructor(
+		container: Element,
+		animations: Record<string, AnimationConfig>,
+		moveDist: number,
+		backgroundName: string,
+		petId: string,
 		scale: number,
-		petName: string
-    ) {
-        super(container, animations, moveDist, backgroundName, petId, scale, petName);
-    }
+		petName: string,
+	) {
+		super(container, animations, moveDist, backgroundName, petId, scale, petName);
+	}
 
-    protected override playSound(): void {
-        playPetSound("bunny");
-    }
+	protected override playSound(): void {
+		playPetSound("bunny");
+	}
 
-    protected setupActions() {
+	protected setupActions() {
 		for (const key in this.animations) {
 			this.animations[key].action = async (multiples = 1) => {
 				this.setAnimation(key);
@@ -33,20 +33,20 @@ export class Bunny extends Pet {
 					await new Promise((resolve) =>
 						activeWindow.setTimeout(
 							resolve,
-							this.animations[key].duration * extensionAmount
-						)
+							this.animations[key].duration * extensionAmount,
+						),
 					);
 				} else {
-                    // Idle
+					// Idle
 					const extensionAmount = Math.floor(Math.random() * 2) + 2;
 					await new Promise((resolve) =>
 						activeWindow.setTimeout(
 							resolve,
-							this.animations[key].duration * extensionAmount
-						)
+							this.animations[key].duration * extensionAmount,
+						),
 					);
 				}
 			};
 		}
-    }
+	}
 }
