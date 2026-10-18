@@ -7,6 +7,7 @@ import { Bunny } from "../pets/bunny";
 import { Ghost } from "../pets/ghost";
 import { Ball } from "../toys/ball";
 import { SNOW_ANIMATION, getBackground } from "../catalog/backgrounds";
+import { getPetType } from "../catalog/pets";
 import {
 	getCatAnimations,
 	getBunnyAnimations,
@@ -176,8 +177,9 @@ export class PetView extends ItemView {
 	addPetToView(wrapper: HTMLElement, singlePet: PetInstance) {
 		try {
 			const background = this.plugin.getSelectedBackground();
+			const petType = getPetType(singlePet.type);
 
-			if (singlePet.type.includes("cat")) {
+			if (petType?.species === "cat") {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
 				const cat = new Cat(
@@ -187,10 +189,10 @@ export class PetView extends ItemView {
 					background,
 					this.plugin.data.petSize,
 					singlePet.name,
-					singlePet.type.includes("witch"),
+					petType.flying,
 				);
 				this.pets.push({ id: singlePet.id, pet: cat });
-			} else if (singlePet.type.includes("bunny")) {
+			} else if (petType?.species === "bunny") {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
 				const bunny = new Bunny(
@@ -202,7 +204,7 @@ export class PetView extends ItemView {
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
-			} else if (singlePet.type.includes("ghost")) {
+			} else if (petType?.species === "ghost") {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
 				const ghost = new Ghost(

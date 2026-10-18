@@ -1,5 +1,6 @@
 import PetPlugin from "../main";
 import { PetInstance } from "../data";
+import { getPetType } from "../catalog/pets";
 import { Pet } from "../pets/pet";
 import { Cat } from "../pets/cat";
 import { Bunny } from "../pets/bunny";
@@ -66,7 +67,8 @@ export class OverlayPetView {
 
 	addPet(singlePet: PetInstance) {
 		try {
-			if (singlePet.type.includes("cat")) {
+			const petType = getPetType(singlePet.type);
+			if (petType?.species === "cat") {
 				const catAnimations = getCatAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 25;
 				const cat = new Cat(
@@ -76,10 +78,10 @@ export class OverlayPetView {
 					"overlay",
 					this.plugin.data.petSize,
 					singlePet.name,
-					singlePet.type.includes("witch"),
+					petType.flying,
 				);
 				this.pets.push({ id: singlePet.id, pet: cat });
-			} else if (singlePet.type.includes("bunny")) {
+			} else if (petType?.species === "bunny") {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
 				const bunny = new Bunny(
@@ -91,7 +93,7 @@ export class OverlayPetView {
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
-			} else if (singlePet.type.includes("ghost")) {
+			} else if (petType?.species === "ghost") {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
 				const ghost = new Ghost(

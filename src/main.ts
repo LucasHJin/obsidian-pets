@@ -4,8 +4,9 @@ import { OverlayPetView } from "./views/overlay-view";
 import { CatToyOverlay } from "./toys/cat-toy";
 import { setSoundEnabled, playPetSound, startToySound } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
-import { SelectorModal, SelectorOption } from "./ui/selector-modal";
+import { SelectorModal } from "./ui/selector-modal";
 import { BACKGROUNDS } from "./catalog/backgrounds";
+import { PETS, getPetType } from "./catalog/pets";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 
 export default class PetPlugin extends Plugin {
@@ -23,94 +24,6 @@ export default class PetPlugin extends Plugin {
 		"toys/purple-ball",
 		"toys/red-ball",
 		"toys/yellow-ball",
-	];
-	protected PETS: SelectorOption[] = [
-		{
-			value: "pets/batman-black-cat",
-			label: "Black batman cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/batman-blue-cat",
-			label: "Blue batman cat",
-			requiresName: true,
-		},
-		{ value: "pets/black-cat", label: "Black cat", requiresName: true },
-		{ value: "pets/brown-cat", label: "Brown cat", requiresName: true },
-		{
-			value: "pets/xmas-cat",
-			label: "Christmas cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/xmas-v2-cat",
-			label: "Christmas cat v2",
-			requiresName: true,
-		},
-		{
-			value: "pets/xmas-v3-cat",
-			label: "Christmas cat v3",
-			requiresName: true,
-		},
-		{
-			value: "pets/classic-cat",
-			label: "Classic cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/deer-cat",
-			label: "Deer cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/demon-cat",
-			label: "Demonic cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/egypt-cat",
-			label: "Egyptian cat",
-			requiresName: true,
-		},
-		{ value: "pets/ghost", label: "Ghost", requiresName: true },
-		{
-			value: "pets/grey-bunny",
-			label: "Grey bunny",
-			requiresName: true,
-		},
-		{
-			value: "pets/pirate-cat",
-			label: "Pirate cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/pirate-v2-cat",
-			label: "Pirate cat v2",
-			requiresName: true,
-		},
-		{
-			value: "pets/pirate-v3-cat",
-			label: "Pirate cat v3",
-			requiresName: true,
-		},
-		{
-			value: "pets/siamese-cat",
-			label: "Siamese cat",
-			requiresName: true,
-		},
-		{
-			value: "pets/three-cat",
-			label: "Tri-colored cat",
-			requiresName: true,
-		},
-		{ value: "pets/tiger-cat", label: "Tiger cat", requiresName: true },
-		{
-			value: "pets/vampire-cat",
-			label: "Vampire cat",
-			requiresName: true,
-		},
-		{ value: "pets/white-cat", label: "White cat", requiresName: true },
-		{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
 	];
 
 	private get mainDocument(): Document {
@@ -202,7 +115,7 @@ export default class PetPlugin extends Plugin {
 			name: "Remove a specific pet",
 			callback: () => {
 				const options = this.data.pets.map((pet) => {
-					const typeLabel = this.PETS.find((option) => option.value === pet.type)?.label;
+					const typeLabel = getPetType(pet.type)?.label;
 					return { value: pet.id, label: `${pet.name} (${typeLabel ?? pet.type})` };
 				});
 				new SelectorModal(this.app, options, async (value: string, _name: string) => {
@@ -269,7 +182,8 @@ export default class PetPlugin extends Plugin {
 	}
 
 	openAddPetPicker() {
-		new SelectorModal(this.app, this.PETS, async (value: string, name: string) => {
+		const options = PETS.map(({ id, label }) => ({ value: id, label, requiresName: true }));
+		new SelectorModal(this.app, options, async (value: string, name: string) => {
 			await this.addPet(value, name);
 		}).open();
 	}
