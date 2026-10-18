@@ -23,7 +23,7 @@
 		"esbuild-plugin-inline-import": "^1.1.0",
 		"eslint": "9.39.5",
 		"eslint-plugin-obsidianmd": "0.4.2",
-		"obsidian": "1.12.3",
+		"obsidian": "1.14.4",
 		"prettier": "3.9.9",
 		"tslib": "2.4.0",
 		"typescript": "^6.0.3",
