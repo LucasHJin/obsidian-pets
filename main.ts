@@ -23,10 +23,12 @@ interface PetPluginData {
 	soundEnabled: boolean; // Whether pet click sounds play
 }
 
-const DEFAULT_DATA: Partial<PetPluginData> = {
+const DEFAULT_DATA: PetPluginData = {
 	selectedBackground: "none",
 	pets: [],
 	nextPetIdCounters: {},
+	animatedBackground: false,
+	petSize: 1,
 	overlayMode: false,
 	soundEnabled: false,
 };
@@ -160,7 +162,7 @@ export default class PetPlugin extends Plugin {
 			console.error("Failed to load pet plugin data:", err);
 		}
 
-		setSoundEnabled(this.instanceData.soundEnabled ?? false);
+		setSoundEnabled(this.instanceData.soundEnabled);
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
@@ -320,7 +322,7 @@ export default class PetPlugin extends Plugin {
 	public changeMouseCommand(): void {
 		this.catToyActive = !this.catToyActive;
 		if (this.catToyActive) {
-			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize ?? 1, (x) => {
+			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize, (x) => {
 				this.currentMouseX = x;
 			});
 			this.startCursorFollowMode();
@@ -413,12 +415,7 @@ export default class PetPlugin extends Plugin {
 		for (const key of chatKeys) {
 			delete savedData[key];
 		}
-		this.instanceData = Object.assign({}, DEFAULT_DATA, savedData) as PetPluginData;
-
-		// Make sure id counter exists
-		if (!this.instanceData.nextPetIdCounters) {
-			this.instanceData.nextPetIdCounters = {};
-		}
+		this.instanceData = Object.assign({}, structuredClone(DEFAULT_DATA), savedData);
 
 		if (chatKeys.length > 0) {
 			await this.saveData(this.instanceData);
@@ -566,7 +563,7 @@ export default class PetPlugin extends Plugin {
 
 	// Getter function to get pet list in petview.ts
 	public getPetList(): PetInstance[] {
-		return this.instanceData.pets || [];
+		return this.instanceData.pets;
 	}
 
 	public async removePetById(id: string): Promise<void> {
