@@ -5,6 +5,7 @@ import { CatToyOverlay } from "./toys/cat-toy";
 import { setSoundEnabled, playPetSound, startToySound } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
 import { SelectorModal, SelectorOption } from "./ui/selector-modal";
+import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 
 export default class PetPlugin extends Plugin {
@@ -110,19 +111,6 @@ export default class PetPlugin extends Plugin {
 		},
 		{ value: "pets/white-cat", label: "White cat", requiresName: true },
 		{ value: "pets/witch-cat", label: "Witch cat", requiresName: true },
-	];
-
-	protected BACKGROUNDS: SelectorOption[] = [
-		{ value: "none", label: "None" },
-		{ value: "backgrounds/snowbg-1.png", label: "Snow #1" },
-		{ value: "backgrounds/snowbg-2.png", label: "Snow #2" },
-		{ value: "backgrounds/summerbg-1.png", label: "Summer #1" },
-		{ value: "backgrounds/summerbg-2.png", label: "Summer #2" },
-		{ value: "backgrounds/summerbg-3.png", label: "Summer #3" },
-		{ value: "backgrounds/templebg-1.png", label: "Temple #1" },
-		{ value: "backgrounds/templebg-2.png", label: "Temple #2" },
-		{ value: "backgrounds/castlebg-1.png", label: "Castle #1" },
-		{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
 	];
 
 	private get mainDocument(): Document {
@@ -336,7 +324,8 @@ export default class PetPlugin extends Plugin {
 	}
 
 	openBackgroundPicker() {
-		new SelectorModal(this.app, this.BACKGROUNDS, async (value: string, _name: string) => {
+		const options = BACKGROUNDS.map(({ id, label }) => ({ value: id, label }));
+		new SelectorModal(this.app, options, async (value: string, _name: string) => {
 			await this.setBackground(value);
 		}).open();
 	}

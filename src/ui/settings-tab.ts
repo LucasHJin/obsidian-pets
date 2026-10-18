@@ -1,6 +1,7 @@
 import { PluginSettingTab, App, SettingDefinitionItem } from "obsidian";
 import PetPlugin from "../main";
 import { DEFAULT_DATA } from "../data";
+import { BACKGROUNDS } from "../catalog/backgrounds";
 
 // https://docs.obsidian.md/Plugins/User+interface/Settings
 
@@ -14,18 +15,10 @@ const SETTING_KEYS = [
 
 type SettingKey = (typeof SETTING_KEYS)[number];
 
-const BACKGROUND_OPTIONS: Record<string, string> = {
-	none: "None",
-	"backgrounds/snowbg-1.png": "Snow #1",
-	"backgrounds/snowbg-2.png": "Snow #2",
-	"backgrounds/summerbg-1.png": "Summer #1",
-	"backgrounds/summerbg-2.png": "Summer #2",
-	"backgrounds/summerbg-3.png": "Summer #3",
-	"backgrounds/templebg-1.png": "Temple #1",
-	"backgrounds/templebg-2.png": "Temple #2",
-	"backgrounds/castlebg-1.png": "Castle #1",
-	"backgrounds/castlebg-2.png": "Castle #2",
-};
+const BACKGROUND_OPTIONS: Record<string, string> = {};
+for (const { id, label } of BACKGROUNDS) {
+	BACKGROUND_OPTIONS[id] = label;
+}
 
 function isSettingKey(key: string): key is SettingKey {
 	return (SETTING_KEYS as readonly string[]).includes(key);

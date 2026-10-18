@@ -1,4 +1,5 @@
 import { heartAsset } from "../catalog/assets";
+import { getBackground } from "../catalog/backgrounds";
 
 // Defines shape for parameters needed to pass in an animation
 export interface AnimationConfig {
@@ -22,19 +23,6 @@ export class Pet {
 	protected isDestroyed = false; // Check if pet instance has been destroyed
 	protected moveDist: number; // For different pet movements
 	private backgroundName = "default";
-	private backgroundHeights: Record<string, string> = {
-		default: "80%", // Just in case no others
-		none: "80%",
-		"backgrounds/snowbg-1.png": "85%",
-		"backgrounds/snowbg-2.png": "86%",
-		"backgrounds/summerbg-1.png": "78%",
-		"backgrounds/summerbg-2.png": "88%",
-		"backgrounds/summerbg-3.png": "75%",
-		"backgrounds/templebg-1.png": "85.5%",
-		"backgrounds/templebg-2.png": "78.3%",
-		"backgrounds/castlebg-1.png": "82.1%",
-		"backgrounds/castlebg-2.png": "74%",
-	};
 	scale: number;
 	protected petName: string;
 	protected chasingCursor = false;
@@ -89,7 +77,7 @@ export class Pet {
 		if (this.backgroundName === "overlay") {
 			return "calc(100% - 14px * var(--scale, 1))";
 		}
-		return this.backgroundHeights[this.backgroundName] ?? this.backgroundHeights["default"];
+		return getBackground(this.backgroundName).floor;
 	}
 
 	// Creates the div representing the pet and styles

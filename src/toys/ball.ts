@@ -1,22 +1,10 @@
 import { playBallSound } from "../audio/sounds";
+import { getBackground } from "../catalog/backgrounds";
 
 export class Ball {
 	private container: HTMLElement;
 	ballEl: HTMLElement;
 	private backgroundName: string;
-	private backgroundHeights: Record<string, string> = {
-		default: "80%", // Just in case no others
-		none: "80%",
-		"backgrounds/snowbg-1.png": "85%",
-		"backgrounds/snowbg-2.png": "86%",
-		"backgrounds/summerbg-1.png": "78%",
-		"backgrounds/summerbg-2.png": "88%",
-		"backgrounds/summerbg-3.png": "75%",
-		"backgrounds/templebg-1.png": "85.5%",
-		"backgrounds/templebg-2.png": "78.3%",
-		"backgrounds/castlebg-1.png": "82.1%",
-		"backgrounds/castlebg-2.png": "74%",
-	};
 
 	// Physics states
 	private x: number;
@@ -78,9 +66,7 @@ export class Ball {
 		if (this.backgroundName === "overlay") {
 			return rect.height - this.radius - 1; // ball bottom edge exactly at screen bottom (found by testing)
 		}
-		const bgHeightPercent =
-			this.backgroundHeights[this.backgroundName] || this.backgroundHeights["default"];
-		const fraction = parseFloat(bgHeightPercent) / 100;
+		const fraction = parseFloat(getBackground(this.backgroundName).floor) / 100;
 		return rect.height * fraction + 15; // 10.7 is half of sprite size of ball and pet
 	}
 

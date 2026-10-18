@@ -1,15 +1,3 @@
-// Backgrounds
-import snow1Background from "../../assets/backgrounds/snowbg-1.png";
-import snow2Background from "../../assets/backgrounds/snowbg-2.png";
-import snowGif from "../../assets/backgrounds/snow.gif";
-import castle1Background from "../../assets/backgrounds/castlebg-1.png";
-import castle2Background from "../../assets/backgrounds/castlebg-2.png";
-import summer1Background from "../../assets/backgrounds/summerbg-1.png";
-import summer2Background from "../../assets/backgrounds/summerbg-2.png";
-import summer3Background from "../../assets/backgrounds/summerbg-3.png";
-import temple1Background from "../../assets/backgrounds/templebg-1.png";
-import temple2Background from "../../assets/backgrounds/templebg-2.png";
-
 // Pet animations
 import blackCatIdle from "../../assets/pets/black-cat/idle-cat.png";
 import blackCatIdle2 from "../../assets/pets/black-cat/idle2-cat.png";
@@ -217,19 +205,6 @@ import catToy from "../../assets/toys/cat-toy.png";
 import heart from "../../assets/misc/heart.png";
 
 // Export organized by type
-export const backgrounds = {
-	"backgrounds/snowbg-1.png": snow1Background,
-	"backgrounds/snowbg-2.png": snow2Background,
-	"backgrounds/castlebg-1.png": castle1Background,
-	"backgrounds/castlebg-2.png": castle2Background,
-	"backgrounds/summerbg-1.png": summer1Background,
-	"backgrounds/summerbg-2.png": summer2Background,
-	"backgrounds/summerbg-3.png": summer3Background,
-	"backgrounds/templebg-1.png": temple1Background,
-	"backgrounds/templebg-2.png": temple2Background,
-	"snow.gif": snowGif,
-};
-
 export const petAssets = {
 	"pets/black-cat": {
 		"idle-cat.png": blackCatIdle,
@@ -469,15 +444,6 @@ export function getPetAsset(petType: string, assetName: string): string {
 	const asset = assets[assetName as keyof typeof assets];
 	if (!asset) {
 		throw new Error(`Asset "${assetName}" not found for pet type "${petType}"`);
-	}
-	return asset;
-}
-
-// Helper function to get background asset
-export function getBackgroundAsset(backgroundName: string): string {
-	const asset = backgrounds[backgroundName as keyof typeof backgrounds];
-	if (!asset) {
-		throw new Error(`Background "${backgroundName}" not found`);
 	}
 	return asset;
 }

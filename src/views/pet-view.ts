@@ -6,7 +6,7 @@ import { Cat } from "../pets/cat";
 import { Bunny } from "../pets/bunny";
 import { Ghost } from "../pets/ghost";
 import { Ball } from "../toys/ball";
-import { getBackgroundAsset } from "../catalog/assets";
+import { SNOW_ANIMATION, getBackground } from "../catalog/backgrounds";
 import {
 	getCatAnimations,
 	getBunnyAnimations,
@@ -105,6 +105,7 @@ export class PetView extends ItemView {
 	updateBackground(wrapper: HTMLElement) {
 		// Get selected background
 		const background = this.plugin.getSelectedBackground();
+		const { image, snow } = getBackground(background);
 		const existingBg = wrapper.querySelector(".pet-view-background");
 
 		// Remove existing background
@@ -119,12 +120,11 @@ export class PetView extends ItemView {
 		}
 
 		// Add the new backgrounds
-		if (background !== "none") {
+		if (image) {
 			try {
-				const backgroundUrl = getBackgroundAsset(background);
 				wrapper.createEl("img", {
 					attr: {
-						src: backgroundUrl,
+						src: image,
 						alt: "Background",
 					},
 					cls: "pet-view-background",
@@ -134,12 +134,11 @@ export class PetView extends ItemView {
 			}
 		}
 
-		if (background.includes("snow") && this.plugin.data.animatedBackground) {
+		if (snow && this.plugin.data.animatedBackground) {
 			try {
-				const snowUrl = getBackgroundAsset("snow.gif");
 				wrapper.createEl("img", {
 					attr: {
-						src: snowUrl,
+						src: SNOW_ANIMATION,
 						alt: "Snow falling animation",
 					},
 					cls: "pet-view-background-animation",
