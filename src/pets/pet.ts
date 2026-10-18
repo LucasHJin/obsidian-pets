@@ -73,8 +73,9 @@ export class Pet {
 		window.requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
 			const containerWidth = this.container.offsetWidth;
-			const minX = containerWidth * 0.1;
-			const maxX = containerWidth * 0.9;
+			const bounds = this.getHorizontalBounds();
+			const minX = Math.max(containerWidth * 0.1, bounds.minLeft);
+			const maxX = Math.min(containerWidth * 0.9, bounds.maxLeft);
 			this.currentX = Math.random() * (maxX - minX) + minX;
 
 			// Create pet HTML element to be shown in view
@@ -169,6 +170,11 @@ export class Pet {
 		return animation;
 	}
 
+	protected getHorizontalBounds(): { minLeft: number; maxLeft: number } {
+		const halfWidth = (this.animations["idle"].frameWidth * this.scale) / 2;
+		return { minLeft: halfWidth, maxLeft: this.container.offsetWidth - halfWidth };
+	}
+
 	// Clamp current position within the container (if container resizes)
 	async clampToContainer() {
 		if (!this.petEl || this.isDestroyed) return;
@@ -179,12 +185,8 @@ export class Pet {
 			this.freezeAtCurrentPosition();
 		}
 
-		// currentX is now the actual visual position (accurate post-freeze)
-		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = this.container.offsetWidth;
-		const minX = petWidth / 2;
-		const maxX = containerWidth - petWidth / 2;
-		const clampedX = Math.max(minX, Math.min(maxX, this.currentX));
+		const { minLeft, maxLeft } = this.getHorizontalBounds();
+		const clampedX = Math.max(minLeft, Math.min(maxLeft, this.currentX));
 		if (clampedX !== this.currentX) {
 			this.currentX = clampedX;
 			this.petEl.setCssProps({ "--left": `${this.currentX}px` });
@@ -246,12 +248,7 @@ export class Pet {
 	// Moves the pet in x direction
 	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused) return Promise.resolve();
-		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = this.container.offsetWidth;
-
-		// Boundaries for the view
-		const maxLeft = containerWidth - petWidth / 2;
-		const minLeft = petWidth / 2;
+		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
 		const magnitude = action?.includes("jump")
@@ -362,10 +359,7 @@ export class Pet {
 
 	protected async followCursorStep(): Promise<void> {
 		if (!this.getCursorX || this.isDestroyed) return;
-		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = this.container.offsetWidth;
-		const minLeft = petWidth / 2;
-		const maxLeft = containerWidth - petWidth / 2;
+		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
 		const dx = targetX - this.currentX;

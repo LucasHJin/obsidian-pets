@@ -149,6 +149,7 @@ export class Stage {
 			pet.petEl?.setCssProps({
 				"--scale": `${this.plugin.data.petSize}`,
 			});
+			void pet.clampToContainer();
 		}
 		for (const { ball } of this.balls) {
 			if (ball.ballEl) {

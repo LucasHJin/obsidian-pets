@@ -149,11 +149,7 @@ export class Cat extends Pet {
 		if (!this.chasingBall || this.isDestroyed) {
 			return;
 		}
-		// Container boundaries (stay within the leaf)
-		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = this.container.offsetWidth;
-		const minLeft = petWidth / 2;
-		const maxLeft = containerWidth - petWidth / 2;
+		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		// Move towards the ball in small steps (less steps = more smooth)
 		const steps = 3;
