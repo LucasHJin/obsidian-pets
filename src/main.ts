@@ -1,6 +1,7 @@
 import { Plugin, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./views/pet-view";
 import { OverlayPetView } from "./views/overlay-view";
+import { Stage } from "./stage";
 import { CatToyOverlay } from "./toys/cat-toy";
 import { setSoundEnabled, playPetSound, startToySound } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
@@ -198,28 +199,20 @@ export default class PetPlugin extends Plugin {
 			const getCursorX = () => this.currentMouseX;
 			this.overlayView?.stage.startCursorFollow(getCursorX);
 		} else {
-			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
-				if (leaf.view instanceof PetView) {
-					const containerEl = leaf.view.getWrapper();
-					const getCursorX = () => {
-						const rect = containerEl.getBoundingClientRect();
-						return this.currentMouseX - rect.left;
-					};
-					leaf.view.stage?.startCursorFollow(getCursorX);
-				}
+			for (const view of this.getPetViews()) {
+				const containerEl = view.getWrapper();
+				const getCursorX = () => {
+					const rect = containerEl.getBoundingClientRect();
+					return this.currentMouseX - rect.left;
+				};
+				view.stage?.startCursorFollow(getCursorX);
 			}
 		}
 	}
 
 	private stopCursorFollowMode() {
-		if (this.data.overlayMode) {
-			this.overlayView?.stage.stopCursorFollow();
-		} else {
-			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
-				if (leaf.view instanceof PetView) {
-					leaf.view.stage?.stopCursorFollow();
-				}
-			}
+		for (const stage of this.getStages()) {
+			stage.stopCursorFollow();
 		}
 	}
 
@@ -273,19 +266,10 @@ export default class PetPlugin extends Plugin {
 		this.data.selectedBackground = backgroundFile;
 		await this.saveSettings();
 
-		// If the view is not open yet -> open it
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		if (leaves.length === 0) {
-			await this.openView();
-		}
-
-		// Update all open PetViews
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			// if is a PetView
-			if (view instanceof PetView) {
-				view.updateView();
-			}
+		const views = this.getPetViews();
+		await this.openViewIfClosed();
+		for (const view of views) {
+			view.updateView();
 		}
 	}
 
@@ -298,14 +282,8 @@ export default class PetPlugin extends Plugin {
 		this.data.animatedBackground = enabled;
 		void this.saveSettings();
 
-		// Update all open PetViews
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			// if is a PetView
-			if (view instanceof PetView) {
-				view.updateView();
-			}
+		for (const view of this.getPetViews()) {
+			view.updateView();
 		}
 	}
 
@@ -322,20 +300,8 @@ export default class PetPlugin extends Plugin {
 
 		this.catToyOverlay?.updateSize(size);
 
-		// Update pet size in overlay mode as well
-		if (this.data.overlayMode) {
-			this.overlayView?.stage.updatePetSize();
-			return;
-		}
-
-		// Update all open PetViews
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			// if is a PetView
-			if (view instanceof PetView) {
-				view.stage?.updatePetSize();
-			}
+		for (const stage of this.getStages()) {
+			stage.updatePetSize();
 		}
 	}
 
@@ -354,41 +320,17 @@ export default class PetPlugin extends Plugin {
 
 		playPetSound("spawn");
 
-		if (this.data.overlayMode) {
-			this.overlayView?.stage.addPet({ id, type, name });
-			return;
-		}
-
-		// Open view on adding pets
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		if (leaves.length === 0) {
-			await this.openView();
-		}
-
-		// Update view
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (view instanceof PetView) {
-				view.stage?.addPet({ id, type, name });
-			}
+		const existingStages = this.getStages();
+		await this.openViewIfClosed();
+		for (const stage of existingStages) {
+			stage.addPet({ id, type, name });
 		}
 	}
 
 	async addBall(id: string): Promise<void> {
-		if (this.data.overlayMode) {
-			this.overlayView?.stage.throwBall(id);
-			return;
-		}
-
-		if (this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length === 0) {
-			await this.openView();
-		}
-
-		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
-			const view = leaf.view;
-			if (view instanceof PetView) {
-				view.stage?.throwBall(id);
-			}
+		await this.openViewIfClosed();
+		for (const stage of this.getStages()) {
+			stage.throwBall(id);
 		}
 	}
 
@@ -402,18 +344,8 @@ export default class PetPlugin extends Plugin {
 		this.data.pets = this.data.pets.filter((p) => p.id !== id);
 		await this.saveSettings();
 
-		if (this.data.overlayMode) {
-			this.overlayView?.stage.removePet(id);
-			return;
-		}
-
-		// Update view
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (view instanceof PetView) {
-				view.stage?.removePet(id);
-			}
+		for (const stage of this.getStages()) {
+			stage.removePet(id);
 		}
 	}
 
@@ -426,18 +358,8 @@ export default class PetPlugin extends Plugin {
 		}
 		await this.saveSettings();
 
-		if (this.data.overlayMode) {
-			this.overlayView?.stage.removeAllPets();
-			return;
-		}
-
-		// Update view
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		for (const leaf of leaves) {
-			const view = leaf.view;
-			if (view instanceof PetView) {
-				view.stage?.removeAllPets();
-			}
+		for (const stage of this.getStages()) {
+			stage.removeAllPets();
 		}
 	}
 
@@ -459,6 +381,35 @@ export default class PetPlugin extends Plugin {
 				this.overlayView.destroy();
 				this.overlayView = null;
 			}
+			await this.openView();
+		}
+	}
+
+	private getPetViews(): PetView[] {
+		const views: PetView[] = [];
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
+			if (leaf.view instanceof PetView) {
+				views.push(leaf.view);
+			}
+		}
+		return views;
+	}
+
+	private getStages(): Stage[] {
+		if (this.data.overlayMode) {
+			return this.overlayView ? [this.overlayView.stage] : [];
+		}
+		const stages: Stage[] = [];
+		for (const view of this.getPetViews()) {
+			if (view.stage) {
+				stages.push(view.stage);
+			}
+		}
+		return stages;
+	}
+
+	private async openViewIfClosed(): Promise<void> {
+		if (this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length === 0) {
 			await this.openView();
 		}
 	}
