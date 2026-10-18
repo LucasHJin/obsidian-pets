@@ -3,7 +3,7 @@ import { PetView, VIEW_TYPE_PET } from "./views/pet-view";
 import { OverlayPetView } from "./views/overlay-view";
 import { Stage } from "./stage";
 import { CatToyOverlay } from "./toys/cat-toy";
-import { setSoundEnabled, playPetSound, startToySound } from "./audio/sounds";
+import { SoundPlayer } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
 import { SelectorModal } from "./ui/selector-modal";
 import { BACKGROUNDS } from "./catalog/backgrounds";
@@ -13,6 +13,7 @@ import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from
 
 export default class PetPlugin extends Plugin {
 	data!: PetPluginData;
+	readonly sounds = new SoundPlayer();
 	private overlayView: OverlayPetView | null = null;
 	private catToy: CatToyOverlay | null = null;
 
@@ -23,7 +24,7 @@ export default class PetPlugin extends Plugin {
 	override async onload(): Promise<void> {
 		await this.loadSettings();
 
-		setSoundEnabled(this.data.soundEnabled);
+		this.sounds.setEnabled(this.data.soundEnabled);
 
 		const hadPetLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 
@@ -187,7 +188,7 @@ export default class PetPlugin extends Plugin {
 			this.catToy = null;
 			this.stopCursorFollowMode();
 		} else {
-			this.catToy = new CatToyOverlay(this.mainDocument, this.data.petSize);
+			this.catToy = new CatToyOverlay(this.mainDocument, this.data.petSize, this.sounds);
 			this.startCursorFollowMode(this.catToy);
 		}
 	}
@@ -283,8 +284,8 @@ export default class PetPlugin extends Plugin {
 	setSound(enabled: boolean): void {
 		this.data.soundEnabled = enabled;
 		void this.saveSettings();
-		setSoundEnabled(enabled);
-		if (enabled && this.catToy) startToySound();
+		this.sounds.setEnabled(enabled);
+		if (enabled && this.catToy) this.sounds.startToy();
 	}
 
 	setPetSize(size: number): void {
@@ -311,7 +312,7 @@ export default class PetPlugin extends Plugin {
 		this.data.pets.push({ id, type, name });
 		await this.saveSettings();
 
-		playPetSound("spawn");
+		this.sounds.playPet("spawn");
 
 		const existingStages = this.getStages();
 		await this.openViewIfClosed();

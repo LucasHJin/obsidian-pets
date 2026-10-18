@@ -1,7 +1,7 @@
 import { Pet, AnimationName, PetAnimations } from "./pet";
 import { Ball } from "../toys/ball";
 import { Floor } from "../floor";
-import { playPetSound } from "../audio/sounds";
+import { SoundPlayer } from "../audio/sounds";
 
 const PASS_GUARD_DELAY = 100;
 
@@ -20,9 +20,10 @@ export class Cat extends Pet {
 		floor: Floor,
 		scale: number,
 		petName: string,
+		sounds: SoundPlayer,
 		canFly = false,
 	) {
-		super(container, animations, moveDist, floor, scale, petName);
+		super(container, animations, moveDist, floor, scale, petName, sounds);
 		this.canFly = canFly;
 		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 	}
@@ -67,7 +68,7 @@ export class Cat extends Pet {
 
 	// Play a meow whenever the cat is clicked
 	protected override playSound(): void {
-		playPetSound("cat");
+		this.sounds.playPet("cat");
 	}
 
 	startFollowingCursor(getCursorX: () => number): void {

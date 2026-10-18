@@ -1,4 +1,4 @@
-import { playBallSound } from "../audio/sounds";
+import { SoundPlayer } from "../audio/sounds";
 import { Floor } from "../floor";
 
 export class Ball {
@@ -28,6 +28,7 @@ export class Ball {
 		floor: Floor,
 		scale: number,
 		lifetime: number,
+		private readonly sounds: SoundPlayer,
 	) {
 		this.container = container;
 		this.floor = floor;
@@ -91,11 +92,11 @@ export class Ball {
 		// Bouncing off walls
 		if (this.x - this.radius < 0) {
 			this.x = this.radius;
-			playBallSound(Math.abs(this.vx));
+			this.sounds.playBounce(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		} else if (this.x + this.radius > rect.width) {
 			this.x = rect.width - this.radius;
-			playBallSound(Math.abs(this.vx));
+			this.sounds.playBounce(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		}
 		// Bouncing off bottom
@@ -105,7 +106,7 @@ export class Ball {
 			this.vy *= -this.damping;
 		} else if (this.y + this.radius > ground) {
 			this.y = ground - this.radius;
-			playBallSound(Math.abs(this.vy));
+			this.sounds.playBounce(Math.abs(this.vy));
 			this.vy *= -this.damping;
 		}
 		// Apply air resistance

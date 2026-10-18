@@ -46,6 +46,7 @@ export class Stage {
 					floor,
 					this.plugin.data.petSize,
 					singlePet.name,
+					this.plugin.sounds,
 					petType.flying,
 				);
 				if (this.getCursorX) {
@@ -63,6 +64,7 @@ export class Stage {
 					floor,
 					this.plugin.data.petSize,
 					singlePet.name,
+					this.plugin.sounds,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
 				bunny.start();
@@ -76,6 +78,7 @@ export class Stage {
 					floor,
 					this.plugin.data.petSize,
 					singlePet.name,
+					this.plugin.sounds,
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
 				ghost.start();
@@ -108,6 +111,7 @@ export class Stage {
 				this.options.getFloor(),
 				this.plugin.data.petSize,
 				this.options.ballLifetime,
+				this.plugin.sounds,
 			);
 			this.balls.push({ id, ball });
 

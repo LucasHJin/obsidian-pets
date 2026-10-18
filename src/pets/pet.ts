@@ -1,5 +1,6 @@
 import { heartAsset } from "../catalog/assets";
 import { Floor } from "../floor";
+import { SoundPlayer } from "../audio/sounds";
 
 const ANIMATION_NAMES = [
 	"idle",
@@ -65,6 +66,7 @@ export abstract class Pet {
 		floor: Floor,
 		scale: number,
 		petName: string,
+		protected readonly sounds: SoundPlayer,
 	) {
 		this.container = container;
 		this.animations = animations;

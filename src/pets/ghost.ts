@@ -1,5 +1,5 @@
 import { Pet, AnimationName, PetAnimations } from "./pet";
-import { playPetSound } from "../audio/sounds";
+import { SoundPlayer } from "../audio/sounds";
 import { Floor } from "../floor";
 
 export class Ghost extends Pet {
@@ -10,12 +10,13 @@ export class Ghost extends Pet {
 		floor: Floor,
 		scale: number,
 		petName: string,
+		sounds: SoundPlayer,
 	) {
-		super(container, animations, moveDist, floor, scale, petName);
+		super(container, animations, moveDist, floor, scale, petName, sounds);
 	}
 
 	protected override playSound(): void {
-		playPetSound("ghost");
+		this.sounds.playPet("ghost");
 	}
 
 	protected override async performAction(name: AnimationName): Promise<void> {
