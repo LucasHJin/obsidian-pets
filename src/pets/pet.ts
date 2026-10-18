@@ -1,5 +1,5 @@
 import { heartAsset } from "../catalog/assets";
-import { getBackground } from "../catalog/backgrounds";
+import { Floor } from "../floor";
 
 const ANIMATION_NAMES = [
 	"idle",
@@ -43,7 +43,7 @@ export class Pet {
 	protected animations: PetAnimations;
 	protected isDestroyed = false; // Check if pet instance has been destroyed
 	protected moveDist: number; // For different pet movements
-	private backgroundName = "default";
+	private floor: Floor;
 	scale: number;
 	protected petName: string;
 	protected chasingCursor = false;
@@ -57,7 +57,7 @@ export class Pet {
 		container: HTMLElement,
 		animations: PetAnimations,
 		moveDist: number,
-		backgroundName: string,
+		floor: Floor,
 		scale: number,
 		petName: string,
 	) {
@@ -66,7 +66,7 @@ export class Pet {
 		this.moveDist = moveDist;
 		// Randomize cursor follow speed per pet (±30%) so cats spread out instead of clumping
 		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
-		this.backgroundName = backgroundName;
+		this.floor = floor;
 		this.scale = scale;
 		this.petName = petName;
 
@@ -91,12 +91,11 @@ export class Pet {
 		});
 	}
 
-	// Different calcs for overlay vs normal
 	private getGroundTopValue(): string {
-		if (this.backgroundName === "overlay") {
+		if (this.floor.kind === "bottom") {
 			return "calc(100% - 14px * var(--scale, 1))";
 		}
-		return getBackground(this.backgroundName).floor;
+		return `${this.floor.value}%`;
 	}
 
 	// Creates the div representing the pet and styles
@@ -196,9 +195,8 @@ export class Pet {
 		}
 	}
 
-	// Update height when background change
-	updateVerticalPosition(newBackground: string) {
-		this.backgroundName = newBackground;
+	updateVerticalPosition(newFloor: Floor) {
+		this.floor = newFloor;
 		const newTop = this.getGroundTopValue();
 		// Pass a prop for the new height -> CSS instantly reacts to this change
 		this.petEl.setCssProps({ "--top": newTop });

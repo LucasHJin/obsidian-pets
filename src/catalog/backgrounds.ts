@@ -13,13 +13,13 @@ export interface Background {
 	id: string;
 	label: string;
 	image?: string;
-	floor: string;
+	floor: number;
 	snow?: boolean;
 }
 
 export const SNOW_ANIMATION = snowGif;
 
-const NO_BACKGROUND: Background = { id: "none", label: "None", floor: "80%" };
+const NO_BACKGROUND: Background = { id: "none", label: "None", floor: 80 };
 
 export const BACKGROUNDS: Background[] = [
 	NO_BACKGROUND,
@@ -27,57 +27,57 @@ export const BACKGROUNDS: Background[] = [
 		id: "backgrounds/snowbg-1.png",
 		label: "Snow #1",
 		image: snow1Background,
-		floor: "85%",
+		floor: 85,
 		snow: true,
 	},
 	{
 		id: "backgrounds/snowbg-2.png",
 		label: "Snow #2",
 		image: snow2Background,
-		floor: "86%",
+		floor: 86,
 		snow: true,
 	},
 	{
 		id: "backgrounds/summerbg-1.png",
 		label: "Summer #1",
 		image: summer1Background,
-		floor: "78%",
+		floor: 78,
 	},
 	{
 		id: "backgrounds/summerbg-2.png",
 		label: "Summer #2",
 		image: summer2Background,
-		floor: "88%",
+		floor: 88,
 	},
 	{
 		id: "backgrounds/summerbg-3.png",
 		label: "Summer #3",
 		image: summer3Background,
-		floor: "75%",
+		floor: 75,
 	},
 	{
 		id: "backgrounds/templebg-1.png",
 		label: "Temple #1",
 		image: temple1Background,
-		floor: "85.5%",
+		floor: 85.5,
 	},
 	{
 		id: "backgrounds/templebg-2.png",
 		label: "Temple #2",
 		image: temple2Background,
-		floor: "78.3%",
+		floor: 78.3,
 	},
 	{
 		id: "backgrounds/castlebg-1.png",
 		label: "Castle #1",
 		image: castle1Background,
-		floor: "82.1%",
+		floor: 82.1,
 	},
 	{
 		id: "backgrounds/castlebg-2.png",
 		label: "Castle #2",
 		image: castle2Background,
-		floor: "74%",
+		floor: 74,
 	},
 ];
 

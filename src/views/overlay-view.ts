@@ -13,7 +13,10 @@ export class OverlayPetView {
 		this.doc = doc;
 		this.win = doc.win;
 		this.overlayEl = doc.body.createDiv({ cls: "pet-overlay-container" });
-		this.stage = new Stage(this.overlayEl, plugin, () => "overlay");
+		this.stage = new Stage(this.overlayEl, plugin, {
+			getFloor: () => ({ kind: "bottom" }),
+			ballLifetime: 6000,
+		});
 		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {

@@ -1,5 +1,6 @@
 import PetPlugin from "./main";
 import { PetInstance } from "./data";
+import { Floor } from "./floor";
 import { getPetType } from "./catalog/pets";
 import { getBallImage } from "./catalog/balls";
 import { Pet } from "./pets/pet";
@@ -9,6 +10,11 @@ import { Ghost } from "./pets/ghost";
 import { Ball } from "./toys/ball";
 import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "./pets/pet-animations";
 
+interface StageOptions {
+	getFloor: () => Floor;
+	ballLifetime: number;
+}
+
 export class Stage {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
@@ -16,12 +22,12 @@ export class Stage {
 	constructor(
 		readonly container: HTMLElement,
 		private readonly plugin: PetPlugin,
-		private readonly getBackgroundName: () => string,
+		private readonly options: StageOptions,
 	) {}
 
 	addPet(singlePet: PetInstance) {
 		try {
-			const background = this.getBackgroundName();
+			const floor = this.options.getFloor();
 			const petType = getPetType(singlePet.type);
 
 			if (petType?.species === "cat") {
@@ -31,7 +37,7 @@ export class Stage {
 					this.container,
 					catAnimations,
 					moveDist,
-					background,
+					floor,
 					this.plugin.data.petSize,
 					singlePet.name,
 					petType.flying,
@@ -44,7 +50,7 @@ export class Stage {
 					this.container,
 					bunnyAnimations,
 					moveDist,
-					background,
+					floor,
 					this.plugin.data.petSize,
 					singlePet.name,
 				);
@@ -56,7 +62,7 @@ export class Stage {
 					this.container,
 					ghostAnimations,
 					moveDist,
-					background,
+					floor,
 					this.plugin.data.petSize,
 					singlePet.name,
 				);
@@ -84,12 +90,12 @@ export class Stage {
 
 	throwBall(id: string) {
 		try {
-			const background = this.getBackgroundName();
 			const ball = new Ball(
 				this.container,
 				getBallImage(id),
-				background,
+				this.options.getFloor(),
 				this.plugin.data.petSize,
+				this.options.ballLifetime,
 			);
 			this.balls.push({ id, ball });
 
@@ -144,9 +150,9 @@ export class Stage {
 	}
 
 	updateFloor() {
-		const background = this.getBackgroundName();
+		const floor = this.options.getFloor();
 		for (const { pet } of this.pets) {
-			pet.updateVerticalPosition(background);
+			pet.updateVerticalPosition(floor);
 		}
 	}
 

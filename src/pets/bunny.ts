@@ -1,16 +1,17 @@
 import { Pet, AnimationName, PetAnimations } from "./pet";
 import { playPetSound } from "../audio/sounds";
+import { Floor } from "../floor";
 
 export class Bunny extends Pet {
 	constructor(
 		container: HTMLElement,
 		animations: PetAnimations,
 		moveDist: number,
-		backgroundName: string,
+		floor: Floor,
 		scale: number,
 		petName: string,
 	) {
-		super(container, animations, moveDist, backgroundName, scale, petName);
+		super(container, animations, moveDist, floor, scale, petName);
 	}
 
 	protected override playSound(): void {

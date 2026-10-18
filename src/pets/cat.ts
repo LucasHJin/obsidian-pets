@@ -1,5 +1,6 @@
 import { Pet, AnimationName, PetAnimations } from "./pet";
 import { Ball } from "../toys/ball";
+import { Floor } from "../floor";
 import { playPetSound } from "../audio/sounds";
 
 export class Cat extends Pet {
@@ -11,12 +12,12 @@ export class Cat extends Pet {
 		container: HTMLElement,
 		animations: PetAnimations,
 		moveDist: number,
-		backgroundName: string,
+		floor: Floor,
 		scale: number,
 		petName: string,
 		canFly = false,
 	) {
-		super(container, animations, moveDist, backgroundName, scale, petName);
+		super(container, animations, moveDist, floor, scale, petName);
 		this.canFly = canFly;
 	}
 

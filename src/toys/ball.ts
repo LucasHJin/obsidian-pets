@@ -1,10 +1,10 @@
 import { playBallSound } from "../audio/sounds";
-import { getBackground } from "../catalog/backgrounds";
+import { Floor } from "../floor";
 
 export class Ball {
 	private container: HTMLElement;
 	ballEl: HTMLElement;
-	private backgroundName: string;
+	private readonly floor: Floor;
 
 	// Physics states
 	private x: number;
@@ -20,9 +20,15 @@ export class Ball {
 
 	onDestroy?: () => void;
 
-	constructor(container: HTMLElement, spriteUrl: string, backgroundImage: string, scale: number) {
+	constructor(
+		container: HTMLElement,
+		spriteUrl: string,
+		floor: Floor,
+		scale: number,
+		lifetime: number,
+	) {
 		this.container = container;
-		this.backgroundName = backgroundImage;
+		this.floor = floor;
 		this.scale = scale;
 
 		// Create ball element
@@ -39,8 +45,6 @@ export class Ball {
 		// Start physics loop
 		this.frameId = window.requestAnimationFrame(() => this.update());
 
-		// Auto-destroy (longer in overlay mode since there's more space to bounce around)
-		const lifetime = this.backgroundName === "overlay" ? 6000 : 5000;
 		window.setTimeout(() => this.destroy(), lifetime);
 	}
 
@@ -63,10 +67,10 @@ export class Ball {
 	// Gets 'ground' height (not just bottom of container)
 	private getGroundHeight(): number {
 		const rect = this.container.getBoundingClientRect();
-		if (this.backgroundName === "overlay") {
+		if (this.floor.kind === "bottom") {
 			return rect.height - this.radius - 1; // ball bottom edge exactly at screen bottom (found by testing)
 		}
-		const fraction = parseFloat(getBackground(this.backgroundName).floor) / 100;
+		const fraction = this.floor.value / 100;
 		return rect.height * fraction + 15; // 10.7 is half of sprite size of ball and pet
 	}
 

@@ -1,6 +1,7 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import PetPlugin from "../main";
 import { Stage } from "../stage";
+import { Floor } from "../floor";
 import { SNOW_ANIMATION, getBackground } from "../catalog/backgrounds";
 
 // Unique ID for the view
@@ -75,7 +76,10 @@ export class PetView extends ItemView {
 			wrapper = container.createDiv({ cls: "pet-view-wrapper" });
 		}
 		if (!this.stage) {
-			this.stage = new Stage(wrapper, this.plugin, () => this.plugin.getSelectedBackground());
+			this.stage = new Stage(wrapper, this.plugin, {
+				getFloor: () => this.getFloor(),
+				ballLifetime: 5000,
+			});
 		}
 
 		// Update the background
@@ -139,6 +143,13 @@ export class PetView extends ItemView {
 				console.error("Failed to load snow animation", error);
 			}
 		}
+	}
+
+	private getFloor(): Floor {
+		return {
+			kind: "percent",
+			value: getBackground(this.plugin.getSelectedBackground()).floor,
+		};
 	}
 
 	// Getter function to get wrapper of entire pet view
