@@ -158,7 +158,7 @@ export default class PetPlugin extends Plugin {
 		return this.app.workspace.containerEl.doc;
 	}
 
-	async onload(): Promise<void> {
+	override async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
@@ -379,7 +379,7 @@ export default class PetPlugin extends Plugin {
 		}).open();
 	}
 
-	onunload() {
+	override onunload() {
 		if (this.catToyOverlay) {
 			this.catToyOverlay.destroy();
 			this.catToyOverlay = null;

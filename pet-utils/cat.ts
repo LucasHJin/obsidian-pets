@@ -21,7 +21,7 @@ export class Cat extends Pet {
 		this.canFly = canFly;
 	}
 
-	protected setupActions() {
+	protected override setupActions() {
 		for (const key in this.animations) {
 			this.animations[key].action = async (multiples = 1) => {
 				this.setAnimation(key);
@@ -83,7 +83,7 @@ export class Cat extends Pet {
 	}
 
 	// Overwrite action loop function to add flying for witch cat + chasing ball logic
-	protected async startActionLoop() {
+	protected override async startActionLoop() {
 		function getRandDelay(min: number, max: number, multiple: number): number {
 			const random = Math.random() * (max - min) + min;
 			return Math.round(random / multiple) * multiple;

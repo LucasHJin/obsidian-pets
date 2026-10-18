@@ -18,7 +18,7 @@ export class Bunny extends Pet {
 		playPetSound("bunny");
 	}
 
-	protected setupActions() {
+	protected override setupActions() {
 		for (const key in this.animations) {
 			this.animations[key].action = async (multiples = 1) => {
 				this.setAnimation(key);

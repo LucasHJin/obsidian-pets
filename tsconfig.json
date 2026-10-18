@@ -3,6 +3,7 @@
 		"module": "ESNext",
 		"target": "ES2018",
 		"strict": true,
+		"noImplicitOverride": true,
 		"moduleResolution": "bundler",
 		"isolatedModules": true,
 		"lib": ["DOM", "ES2018"],

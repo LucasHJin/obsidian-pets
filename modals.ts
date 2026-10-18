@@ -22,7 +22,7 @@ export class SelectorModal extends Modal {
 	}
 
 	// Show modal options on open
-	onOpen() {
+	override onOpen() {
 		const { contentEl } = this;
 
 		for (const option of this.options) {
@@ -99,7 +99,7 @@ export class SelectorModal extends Modal {
 	}
 
 	// Clean up DOM on modal close
-	onClose() {
+	override onClose() {
 		this.contentEl.empty();
 	}
 }

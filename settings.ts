@@ -38,7 +38,7 @@ export class PetSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	getSettingDefinitions(): SettingDefinitionItem<SettingKey>[] {
+	override getSettingDefinitions(): SettingDefinitionItem<SettingKey>[] {
 		return [
 			{
 				name: "Overlay mode",
@@ -82,11 +82,11 @@ export class PetSettingTab extends PluginSettingTab {
 		];
 	}
 
-	getControlValue(key: string): unknown {
+	override getControlValue(key: string): unknown {
 		return isSettingKey(key) ? this.plugin.instanceData[key] : undefined;
 	}
 
-	async setControlValue(key: string, value: unknown): Promise<void> {
+	override async setControlValue(key: string, value: unknown): Promise<void> {
 		switch (key) {
 			case "overlayMode":
 				if (typeof value === "boolean") {

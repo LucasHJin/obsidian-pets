@@ -20,7 +20,7 @@ export class Ghost extends Pet {
 	}
 
 	// Only need to setup idle action
-	protected setupActions() {
+	protected override setupActions() {
 		this.animations["idle"].action = async () => {
 			this.setAnimation("idle");
 			// Delay for one cycle so it doesn't instantly switch again
@@ -29,7 +29,7 @@ export class Ghost extends Pet {
 	}
 
 	// Only idle + occasionally move
-	protected async startActionLoop() {
+	protected override async startActionLoop() {
 		while (!this.isDestroyed) {
 			// Random chance: either stay idle or move then idle again
 			const shouldMove = Math.random() < 0.9;
@@ -48,7 +48,7 @@ export class Ghost extends Pet {
 		}
 	}
 
-	public async destroy() {
+	public override async destroy() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
 
@@ -62,7 +62,7 @@ export class Ghost extends Pet {
 		}, 1000);
 	}
 
-	public destroyImmediate() {
+	public override destroyImmediate() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
 		this.petEl?.remove();

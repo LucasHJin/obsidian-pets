@@ -41,12 +41,12 @@ export class PetView extends ItemView {
 	}
 
 	// Decides icon for view
-	getIcon() {
+	override getIcon() {
 		return "cat";
 	}
 
 	// Builds content of view when it is opened
-	async onOpen() {
+	override async onOpen() {
 		// Detach if leaf was rendered while overlay is on
 		if (this.plugin.instanceData.overlayMode) {
 			window.setTimeout(() => this.leaf.detach(), 0);
@@ -362,7 +362,7 @@ export class PetView extends ItemView {
 	}
 
 	// Used to clean up content after view is closed
-	async onClose() {
+	override async onClose() {
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
 			this.resizeObserver = undefined;
