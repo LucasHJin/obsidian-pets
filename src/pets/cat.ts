@@ -136,6 +136,7 @@ export class Cat extends Pet {
 		if (!this.chasingBall || this.isDestroyed) {
 			return;
 		}
+		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		// Move towards the ball in small steps (less steps = more smooth)
@@ -157,8 +158,7 @@ export class Cat extends Pet {
 			if (newX > maxLeft) newX = maxLeft;
 			this.currentX = newX;
 
-			// Apply the running animation and movement
-			this.petEl.setCssProps({
+			el.setCssProps({
 				"--left": `${this.currentX}px`,
 				"--scale-x": `${this.direction}`,
 			});
@@ -176,6 +176,7 @@ export class Cat extends Pet {
 
 	private async followCursorStep(): Promise<void> {
 		if (!this.getCursorX || this.isDestroyed) return;
+		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
@@ -190,7 +191,7 @@ export class Cat extends Pet {
 		this.currentX = Math.max(minLeft, Math.min(maxLeft, this.currentX + step));
 
 		this.setAnimation("run");
-		this.petEl.setCssProps({
+		el.setCssProps({
 			"--left": `${this.currentX}px`,
 			"--scale-x": `${this.direction}`,
 		});

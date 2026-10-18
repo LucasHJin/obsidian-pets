@@ -41,10 +41,10 @@ export type PetAnimations = { idle: AnimationConfig } & Partial<
 
 // Make size changeable
 
-export class Pet {
+export abstract class Pet {
 	protected container: HTMLElement;
-	petEl!: HTMLElement;
-	protected currentX!: number;
+	petEl: HTMLElement | null = null;
+	protected currentX = 0;
 	protected direction = 1; // 1 right, -1 left
 	private currentAnimation: AnimationName | "none" = "none";
 	protected animations: PetAnimations;
@@ -53,7 +53,7 @@ export class Pet {
 	private floor: Floor;
 	scale: number;
 	protected petName: string;
-	protected tooltipEl!: HTMLElement;
+	protected tooltipEl: HTMLElement | null = null;
 	protected actionLoopPaused = false;
 	private pauseWaiters: (() => void)[] = [];
 	private interruptMove: (() => void) | null = null;
@@ -72,28 +72,32 @@ export class Pet {
 		this.floor = floor;
 		this.scale = scale;
 		this.petName = petName;
+	}
 
+	start(): void {
 		window.requestAnimationFrame(() => {
 			if (this.isDestroyed) return;
-			// Randomized spawn within middle 80% of container
 			const containerWidth = this.container.offsetWidth;
 			const bounds = this.getHorizontalBounds();
 			const minX = Math.max(containerWidth * 0.1, bounds.minLeft);
 			const maxX = Math.min(containerWidth * 0.9, bounds.maxLeft);
 			this.currentX = Math.random() * (maxX - minX) + minX;
 
-			// Create pet HTML element to be shown in view
 			this.petEl = this.createPetElement();
-
-			// Setup the listeners for if the mouse is hovering
 			this.setupHoverListeners();
 
-			// Start the behavior
 			void (async () => {
 				await this.performAction("idle");
 				await this.startActionLoop();
 			})();
 		});
+	}
+
+	protected requirePetEl(): HTMLElement {
+		if (!this.petEl) {
+			throw new Error("Pet has not started");
+		}
+		return this.petEl;
 	}
 
 	private getGroundTopValue(): string {
@@ -127,17 +131,18 @@ export class Pet {
 
 	// Sets up the listeners on the pets
 	protected setupHoverListeners() {
-		this.petEl.addEventListener("mouseenter", () => {
+		const el = this.requirePetEl();
+		el.addEventListener("mouseenter", () => {
 			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
 		});
 
-		this.petEl.addEventListener("mouseleave", () => {
+		el.addEventListener("mouseleave", () => {
 			this.resumeActionLoop();
 		});
 
-		this.petEl.addEventListener("click", () => {
+		el.addEventListener("click", () => {
 			this.showHeart();
 			this.playSound();
 		});
@@ -146,7 +151,7 @@ export class Pet {
 	protected playSound(): void {}
 
 	protected showHeart() {
-		const heart = this.petEl.createDiv({ cls: "pet-heart" });
+		const heart = this.requirePetEl().createDiv({ cls: "pet-heart" });
 
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
@@ -158,9 +163,7 @@ export class Pet {
 		}, 1000);
 	}
 
-	protected performAction(_name: AnimationName, _repeats = 1): Promise<void> {
-		return Promise.resolve();
-	}
+	protected abstract performAction(name: AnimationName, repeats?: number): Promise<void>;
 
 	protected getAnimationNames(): AnimationName[] {
 		return Object.keys(this.animations).filter(isAnimationName);
@@ -181,7 +184,8 @@ export class Pet {
 
 	// Clamp current position within the container (if container resizes)
 	async clampToContainer() {
-		if (!this.petEl || this.isDestroyed || this.container.offsetWidth === 0) return;
+		const el = this.petEl;
+		if (!el || this.isDestroyed || this.container.offsetWidth === 0) return;
 
 		const wasAlreadyPaused = this.actionLoopPaused;
 		if (!wasAlreadyPaused) {
@@ -193,7 +197,7 @@ export class Pet {
 		const clampedX = Math.max(minLeft, Math.min(maxLeft, this.currentX));
 		if (clampedX !== this.currentX) {
 			this.currentX = clampedX;
-			this.petEl.setCssProps({ "--left": `${this.currentX}px` });
+			el.setCssProps({ "--left": `${this.currentX}px` });
 		}
 
 		if (!wasAlreadyPaused) {
@@ -220,15 +224,15 @@ export class Pet {
 			return;
 		}
 
-		this.petEl.setCssStyles({ animation: "none" });
-		void this.petEl.offsetHeight; // Reflow
+		const el = this.requirePetEl();
+		el.setCssStyles({ animation: "none" });
+		void el.offsetHeight;
 
-		// No keyframe animation
-		this.petEl.setCssStyles({
+		el.setCssStyles({
 			animation: `pet-sprite ${animation.duration}ms steps(${animation.frameCount}) infinite`,
 		});
 
-		this.petEl.setCssProps({
+		el.setCssProps({
 			"--sprite-url": `url(${animation.spriteUrl})`,
 			"--sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
 			"--sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
@@ -239,11 +243,12 @@ export class Pet {
 	}
 
 	protected freezeAtCurrentPosition() {
-		const computedLeft = window.getComputedStyle(this.petEl).left;
-		this.petEl.setCssStyles({ transition: "none" });
-		this.petEl.setCssProps({ "--left": computedLeft });
-		void this.petEl.offsetHeight;
-		this.petEl.setCssStyles({ transition: "" });
+		const el = this.requirePetEl();
+		const computedLeft = window.getComputedStyle(el).left;
+		el.setCssStyles({ transition: "none" });
+		el.setCssProps({ "--left": computedLeft });
+		void el.offsetHeight;
+		el.setCssStyles({ transition: "" });
 		this.currentX = parseFloat(computedLeft);
 		this.interruptMove?.(); // directly stop on hover
 	}
@@ -251,6 +256,7 @@ export class Pet {
 	// Moves the pet in x direction
 	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused) return Promise.resolve();
+		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		// Get a random change in x direction (biased towards the side that was already being visited)
@@ -285,25 +291,24 @@ export class Pet {
 				if (settled) return;
 				settled = true;
 				window.clearTimeout(timeout);
-				this.petEl.removeEventListener("transitionend", done);
+				el.removeEventListener("transitionend", done);
 				this.interruptMove = null;
 				res();
 			};
 
 			const done = (e?: TransitionEvent) => {
-				if (e && (e.target !== this.petEl || e.propertyName !== "left")) return; // only explicitly stop for when style sets left of this specific pet
-				this.petEl.setCssStyles({ transition: "" });
+				if (e && (e.target !== el || e.propertyName !== "left")) return;
+				el.setCssStyles({ transition: "" });
 				this.currentX = targetX;
 				settle();
 			};
-			this.petEl.addEventListener("transitionend", done);
+			el.addEventListener("transitionend", done);
 			const timeout = window.setTimeout(() => done(), duration + MOVE_TIMEOUT_MARGIN);
 
 			this.interruptMove = settle;
 
-			void this.petEl.offsetWidth; // Reflow for new animation reset
-			// Show moving animation
-			this.petEl.setCssProps({
+			void el.offsetWidth;
+			el.setCssProps({
 				"--left": `${targetX}px`,
 				"--scale-x": `${this.direction}`,
 				"--move-duration": `${duration}ms`,

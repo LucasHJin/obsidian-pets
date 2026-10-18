@@ -52,6 +52,7 @@ export class Stage {
 					cat.startFollowingCursor(this.getCursorX);
 				}
 				this.pets.push({ id: singlePet.id, pet: cat });
+				cat.start();
 			} else if (petType?.species === "bunny") {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 30) + 45;
@@ -64,6 +65,7 @@ export class Stage {
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
+				bunny.start();
 			} else if (petType?.species === "ghost") {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
 				const moveDist = Math.floor(Math.random() * 20) + 20;
@@ -76,6 +78,7 @@ export class Stage {
 					singlePet.name,
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
+				ghost.start();
 			}
 		} catch (error) {
 			console.error(`Failed to create pet ${singlePet.id}:`, error);

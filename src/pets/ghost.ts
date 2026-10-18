@@ -40,7 +40,7 @@ export class Ghost extends Pet {
 	}
 
 	protected override async playDeathAnimation() {
-		this.petEl.setCssProps({
+		this.requirePetEl().setCssProps({
 			transition: "opacity 1s ease",
 			opacity: "0",
 		});
