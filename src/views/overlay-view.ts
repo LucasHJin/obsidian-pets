@@ -24,7 +24,7 @@ export class OverlayPetView {
 			this.resizeTimer = window.setTimeout(() => {
 				this.resizeTimer = null;
 				this.updateOverlayBounds();
-				void Promise.all(this.stage.pets.map(({ pet }) => pet.clampToContainer()));
+				void this.stage.clampPets();
 			}, 100);
 		};
 		this.win.addEventListener("resize", this.resizeHandler);

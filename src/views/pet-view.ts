@@ -140,12 +140,6 @@ export class PetView extends ItemView {
 		};
 	}
 
-	// Recreates pets from scratch (avoids pet animations getting stuck)
-	resetPets() {
-		this.stage?.clearImmediately();
-		this.updateView();
-	}
-
 	private setupResizeObserver() {
 		if (typeof ResizeObserver === "undefined") return;
 
@@ -170,13 +164,12 @@ export class PetView extends ItemView {
 			lastWidth = width;
 			lastHeight = height;
 
-			// Debounce -> only reset when user stops dragging
 			if (this.resizeTimeout !== undefined) {
 				window.clearTimeout(this.resizeTimeout);
 			}
 			this.resizeTimeout = window.setTimeout(() => {
 				this.resizeTimeout = undefined;
-				this.resetPets();
+				void this.stage?.clampPets();
 			}, 250);
 		});
 		this.resizeObserver.observe(this.contentEl);

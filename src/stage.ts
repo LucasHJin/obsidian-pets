@@ -168,6 +168,10 @@ export class Stage {
 		}
 	}
 
+	async clampPets() {
+		await Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
+	}
+
 	clearImmediately() {
 		for (const { pet } of this.pets) {
 			pet.destroyImmediate();

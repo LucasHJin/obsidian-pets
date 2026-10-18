@@ -180,7 +180,7 @@ export class Pet {
 
 	// Clamp current position within the container (if container resizes)
 	async clampToContainer() {
-		if (!this.petEl || this.isDestroyed) return;
+		if (!this.petEl || this.isDestroyed || this.container.offsetWidth === 0) return;
 
 		const wasAlreadyPaused = this.actionLoopPaused;
 		if (!wasAlreadyPaused) {

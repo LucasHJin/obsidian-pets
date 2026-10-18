@@ -79,6 +79,10 @@ export class Ball {
 	// Updates states for ball physics
 	private update() {
 		const rect = this.container.getBoundingClientRect();
+		if (rect.width === 0 || rect.height === 0) {
+			this.frameId = window.requestAnimationFrame(() => this.update());
+			return;
+		}
 
 		// Updating physics
 		this.vy += this.gravity;
