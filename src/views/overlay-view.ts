@@ -1,4 +1,5 @@
-import PetPlugin, { PetInstance } from "../main";
+import PetPlugin from "../main";
+import { PetInstance } from "../data";
 import { Pet } from "../pets/pet";
 import { Cat } from "../pets/cat";
 import { Bunny } from "../pets/bunny";

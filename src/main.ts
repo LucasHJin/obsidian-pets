@@ -5,36 +5,7 @@ import { CatToyOverlay } from "./toys/cat-toy";
 import { setSoundEnabled, playPetSound, startToySound } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
 import { SelectorModal, SelectorOption } from "./ui/selector-modal";
-
-export interface PetInstance {
-	id: string; // Unique id
-	type: string; // Directory to their type
-	name: string;
-}
-
-// Define shape of saved plugin data
-interface PetPluginData {
-	selectedBackground: string;
-	pets: PetInstance[]; // To keep track of all pet instances
-	nextPetIdCounters: Record<string, number>; // Object to make sure no duplicate ids for pets of the same class
-	animatedBackground: boolean; // Whether background animations are on or off
-	petSize: number; // Overall size of pets (1 = normal size)
-	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
-	soundEnabled: boolean; // Whether pet click sounds play
-}
-
-const DEFAULT_DATA: PetPluginData = {
-	selectedBackground: "none",
-	pets: [],
-	nextPetIdCounters: {},
-	animatedBackground: false,
-	petSize: 1,
-	overlayMode: false,
-	soundEnabled: false,
-};
-
-const REMOVED_CHAT_DATA_KEYS = ["geminiApiKey", "openAiApiKey", "selectedModel", "indexedFiles"];
-const REMOVED_CHAT_DATABASE = "obsidian-rag-db";
+import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
@@ -159,12 +130,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	override async onload(): Promise<void> {
-		// Loads saved data and merges with current data
-		try {
-			await this.loadSettings();
-		} catch (err) {
-			console.error("Failed to load pet plugin data:", err);
-		}
+		await this.loadSettings();
 
 		setSoundEnabled(this.instanceData.soundEnabled);
 
@@ -391,24 +357,18 @@ export default class PetPlugin extends Plugin {
 		// Don't detach leaves: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines#Don't+detach+leaves+in+%60onunload%60
 	}
 
-	// Merges current data with default data
 	async loadSettings() {
-		const savedData = ((await this.loadData()) ?? {}) as Record<string, unknown>;
-		const chatKeys = REMOVED_CHAT_DATA_KEYS.filter((key) => key in savedData);
-		for (const key of chatKeys) {
-			delete savedData[key];
-		}
-		this.instanceData = Object.assign({}, structuredClone(DEFAULT_DATA), savedData);
+		const { data, migrated } = resolveSavedData(await this.loadData());
+		this.instanceData = data;
 
-		if (chatKeys.length > 0) {
-			await this.saveData(this.instanceData);
-			this.deleteChatDatabase();
+		if (migrated) {
+			await this.saveSettings();
+			deleteChatDatabase();
 		}
 	}
 
-	private deleteChatDatabase() {
-		const request = window.indexedDB.deleteDatabase(REMOVED_CHAT_DATABASE);
-		request.onerror = () => console.warn("Failed to delete the old chat index:", request.error);
+	async saveSettings(): Promise<void> {
+		await this.saveData(this.instanceData);
 	}
 
 	async chooseBackground(backgroundFile: string): Promise<void> {
@@ -420,9 +380,8 @@ export default class PetPlugin extends Plugin {
 			return;
 		}
 
-		// Persist background data across sessions
 		this.instanceData.selectedBackground = backgroundFile;
-		await this.saveData(this.instanceData);
+		await this.saveSettings();
 
 		// If the view is not open yet -> open it
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
@@ -447,7 +406,7 @@ export default class PetPlugin extends Plugin {
 
 	toggleBackgroundAnimation(value: boolean): void {
 		this.instanceData.animatedBackground = value;
-		void this.saveData(this.instanceData);
+		void this.saveSettings();
 
 		// Update all open PetViews
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
@@ -462,14 +421,14 @@ export default class PetPlugin extends Plugin {
 
 	toggleSound(value: boolean): void {
 		this.instanceData.soundEnabled = value;
-		void this.saveData(this.instanceData);
+		void this.saveSettings();
 		setSoundEnabled(value);
 		if (value && this.catToyActive) startToySound();
 	}
 
 	updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
-		void this.saveData(this.instanceData);
+		void this.saveSettings();
 
 		this.catToyOverlay?.updateSize(value);
 
@@ -501,7 +460,7 @@ export default class PetPlugin extends Plugin {
 
 		// Add to list of pets
 		this.instanceData.pets.push({ id, type, name });
-		await this.saveData(this.instanceData);
+		await this.saveSettings();
 
 		playPetSound("spawn");
 
@@ -551,7 +510,7 @@ export default class PetPlugin extends Plugin {
 	async removePetById(id: string): Promise<void> {
 		// Filters out the one with the same id
 		this.instanceData.pets = this.instanceData.pets.filter((p) => p.id !== id);
-		await this.saveData(this.instanceData);
+		await this.saveSettings();
 
 		if (this.instanceData.overlayMode) {
 			this.overlayView?.removePet(id);
@@ -575,7 +534,7 @@ export default class PetPlugin extends Plugin {
 		for (const type in this.instanceData.nextPetIdCounters) {
 			this.instanceData.nextPetIdCounters[type] = 1;
 		}
-		await this.saveData(this.instanceData);
+		await this.saveSettings();
 
 		if (this.instanceData.overlayMode) {
 			this.overlayView?.removeAllPets();
@@ -597,7 +556,7 @@ export default class PetPlugin extends Plugin {
 		if (this.instanceData.overlayMode === enabled) return;
 
 		this.instanceData.overlayMode = enabled;
-		await this.saveData(this.instanceData);
+		await this.saveSettings();
 
 		if (enabled) {
 			await this.closeView();

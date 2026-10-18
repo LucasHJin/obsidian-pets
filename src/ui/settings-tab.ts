@@ -1,5 +1,6 @@
 import { PluginSettingTab, App, SettingDefinitionItem } from "obsidian";
 import PetPlugin from "../main";
+import { DEFAULT_DATA } from "../data";
 
 // https://docs.obsidian.md/Plugins/User+interface/Settings
 
@@ -43,7 +44,11 @@ export class PetSettingTab extends PluginSettingTab {
 			{
 				name: "Overlay mode",
 				desc: "When enabled, pets treat the entire Obsidian window as their playground (using a transparent overlay).",
-				control: { type: "toggle", key: "overlayMode", defaultValue: false },
+				control: {
+					type: "toggle",
+					key: "overlayMode",
+					defaultValue: DEFAULT_DATA.overlayMode,
+				},
 			},
 			{
 				name: "Background",
@@ -52,7 +57,7 @@ export class PetSettingTab extends PluginSettingTab {
 				control: {
 					type: "dropdown",
 					key: "selectedBackground",
-					defaultValue: "none",
+					defaultValue: DEFAULT_DATA.selectedBackground,
 					options: BACKGROUND_OPTIONS,
 				},
 			},
@@ -60,7 +65,11 @@ export class PetSettingTab extends PluginSettingTab {
 				name: "Animations",
 				desc: "Toggle the background's animation on or off.",
 				visible: () => !this.plugin.instanceData.overlayMode,
-				control: { type: "toggle", key: "animatedBackground", defaultValue: false },
+				control: {
+					type: "toggle",
+					key: "animatedBackground",
+					defaultValue: DEFAULT_DATA.animatedBackground,
+				},
 			},
 			{
 				name: "Pet size",
@@ -71,13 +80,17 @@ export class PetSettingTab extends PluginSettingTab {
 					min: 1,
 					max: 2,
 					step: 0.1,
-					defaultValue: 1,
+					defaultValue: DEFAULT_DATA.petSize,
 				},
 			},
 			{
 				name: "Sound",
 				desc: "Enable sounds for your pets and actions.",
-				control: { type: "toggle", key: "soundEnabled", defaultValue: false },
+				control: {
+					type: "toggle",
+					key: "soundEnabled",
+					defaultValue: DEFAULT_DATA.soundEnabled,
+				},
 			},
 		];
 	}
