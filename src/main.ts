@@ -29,13 +29,10 @@ export default class PetPlugin extends Plugin {
 
 		const hadPetLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 
-		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
 
-		// Open again if open last session (wait until obsidian is ready first)
 		this.app.workspace.onLayoutReady(async () => {
 			if (this.data.overlayMode) {
-				// Close any leafs if they appear from a restored layout
 				await this.closeView();
 				this.overlayView = new OverlayPetView(this, this.mainDocument);
 				for (const pet of this.data.pets) {
@@ -49,7 +46,6 @@ export default class PetPlugin extends Plugin {
 				}
 			}
 
-			// Detach leaf when sibling sharing petview's tab group is opened
 			this.registerEvent(
 				this.app.workspace.on("active-leaf-change", (leaf) =>
 					this.handleActiveLeafChange(leaf),
@@ -57,7 +53,6 @@ export default class PetPlugin extends Plugin {
 			);
 		});
 
-		// Adds icon on the ribbon (side panel) to open view
 		this.addRibbonIcon("cat", "Toggle pet view", async () => {
 			const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 			if (isOpen) {
@@ -67,35 +62,30 @@ export default class PetPlugin extends Plugin {
 			}
 		});
 
-		// Command to choose the background
 		this.addCommand({
 			id: "choose-background-dropdown",
 			name: "Choose pet view background",
 			callback: () => this.openBackgroundPicker(),
 		});
 
-		// Command to add a pet
 		this.addCommand({
 			id: "add-pet-dropdown",
 			name: "Add a pet",
 			callback: () => this.openAddPetPicker(),
 		});
 
-		// Command to add a ball
 		this.addCommand({
 			id: "add-ball-dropdown",
 			name: "Add a ball",
 			callback: async () => this.throwRandomBall(),
 		});
 
-		// Command to change mouse to a cat toy
 		this.addCommand({
 			id: "add-cat-toy-dropdown",
 			name: "Cat toy mouse toggle",
 			callback: async () => this.toggleCatToy(),
 		});
 
-		// Command to remove all pets
 		this.addCommand({
 			id: "clear-all-pets",
 			name: "Remove all pets",
@@ -104,7 +94,6 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		// Command to remove a specific pet
 		this.addCommand({
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
@@ -119,7 +108,6 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		// Add settings
 		this.addSettingTab(new PetSettingTab(this.app, this));
 
 		registerNewNoteNotices(this);
@@ -201,9 +189,7 @@ export default class PetPlugin extends Plugin {
 	async setBackground(backgroundFile: string): Promise<void> {
 		if (this.data.overlayMode) return;
 
-		// Make sure not already selected background
 		if (this.data.selectedBackground === backgroundFile) {
-			// console.log("Same picked");
 			return;
 		}
 
@@ -217,7 +203,6 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	// Getter function to get background in petview.ts
 	getSelectedBackground(): string {
 		return this.data.selectedBackground;
 	}
@@ -254,11 +239,9 @@ export default class PetPlugin extends Plugin {
 			this.data.nextPetIdCounters[type] = 1;
 		}
 
-		// Create id (type format -> pets/petType)
 		const id = `${type}-${this.data.nextPetIdCounters[type]}`;
 		this.data.nextPetIdCounters[type]++;
 
-		// Add to list of pets
 		this.data.pets.push({ id, type, name });
 		await this.saveSettings();
 
@@ -278,13 +261,11 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	// Getter function to get pet list in petview.ts
 	getPetList(): PetInstance[] {
 		return this.data.pets;
 	}
 
 	async removePetById(id: string): Promise<void> {
-		// Filters out the one with the same id
 		this.data.pets = this.data.pets.filter((p) => p.id !== id);
 		await this.saveSettings();
 
@@ -294,9 +275,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	async clearAllPets(): Promise<void> {
-		// Empties out the entire pet list
 		this.data.pets = [];
-		// Reset all counters back to 1
 		for (const type in this.data.nextPetIdCounters) {
 			this.data.nextPetIdCounters[type] = 1;
 		}
@@ -307,7 +286,6 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	// Switch between panel mode and overlay mode
 	async setOverlayMode(enabled: boolean): Promise<void> {
 		if (this.data.overlayMode === enabled) return;
 
@@ -358,7 +336,6 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	// Open the leaf view
 	async openView() {
 		if (this.data.overlayMode) return;
 
@@ -369,7 +346,6 @@ export default class PetPlugin extends Plugin {
 		});
 	}
 
-	// Remove the leaf (view) based on its ID
 	async closeView() {
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
@@ -412,7 +388,6 @@ export default class PetPlugin extends Plugin {
 		if (!petLeaf) return;
 		if (this.sidebarOf(petLeaf) !== activeSide) return;
 
-		// Only yield space when the pet leaf is actually sharing a tab group
 		if (!this.petLeafHasSiblings(petLeaf)) return;
 
 		petLeaf.detach();

@@ -28,29 +28,26 @@ function getRandDelay(min: number, max: number, multiple: number): number {
 	return Math.round(random / multiple) * multiple;
 }
 
-// Defines shape for parameters needed to pass in an animation
 export interface AnimationConfig {
-	spriteUrl: string; // Link to the spritesheet
-	frameCount: number; // Number of frames in spritesheet
+	spriteUrl: string;
+	frameCount: number;
 	frameWidth: number;
-	duration: number; // Of animation (ms)
+	duration: number;
 }
 
 export type PetAnimations = { idle: AnimationConfig } & Partial<
 	Record<AnimationName, AnimationConfig>
 >;
 
-// Make size changeable
-
 export abstract class Pet {
 	protected container: HTMLElement;
 	petEl: HTMLElement | null = null;
 	protected currentX = 0;
-	protected direction = 1; // 1 right, -1 left
+	protected direction = 1;
 	private currentAnimation: AnimationName | "none" = "none";
 	protected animations: PetAnimations;
-	protected isDestroyed = false; // Check if pet instance has been destroyed
-	protected moveDist: number; // For different pet movements
+	protected isDestroyed = false;
+	protected moveDist: number;
 	private floor: Floor;
 	scale: number;
 	protected petName: string;
@@ -109,12 +106,10 @@ export abstract class Pet {
 		return `${this.floor.value}%`;
 	}
 
-	// Creates the div representing the pet and styles
 	protected createPetElement(): HTMLElement {
 		const el = this.container.createDiv({ cls: "pixel-pets-pet" });
 		const topPercent = this.getGroundTopValue();
 
-		// Set initial CSS custom properties (to be used as variables in styles.css)
 		el.setCssProps({
 			"--pixel-pets-left": `${this.currentX}px`,
 			"--pixel-pets-top": topPercent,
@@ -131,7 +126,6 @@ export abstract class Pet {
 		return el;
 	}
 
-	// Sets up the listeners on the pets
 	protected setupHoverListeners() {
 		const el = this.requirePetEl();
 		el.addEventListener("mouseenter", () => {
@@ -184,7 +178,6 @@ export abstract class Pet {
 		return { minLeft: halfWidth, maxLeft: this.container.offsetWidth - halfWidth };
 	}
 
-	// Clamp current position within the container (if container resizes)
 	async clampToContainer() {
 		const el = this.petEl;
 		if (!el || this.isDestroyed || this.container.offsetWidth === 0) return;
@@ -213,14 +206,11 @@ export abstract class Pet {
 		this.petEl?.setCssProps({ "--pixel-pets-top": newTop });
 	}
 
-	// Add an animation for the pet
 	protected setAnimation(animationName: AnimationName) {
-		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
 			return;
 		}
 
-		// If the animation does not exist
 		const animation = this.animations[animationName];
 		if (!animation) {
 			return;
@@ -239,7 +229,6 @@ export abstract class Pet {
 			"--pixel-pets-sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
 		});
 
-		// Update tracking for which animation it is
 		this.currentAnimation = animationName;
 	}
 
@@ -251,44 +240,37 @@ export abstract class Pet {
 		void el.offsetHeight;
 		el.removeClass("pixel-pets-pet--frozen");
 		this.currentX = parseFloat(computedLeft);
-		this.interruptMove?.(); // directly stop on hover
+		this.interruptMove?.();
 	}
 
-	// Moves the pet in x direction
 	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused) return Promise.resolve();
 		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
-		// Get a random change in x direction (biased towards the side that was already being visited)
 		const magnitude = action?.includes("jump")
 			? this.moveDist * (Math.random() * 0.3 + 1.5)
-			: this.moveDist; // Diff distance based on jumping vs running
+			: this.moveDist;
 		const bias = 0.9;
 		const direction = Math.random() < bias ? this.direction : -this.direction;
 		let dx = magnitude * direction;
 		const possibleX = this.currentX + dx;
 
-		// Clamp it within bounds (reverse the direction if too close to edge)
 		if (possibleX < minLeft || possibleX > maxLeft) {
 			dx = -dx;
 		}
 		const targetX = this.currentX + dx;
 
-		// If no movement, resolve immediately (petching any overlapping of actions)
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
 
-		// Update direction based on movement
 		this.direction = dx < 0 ? -1 : 1;
 
-		// Return a promise that is being awaited (to prevent moving on until this is finished)
 		return new Promise((res) => {
 			let settled = false;
 
 			const settle = () => {
-				// settle stops movement
 				if (settled) return;
 				settled = true;
 				window.clearTimeout(timeout);
@@ -379,7 +361,6 @@ export abstract class Pet {
 		return "run";
 	}
 
-	// Destroys pet instance
 	async destroy() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;

@@ -1,18 +1,12 @@
 import { PetAnimations } from "./pet";
 import { getPetAsset } from "../catalog/assets";
 
-// ±100ms variation for each animation duration
 function alterDuration(base: number, variation = 100): number {
 	const offset = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
 	return base + offset;
 }
 
 export function getCatAnimations(type: string): PetAnimations {
-	/*
-    Exceptions:
-    - Classic cat -> liking
-    - Witch cat -> flying
-    */
 	const animations: PetAnimations = {
 		idle: {
 			spriteUrl: getPetAsset(type, "idle-cat.png"),

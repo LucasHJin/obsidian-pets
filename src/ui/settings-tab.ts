@@ -3,8 +3,6 @@ import PetPlugin from "../main";
 import { DEFAULT_DATA } from "../data";
 import { BACKGROUNDS } from "../catalog/backgrounds";
 
-// https://docs.obsidian.md/Plugins/User+interface/Settings
-
 const SETTING_KEYS = [
 	"overlayMode",
 	"selectedBackground",

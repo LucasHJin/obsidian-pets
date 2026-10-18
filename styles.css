@@ -21,9 +21,6 @@
 	--pixel-pets-layer-tooltip: 2;
 }
 
-/* ------------- Overlay Mode Styles ------------- */
-
-/* Full-screen transparent overlay for overlay mode (overlay top to allow dragging) */
 .pixel-pets-overlay {
 	position: fixed;
 	top: var(--pixel-pets-overlay-top, 0px);
@@ -35,19 +32,16 @@
 	overflow: hidden;
 }
 
-/* Pets inside the overlay need to capture clicks */
 .pixel-pets-overlay .pixel-pets-pet {
 	pointer-events: auto;
 }
-
-/* ------------- Pet View Styles ------------- */
 
 .pixel-pets-view {
 	position: relative;
 	isolation: isolate;
 	width: 100%;
 	height: 100%;
-	overflow: hidden; /* Allow for resizing */
+	overflow: hidden;
 }
 
 .pixel-pets-view__background {
@@ -56,7 +50,7 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	object-fit: cover; /* Can crop but no distortion */
+	object-fit: cover;
 	z-index: var(--pixel-pets-layer-background);
 }
 
@@ -70,7 +64,6 @@
 	z-index: var(--pixel-pets-layer-snow);
 }
 
-/* Use css variables for most of the dynamically changing values, i.e. top, transition, etc. */
 .pixel-pets-pet {
 	position: absolute;
 	width: var(--pixel-pets-pet-size);
@@ -173,7 +166,7 @@
 .pixel-pets-ball {
 	position: absolute;
 	transform: translate(calc(var(--pixel-pets-ball-x, 0)), calc(var(--pixel-pets-ball-y, 0)))
-		scale(var(--pixel-pets-scale, 1)); /* same as above */
+		scale(var(--pixel-pets-scale, 1));
 	width: var(--pixel-pets-ball-width);
 	height: var(--pixel-pets-ball-height);
 	z-index: var(--pixel-pets-layer-ball);
@@ -259,7 +252,6 @@ body.pixel-pets-hide-cursor {
 	}
 }
 
-/* Make Pet View action buttons always visible */
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header {
 	display: flex;
 	min-height: 36px;
@@ -294,7 +286,6 @@ body.pixel-pets-hide-cursor {
 	opacity: 1;
 }
 
-/* Hide everything in the header except custom buttons */
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-nav-buttons,
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-icon,
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-action.mod-bookmark,

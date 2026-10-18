@@ -66,7 +66,6 @@ export class Cat extends Pet {
 		}
 	}
 
-	// Play a meow whenever the cat is clicked
 	protected override playSound(): void {
 		this.sounds.playPet("cat");
 	}
@@ -83,7 +82,6 @@ export class Cat extends Pet {
 		this.interruptAction = false;
 	}
 
-	// Function to start chasing the ball
 	startChasingBall(ball: Ball) {
 		this.chasingBall = ball;
 		this.interruptAction = true;
@@ -132,7 +130,6 @@ export class Cat extends Pet {
 		return this.canFly && Math.random() < 0.3 ? "fly" : "run";
 	}
 
-	// Function to chase the ball
 	private async chaseBall() {
 		if (!this.chasingBall || this.isDestroyed) {
 			return;
@@ -140,20 +137,17 @@ export class Cat extends Pet {
 		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
-		// Move towards the ball in small steps (less steps = more smooth)
 		const steps = 3;
 		for (let i = 0; i < steps; i++) {
 			if (!this.chasingBall) {
 				break;
 			}
 
-			// Calculate direction and how much to move
 			const ballPos = this.chasingBall.getPosition();
 			const dx = ballPos.x - (this.currentX ?? 0);
 			this.direction = dx < 0 ? -1 : 1;
 			const moveAmount = Math.sign(dx) * Math.min(Math.abs(dx), this.moveDist);
 
-			// Clamp the new position to within the boundaries
 			let newX = this.currentX + moveAmount;
 			if (newX < minLeft) newX = minLeft;
 			if (newX > maxLeft) newX = maxLeft;
@@ -166,7 +160,6 @@ export class Cat extends Pet {
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 			this.setAnimation("run");
 
-			// Wait a second to make it more smooth (not teleporting)
 			await new Promise((res) => window.setTimeout(res, 200));
 			if (this.interruptAction) {
 				break;

@@ -4,7 +4,6 @@ import { Stage } from "../stage";
 import { Floor } from "../floor";
 import { SNOW_ANIMATION, getBackground } from "../catalog/backgrounds";
 
-// Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
 
 export class PetView extends ItemView {
@@ -15,31 +14,25 @@ export class PetView extends ItemView {
 	private resizeObserver?: ResizeObserver;
 	private resizeTimeout?: number;
 
-	// Inheriting from ItemView
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
 		super(leaf);
 		this.plugin = plugin;
 	}
 
-	// Returns view's ID
 	getViewType() {
 		return VIEW_TYPE_PET;
 	}
 
-	// Returns human friendly name for view (shown when hovered)
 	getDisplayText() {
 		const displayName = this.app.vault.getName();
 		return `${displayName} Pets`;
 	}
 
-	// Decides icon for view
 	override getIcon() {
 		return "cat";
 	}
 
-	// Builds content of view when it is opened
 	override async onOpen() {
-		// Detach if leaf was rendered while overlay is on
 		if (this.plugin.data.overlayMode) {
 			window.setTimeout(() => this.leaf.detach(), 0);
 			return;
@@ -77,15 +70,12 @@ export class PetView extends ItemView {
 	updateView() {
 		if (!this.stage) return;
 
-		// Update the background
 		this.updateBackground(this.stage.container);
 		this.stage.updateFloor();
 
-		// Create a set of pet-ids in the view (unique ids, faster lookup)
 		const currentPetList = this.plugin.getPetList();
 		const existingPetIds = new Set(this.stage.pets.map((p) => p.id));
 
-		// Add all needed pets to the view
 		for (const pet of currentPetList) {
 			if (!existingPetIds.has(pet.id)) {
 				this.stage.addPet(pet);
@@ -94,7 +84,6 @@ export class PetView extends ItemView {
 	}
 
 	updateBackground(wrapper: HTMLElement) {
-		// Get selected background
 		const background = this.plugin.getSelectedBackground();
 		const { image, snow } = getBackground(background);
 
@@ -103,7 +92,6 @@ export class PetView extends ItemView {
 		this.snowEl?.remove();
 		this.snowEl = null;
 
-		// Add the new backgrounds
 		if (image) {
 			try {
 				this.backgroundEl = wrapper.createEl("img", {
@@ -152,7 +140,6 @@ export class PetView extends ItemView {
 			if (!entry) return;
 			const { width, height } = entry.contentRect;
 
-			// Skip the initial fire that reports the starting size
 			if (!initialized) {
 				initialized = true;
 				lastWidth = width;
@@ -175,7 +162,6 @@ export class PetView extends ItemView {
 		this.resizeObserver.observe(this.contentEl);
 	}
 
-	// Used to clean up content after view is closed
 	override async onClose() {
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();

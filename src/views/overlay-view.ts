@@ -47,7 +47,7 @@ export class OverlayPetView {
 				"";
 			if (region !== "drag") continue;
 			const rect = el.getBoundingClientRect();
-			if (rect.top > 5) continue; // Only elements pinned to the window top
+			if (rect.top > 5) continue;
 			if (rect.bottom > topOffset) topOffset = rect.bottom;
 		}
 

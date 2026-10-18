@@ -1,4 +1,3 @@
-// Pet animations
 import blackCatIdle from "../../assets/pets/black-cat/idle-cat.png";
 import blackCatIdle2 from "../../assets/pets/black-cat/idle2-cat.png";
 import blackCatJump from "../../assets/pets/black-cat/jump-cat.png";
@@ -189,12 +188,10 @@ import greyBunnyDie from "../../assets/pets/grey-bunny/die-bunny.png";
 
 import ghostIdle from "../../assets/pets/ghost/idle-ghost.png";
 
-// Cat toy animations
 import catToy from "../../assets/toys/cat-toy.png";
 
 import heart from "../../assets/misc/heart.png";
 
-// Export organized by type
 export const petAssets = {
 	"pets/black-cat": {
 		"idle-cat.png": blackCatIdle,
@@ -414,7 +411,6 @@ export const catToyAsset = catToy;
 
 export const heartAsset = heart;
 
-// Helper function to get pet asset
 export function getPetAsset(petType: string, assetName: string): string {
 	const assets = petAssets[petType as keyof typeof petAssets];
 	if (!assets) {

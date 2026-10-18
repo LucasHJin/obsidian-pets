@@ -1,6 +1,5 @@
 import { Modal, App } from "obsidian";
 
-// Type for selectable option
 export interface SelectorOption {
 	value: string;
 	label: string;
@@ -8,8 +7,8 @@ export interface SelectorOption {
 }
 
 export class SelectorModal extends Modal {
-	options: SelectorOption[]; // Array of options
-	onSubmit: (value: string, name: string) => Promise<void>; // Expects a function that takes a value and name and returns a promise (callback to chooser function)
+	options: SelectorOption[];
+	onSubmit: (value: string, name: string) => Promise<void>;
 
 	constructor(
 		app: App,
@@ -21,18 +20,15 @@ export class SelectorModal extends Modal {
 		this.onSubmit = onSubmit;
 	}
 
-	// Show modal options on open
 	override onOpen() {
 		const { contentEl } = this;
 
 		for (const option of this.options) {
-			// Make the button
 			const button = contentEl.createEl("button", {
 				text: option.label,
 				cls: "pixel-pets-selector__button",
 			});
 
-			// Call the chooser function when it is clicked
 			button.addEventListener("click", () => {
 				void this.chooseOption(option);
 			});
@@ -43,13 +39,11 @@ export class SelectorModal extends Modal {
 		if (option.requiresName) {
 			this.showNameForm(option.value);
 		} else {
-			// No name needed (background)
 			await this.onSubmit(option.value, "");
 			this.close();
 		}
 	}
 
-	// Form to enter the pet's name
 	private showNameForm(selectedValue: string) {
 		const { contentEl } = this;
 		contentEl.empty();
@@ -58,13 +52,11 @@ export class SelectorModal extends Modal {
 			cls: "pixel-pets-name-form__container",
 		});
 
-		// Title
 		container.createDiv({
 			text: "Enter a name:",
 			cls: "pixel-pets-name-form__title setting-item-heading",
 		});
 
-		// Input form
 		const form = container.createEl("form", {
 			cls: "pixel-pets-name-form",
 		});
@@ -75,7 +67,6 @@ export class SelectorModal extends Modal {
 		});
 		input.focus();
 
-		// Button to submit
 		form.createEl("button", {
 			type: "submit",
 			text: "Submit",
@@ -84,13 +75,11 @@ export class SelectorModal extends Modal {
 
 		form.addEventListener("submit", (e) => {
 			e.preventDefault();
-			// Prevent submitting blank name
 			const name = input.value.trim();
 			if (!name) {
 				return;
 			}
 
-			// Call function to use the selected type and pet name
 			void (async () => {
 				await this.onSubmit(selectedValue, name);
 				this.close();
@@ -98,7 +87,6 @@ export class SelectorModal extends Modal {
 		});
 	}
 
-	// Clean up DOM on modal close
 	override onClose() {
 		this.contentEl.empty();
 	}
