@@ -1,15 +1,36 @@
 import { heartAsset } from "../catalog/assets";
 import { getBackground } from "../catalog/backgrounds";
 
+const ANIMATION_NAMES = [
+	"idle",
+	"idle2",
+	"jump",
+	"jump2",
+	"run",
+	"sit",
+	"sleep",
+	"die",
+	"liking",
+	"fly",
+] as const;
+
+export type AnimationName = (typeof ANIMATION_NAMES)[number];
+
+function isAnimationName(key: string): key is AnimationName {
+	return (ANIMATION_NAMES as readonly string[]).includes(key);
+}
+
 // Defines shape for parameters needed to pass in an animation
 export interface AnimationConfig {
-	name: string;
 	spriteUrl: string; // Link to the spritesheet
 	frameCount: number; // Number of frames in spritesheet
 	frameWidth: number;
 	duration: number; // Of animation (ms)
-	action?: (multiples?: number) => Promise<void> | void;
 }
+
+export type PetAnimations = { idle: AnimationConfig } & Partial<
+	Record<AnimationName, AnimationConfig>
+>;
 
 // Make size changeable
 
@@ -18,8 +39,8 @@ export class Pet {
 	petEl!: HTMLElement;
 	protected currentX!: number;
 	protected direction = 1; // 1 right, -1 left
-	private currentAnimation = "none";
-	protected animations: Record<string, AnimationConfig>;
+	private currentAnimation: AnimationName | "none" = "none";
+	protected animations: PetAnimations;
 	protected isDestroyed = false; // Check if pet instance has been destroyed
 	protected moveDist: number; // For different pet movements
 	private backgroundName = "default";
@@ -34,7 +55,7 @@ export class Pet {
 
 	constructor(
 		container: HTMLElement,
-		animations: Record<string, AnimationConfig>,
+		animations: PetAnimations,
 		moveDist: number,
 		backgroundName: string,
 		scale: number,
@@ -48,8 +69,6 @@ export class Pet {
 		this.backgroundName = backgroundName;
 		this.scale = scale;
 		this.petName = petName;
-
-		this.setupActions();
 
 		window.requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
@@ -66,7 +85,7 @@ export class Pet {
 
 			// Start the behavior
 			void (async () => {
-				await this.animations["idle"].action?.();
+				await this.performAction("idle");
 				await this.startActionLoop();
 			})();
 		});
@@ -135,8 +154,21 @@ export class Pet {
 		}, 1000);
 	}
 
-	// Leave empty to override in subclasses
-	protected setupActions() {}
+	protected performAction(_name: AnimationName, _repeats = 1): Promise<void> {
+		return Promise.resolve();
+	}
+
+	protected getAnimationNames(): AnimationName[] {
+		return Object.keys(this.animations).filter(isAnimationName);
+	}
+
+	protected requireAnimation(name: AnimationName): AnimationConfig {
+		const animation = this.animations[name];
+		if (!animation) {
+			throw new Error(`Animation "${name}" not found`);
+		}
+		return animation;
+	}
 
 	// Clamp current position within the container (if container resizes)
 	async clampToContainer() {
@@ -173,7 +205,7 @@ export class Pet {
 	}
 
 	// Add an animation for the pet
-	protected setAnimation(animationName: string) {
+	protected setAnimation(animationName: AnimationName) {
 		// If the animation is already selected
 		if (this.currentAnimation === animationName) {
 			return;
@@ -214,7 +246,7 @@ export class Pet {
 	}
 
 	// Moves the pet in x direction
-	protected move(duration: number, action?: string): Promise<void> {
+	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused) return Promise.resolve();
 		const petWidth = this.animations["idle"].frameWidth;
 		const containerWidth = this.container.offsetWidth;
@@ -289,7 +321,7 @@ export class Pet {
 		}
 
 		// Possible actions excluding dieing and running
-		const ACTIONS = Object.keys(this.animations).filter((a) => a !== "die" && a !== "run");
+		const ACTIONS = this.getAnimationNames().filter((a) => a !== "die" && a !== "run");
 
 		while (!this.isDestroyed) {
 			// Check if is hovered
@@ -303,7 +335,7 @@ export class Pet {
 
 			// Pick and run a random action
 			const randomAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
-			await this.animations[randomAction].action?.();
+			await this.performAction(randomAction);
 
 			while (this.actionLoopPaused && !this.isDestroyed) {
 				await new Promise((resolve) => window.setTimeout(resolve, 100));
@@ -314,10 +346,9 @@ export class Pet {
 			}
 
 			// Go back to the running action
-			const delay = getRandDelay(3000, 8000, this.animations["run"].duration);
-			await this.animations["run"].action?.(
-				Math.floor(delay / this.animations["run"].duration),
-			);
+			const run = this.requireAnimation("run");
+			const delay = getRandDelay(3000, 8000, run.duration);
+			await this.performAction("run", Math.floor(delay / run.duration));
 		}
 	}
 
@@ -362,7 +393,9 @@ export class Pet {
 		this.isDestroyed = true;
 		// Death animation (wait for the animation to finish)
 		this.setAnimation("die");
-		await new Promise((resolve) => window.setTimeout(resolve, this.animations["die"].duration));
+		await new Promise((resolve) =>
+			window.setTimeout(resolve, this.requireAnimation("die").duration),
+		);
 		// Removes instance from DOM
 		this.petEl.remove();
 	}

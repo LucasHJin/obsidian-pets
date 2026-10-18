@@ -1,10 +1,10 @@
-import { Pet, AnimationConfig } from "./pet";
+import { Pet, AnimationName, PetAnimations } from "./pet";
 import { playPetSound } from "../audio/sounds";
 
 export class Bunny extends Pet {
 	constructor(
 		container: HTMLElement,
-		animations: Record<string, AnimationConfig>,
+		animations: PetAnimations,
 		moveDist: number,
 		backgroundName: string,
 		scale: number,
@@ -17,29 +17,35 @@ export class Bunny extends Pet {
 		playPetSound("bunny");
 	}
 
-	protected override setupActions() {
-		for (const key in this.animations) {
-			this.animations[key].action = async (multiples = 1) => {
-				this.setAnimation(key);
-				if (key === "run") {
-					for (let i = 0; i < multiples; i++) {
-						await this.move(this.animations[key].duration, key);
-					}
-				} else if (key === "jump") {
-					await this.move(this.animations[key].duration, key);
-				} else if (key === "sit" || key === "sleep" || key === "idle2") {
-					const extensionAmount = Math.floor(Math.random() * 7) + 6;
-					await new Promise((resolve) =>
-						window.setTimeout(resolve, this.animations[key].duration * extensionAmount),
-					);
-				} else {
-					// Idle
-					const extensionAmount = Math.floor(Math.random() * 2) + 2;
-					await new Promise((resolve) =>
-						window.setTimeout(resolve, this.animations[key].duration * extensionAmount),
-					);
+	protected override async performAction(name: AnimationName, repeats = 1): Promise<void> {
+		const animation = this.animations[name];
+		if (!animation) return;
+		this.setAnimation(name);
+
+		switch (name) {
+			case "run":
+				for (let i = 0; i < repeats; i++) {
+					await this.move(animation.duration, name);
 				}
-			};
+				break;
+			case "jump":
+				await this.move(animation.duration, name);
+				break;
+			case "sit":
+			case "sleep":
+			case "idle2": {
+				const extensionAmount = Math.floor(Math.random() * 7) + 6;
+				await new Promise((resolve) =>
+					window.setTimeout(resolve, animation.duration * extensionAmount),
+				);
+				break;
+			}
+			default: {
+				const extensionAmount = Math.floor(Math.random() * 2) + 2;
+				await new Promise((resolve) =>
+					window.setTimeout(resolve, animation.duration * extensionAmount),
+				);
+			}
 		}
 	}
 }

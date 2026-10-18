@@ -1,11 +1,10 @@
-import { Pet } from "./pet";
-import { AnimationConfig } from "./pet";
+import { Pet, AnimationName, PetAnimations } from "./pet";
 import { playPetSound } from "../audio/sounds";
 
 export class Ghost extends Pet {
 	constructor(
 		container: HTMLElement,
-		animations: Record<string, AnimationConfig>,
+		animations: PetAnimations,
 		moveDist: number,
 		backgroundName: string,
 		scale: number,
@@ -18,13 +17,10 @@ export class Ghost extends Pet {
 		playPetSound("ghost");
 	}
 
-	// Only need to setup idle action
-	protected override setupActions() {
-		this.animations["idle"].action = async () => {
-			this.setAnimation("idle");
-			// Delay for one cycle so it doesn't instantly switch again
-			await new Promise((res) => window.setTimeout(res, this.animations["idle"].duration));
-		};
+	protected override async performAction(name: AnimationName): Promise<void> {
+		if (name !== "idle") return;
+		this.setAnimation("idle");
+		await new Promise((res) => window.setTimeout(res, this.animations["idle"].duration));
 	}
 
 	// Only idle + occasionally move
@@ -41,7 +37,7 @@ export class Ghost extends Pet {
 			}
 
 			// Always idle afterwards (small amount of time)
-			await this.animations["idle"].action?.();
+			await this.performAction("idle");
 			const delay2 = 2000 + Math.random() * 3000;
 			await new Promise((res) => window.setTimeout(res, delay2));
 		}

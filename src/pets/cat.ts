@@ -1,4 +1,4 @@
-import { Pet, AnimationConfig } from "./pet";
+import { Pet, AnimationName, PetAnimations } from "./pet";
 import { Ball } from "../toys/ball";
 import { playPetSound } from "../audio/sounds";
 
@@ -9,7 +9,7 @@ export class Cat extends Pet {
 
 	constructor(
 		container: HTMLElement,
-		animations: Record<string, AnimationConfig>,
+		animations: PetAnimations,
 		moveDist: number,
 		backgroundName: string,
 		scale: number,
@@ -20,38 +20,41 @@ export class Cat extends Pet {
 		this.canFly = canFly;
 	}
 
-	protected override setupActions() {
-		for (const key in this.animations) {
-			this.animations[key].action = async (multiples = 1) => {
-				this.setAnimation(key);
+	protected override async performAction(name: AnimationName, repeats = 1): Promise<void> {
+		const animation = this.animations[name];
+		if (!animation) return;
+		this.setAnimation(name);
 
-				if (key === "run" || key === "fly") {
-					for (let i = 0; i < multiples; i++) {
-						if (this.interruptAction) break;
-						await this.move(this.animations[key].duration, key);
-					}
-				} else if (key === "jump" || key === "jump2") {
-					if (!this.interruptAction) {
-						await this.move(this.animations[key].duration, key);
-					}
-				} else if (key === "sit" || key === "sleep") {
-					const extensionAmount = Math.floor(Math.random() * 8) + 5;
-					for (let i = 0; i < extensionAmount; i++) {
-						if (this.interruptAction) break;
-						await new Promise((resolve) =>
-							window.setTimeout(resolve, this.animations[key].duration),
-						);
-					}
-				} else {
-					const extensionAmount = Math.floor(Math.random() * 2) + 2;
-					for (let i = 0; i < extensionAmount; i++) {
-						if (this.interruptAction) break;
-						await new Promise((resolve) =>
-							window.setTimeout(resolve, this.animations[key].duration),
-						);
-					}
+		switch (name) {
+			case "run":
+			case "fly":
+				for (let i = 0; i < repeats; i++) {
+					if (this.interruptAction) break;
+					await this.move(animation.duration, name);
 				}
-			};
+				break;
+			case "jump":
+			case "jump2":
+				if (!this.interruptAction) {
+					await this.move(animation.duration, name);
+				}
+				break;
+			case "sit":
+			case "sleep": {
+				const extensionAmount = Math.floor(Math.random() * 8) + 5;
+				for (let i = 0; i < extensionAmount; i++) {
+					if (this.interruptAction) break;
+					await new Promise((resolve) => window.setTimeout(resolve, animation.duration));
+				}
+				break;
+			}
+			default: {
+				const extensionAmount = Math.floor(Math.random() * 2) + 2;
+				for (let i = 0; i < extensionAmount; i++) {
+					if (this.interruptAction) break;
+					await new Promise((resolve) => window.setTimeout(resolve, animation.duration));
+				}
+			}
 		}
 	}
 
@@ -88,7 +91,7 @@ export class Cat extends Pet {
 			return Math.round(random / multiple) * multiple;
 		}
 
-		const ACTIONS = Object.keys(this.animations).filter(
+		const ACTIONS = this.getAnimationNames().filter(
 			(a) => a !== "die" && a !== "run" && a !== "fly",
 		);
 
@@ -123,7 +126,7 @@ export class Cat extends Pet {
 
 				// Normal behavior
 				const randomAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
-				await this.animations[randomAction].action?.();
+				await this.performAction(randomAction);
 
 				while (this.actionLoopPaused && !this.isDestroyed) {
 					await new Promise((resolve) => window.setTimeout(resolve, 100));
@@ -132,10 +135,9 @@ export class Cat extends Pet {
 
 				const movingAnimation = this.canFly ? (Math.random() < 0.3 ? "fly" : "run") : "run";
 
-				const delay = getRandDelay(3000, 8000, this.animations[movingAnimation].duration);
-				await this.animations[movingAnimation].action?.(
-					Math.floor(delay / this.animations[movingAnimation].duration),
-				);
+				const moving = this.requireAnimation(movingAnimation);
+				const delay = getRandDelay(3000, 8000, moving.duration);
+				await this.performAction(movingAnimation, Math.floor(delay / moving.duration));
 				await new Promise((resolve) => window.setTimeout(resolve, 100));
 			}
 		}
