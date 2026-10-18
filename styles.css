@@ -1,100 +1,113 @@
 /* Register scale props as a number so windows build resolves scaleX properly */
-@property --scale-x {
+@property --pixel-pets-scale-x {
 	syntax: "<number>";
 	inherits: true;
 	initial-value: 1;
 }
 
-@property --scale {
+@property --pixel-pets-scale {
 	syntax: "<number>";
 	inherits: true;
 	initial-value: 1;
+}
+
+.pixel-pets-view,
+.pixel-pets-overlay {
+	--pixel-pets-layer-background: 0;
+	--pixel-pets-layer-snow: 1;
+	--pixel-pets-layer-pet: 2;
+	--pixel-pets-layer-ball: 3;
+	--pixel-pets-layer-heart: 1;
+	--pixel-pets-layer-tooltip: 2;
 }
 
 /* ------------- Overlay Mode Styles ------------- */
 
 /* Full-screen transparent overlay for overlay mode (overlay top to allow dragging) */
-.pet-overlay-container {
+.pixel-pets-overlay {
 	position: fixed;
-	top: var(--overlay-top, 0px);
+	top: var(--pixel-pets-overlay-top, 0px);
 	left: 0;
 	width: 100vw;
-	height: calc(100vh - var(--overlay-top, 0px));
+	height: calc(100vh - var(--pixel-pets-overlay-top, 0px));
 	pointer-events: none;
-	z-index: 9999;
+	z-index: calc(var(--layer-modal) - 1);
 	overflow: hidden;
 }
 
 /* Pets inside the overlay need to capture clicks */
-.pet-overlay-container .pet {
+.pixel-pets-overlay .pixel-pets-pet {
 	pointer-events: auto;
 }
 
 /* ------------- Pet View Styles ------------- */
 
-.pet-view-wrapper {
+.pixel-pets-view {
 	position: relative;
+	isolation: isolate;
 	width: 100%;
 	height: 100%;
 	overflow: hidden; /* Allow for resizing */
 }
 
-.pet-view-background {
+.pixel-pets-view__background {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: cover; /* Can crop but no distortion */
-	z-index: 0;
+	z-index: var(--pixel-pets-layer-background);
 }
 
-.pet-view-background-animation {
+.pixel-pets-view__background-animation {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	z-index: 1;
+	z-index: var(--pixel-pets-layer-snow);
 }
 
 /* Use css variables for most of the dynamically changing values, i.e. top, transition, etc. */
-.pet {
+.pixel-pets-pet {
 	position: absolute;
-	width: var(--pet-size);
-	height: var(--pet-size);
-	left: var(--left);
-	top: var(--top);
-	transform: translate(-50%, -50%) scale(var(--scale, 1)) scaleX(var(--scale-x, 1));
+	width: var(--pixel-pets-pet-size);
+	height: var(--pixel-pets-pet-size);
+	left: var(--pixel-pets-left);
+	top: var(--pixel-pets-top);
+	transform: translate(-50%, -50%) scale(var(--pixel-pets-scale, 1))
+		scaleX(var(--pixel-pets-scale-x, 1));
 	background-repeat: no-repeat;
 	background-position: 0 0;
-	background-image: var(--sprite-url);
-	background-size: var(--sprite-size);
+	background-image: var(--pixel-pets-sprite-url);
+	background-size: var(--pixel-pets-sprite-size);
 	image-rendering: pixelated;
-	transition: left var(--move-duration, 300ms) linear;
-	animation: pet-sprite var(--sprite-duration) steps(var(--frame-count)) infinite;
-	z-index: 100;
+	transition: left var(--pixel-pets-move-duration, 300ms) linear;
+	animation: pixel-pets-sprite var(--pixel-pets-sprite-duration)
+		steps(var(--pixel-pets-frame-count)) infinite;
+	z-index: var(--pixel-pets-layer-pet);
 }
 
-.pet-restart {
+.pixel-pets-pet--restart {
 	animation: none;
 }
 
-.pet-frozen {
+.pixel-pets-pet--frozen {
 	transition: none;
 }
 
-.pet-fading {
+.pixel-pets-pet--fading {
 	transition: opacity 1s ease;
 	opacity: 0;
 }
 
-.pet-name-tooltip {
+.pixel-pets-pet__tooltip {
 	position: absolute;
 	bottom: 100%;
 	left: 50%;
-	transform: translateX(-50%) translateY(-2px) scaleX(var(--scale-x, 1));
+	transform: translateX(-50%) translateY(-2px) scaleX(var(--pixel-pets-scale-x, 1));
 	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
 	color: var(--text-normal);
 	padding: 4px 8px;
@@ -104,14 +117,14 @@
 	pointer-events: none;
 	opacity: 0;
 	transition: opacity 0.2s ease;
-	z-index: 1000;
+	z-index: var(--pixel-pets-layer-tooltip);
 }
 
-.pet:hover .pet-name-tooltip {
+.pixel-pets-pet:hover .pixel-pets-pet__tooltip {
 	opacity: 1;
 }
 
-.modal button.selector-button {
+.modal button.pixel-pets-selector__button {
 	cursor: pointer;
 	display: block;
 	width: 100%;
@@ -129,116 +142,120 @@
 	box-shadow: none;
 }
 
-.modal button.selector-button:hover {
+.modal button.pixel-pets-selector__button:hover {
 	background-color: var(--background-secondary-alt);
 }
 
-.pet-name-title {
+.pixel-pets-name-form__title {
 	margin-top: 0;
 	margin-bottom: 0.5rem;
 	line-height: 1.1;
 	font-size: 1.1em;
 }
 
-.pet-name-form {
+.pixel-pets-name-form {
 	display: flex;
 	flex-direction: column;
 	gap: 0.8rem;
 	align-items: flex-start;
 }
 
-.pet-name-form .pet-name-input {
+.pixel-pets-name-form .pixel-pets-name-form__input {
 	width: 100%;
 	flex: 1;
 	padding: 0.5em;
 }
 
-.pet-name-button {
+.pixel-pets-name-form__button {
 	transition: background-color 0.2s ease;
 }
 
-.ball {
+.pixel-pets-ball {
 	position: absolute;
-	transform: translate(calc(var(--x, 0)), calc(var(--y, 0))) scale(var(--scale, 1)); /* same as above */
-	width: var(--ballwidth);
-	height: var(--ballheight);
-	z-index: 200;
+	transform: translate(calc(var(--pixel-pets-ball-x, 0)), calc(var(--pixel-pets-ball-y, 0)))
+		scale(var(--pixel-pets-scale, 1)); /* same as above */
+	width: var(--pixel-pets-ball-width);
+	height: var(--pixel-pets-ball-height);
+	z-index: var(--pixel-pets-layer-ball);
 }
-.ball img {
+.pixel-pets-ball img {
 	display: block;
 	image-rendering: pixelated;
 	width: 100%;
 	height: 100%;
 }
 
-.pet-heart {
+.pixel-pets-pet__heart {
 	position: absolute;
 	width: 13px;
 	height: 12px;
-	left: var(--heart-random-x);
+	left: var(--pixel-pets-heart-random-x);
 	top: -10px;
-	transform: translateX(-50%) scaleX(var(--scale-x, 1));
-	background-image: var(--heart-url);
+	transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1));
+	background-image: var(--pixel-pets-heart-url);
 	background-size: cover;
 	image-rendering: pixelated;
 	opacity: 0;
 	pointer-events: none;
-	z-index: 1001;
-	animation: heart-float 1s ease-out forwards;
+	z-index: var(--pixel-pets-layer-heart);
+	animation: pixel-pets-heart-float 1s ease-out forwards;
 }
 
-@keyframes heart-float {
+@keyframes pixel-pets-heart-float {
 	0% {
 		opacity: 1;
-		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(0) scale(0.5);
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(0) scale(0.5);
 	}
 	50% {
 		opacity: 1;
-		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(-15px) scale(1);
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-15px) scale(1);
 	}
 	100% {
 		opacity: 0;
-		transform: translateX(-50%) scaleX(var(--scale-x, 1)) translateY(-30px) scale(0.8);
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-30px)
+			scale(0.8);
 	}
 }
 
-body.cat-toy-hide-cursor {
+body.pixel-pets-hide-cursor {
 	cursor: none;
 }
 
-.cat-toy-cursor {
+.pixel-pets-cat-toy {
 	position: fixed;
-	left: var(--cursor-x);
-	top: var(--cursor-y);
-	width: var(--cat-toy-frame-size);
-	height: var(--cat-toy-frame-size);
-	transform: translate(var(--cat-toy-offset), var(--cat-toy-offset)) scale(var(--cat-toy-scale));
+	left: var(--pixel-pets-cursor-x);
+	top: var(--pixel-pets-cursor-y);
+	width: var(--pixel-pets-cat-toy-frame-size);
+	height: var(--pixel-pets-cat-toy-frame-size);
+	transform: translate(var(--pixel-pets-cat-toy-offset), var(--pixel-pets-cat-toy-offset))
+		scale(var(--pixel-pets-cat-toy-scale));
 	transform-origin: top left;
-	background-image: var(--cat-toy-url);
-	background-size: var(--cat-toy-sprite-width);
+	background-image: var(--pixel-pets-cat-toy-url);
+	background-size: var(--pixel-pets-cat-toy-sprite-width);
 	background-repeat: no-repeat;
 	background-position: 0 0;
 	image-rendering: pixelated;
 	pointer-events: none;
-	z-index: 99999;
-	animation: cat-toy-cursor var(--cat-toy-duration) steps(var(--cat-toy-frames)) infinite;
+	z-index: calc(var(--layer-dragged-item) + 1);
+	animation: pixel-pets-cat-toy var(--pixel-pets-cat-toy-duration)
+		steps(var(--pixel-pets-cat-toy-frames)) infinite;
 }
 
-@keyframes pet-sprite {
+@keyframes pixel-pets-sprite {
 	from {
 		background-position: 0 0;
 	}
 	to {
-		background-position: var(--sprite-total-width) 0;
+		background-position: var(--pixel-pets-sprite-total-width) 0;
 	}
 }
 
-@keyframes cat-toy-cursor {
+@keyframes pixel-pets-cat-toy {
 	from {
 		background-position: 0 0;
 	}
 	to {
-		background-position: calc(-1 * var(--cat-toy-sprite-width)) 0;
+		background-position: calc(-1 * var(--pixel-pets-cat-toy-sprite-width)) 0;
 	}
 }
 

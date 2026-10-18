@@ -104,29 +104,29 @@ export abstract class Pet {
 
 	private getGroundTopValue(): string {
 		if (this.floor.kind === "bottom") {
-			return "calc(100% - 14px * var(--scale, 1))";
+			return "calc(100% - 14px * var(--pixel-pets-scale, 1))";
 		}
 		return `${this.floor.value}%`;
 	}
 
 	// Creates the div representing the pet and styles
 	protected createPetElement(): HTMLElement {
-		const el = this.container.createDiv({ cls: "pet" });
+		const el = this.container.createDiv({ cls: "pixel-pets-pet" });
 		const topPercent = this.getGroundTopValue();
 
 		// Set initial CSS custom properties (to be used as variables in styles.css)
 		el.setCssProps({
-			"--left": `${this.currentX}px`,
-			"--top": topPercent,
-			"--pet-size": `${this.animations["idle"].frameWidth}px`,
-			"--scale-x": `${this.direction}`,
-			"--scale": `${this.scale}`,
-			"--heart-url": `url(${heartAsset})`,
+			"--pixel-pets-left": `${this.currentX}px`,
+			"--pixel-pets-top": topPercent,
+			"--pixel-pets-pet-size": `${this.animations["idle"].frameWidth}px`,
+			"--pixel-pets-scale-x": `${this.direction}`,
+			"--pixel-pets-scale": `${this.scale}`,
+			"--pixel-pets-heart-url": `url(${heartAsset})`,
 		});
 
-		this.tooltipEl = el.createDiv({ cls: "pet-name-tooltip" });
+		this.tooltipEl = el.createDiv({ cls: "pixel-pets-pet__tooltip" });
 		this.tooltipEl.textContent = this.petName;
-		this.tooltipEl.setCssProps({ "--scale-x": `${this.direction}` });
+		this.tooltipEl.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 
 		return el;
 	}
@@ -153,11 +153,11 @@ export abstract class Pet {
 	protected playSound(): void {}
 
 	protected showHeart() {
-		const heart = this.requirePetEl().createDiv({ cls: "pet-heart" });
+		const heart = this.requirePetEl().createDiv({ cls: "pixel-pets-pet__heart" });
 
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
-			"--heart-random-x": `${randomX}%`,
+			"--pixel-pets-heart-random-x": `${randomX}%`,
 		});
 
 		window.setTimeout(() => {
@@ -199,7 +199,7 @@ export abstract class Pet {
 		const clampedX = Math.max(minLeft, Math.min(maxLeft, this.currentX));
 		if (clampedX !== this.currentX) {
 			this.currentX = clampedX;
-			el.setCssProps({ "--left": `${this.currentX}px` });
+			el.setCssProps({ "--pixel-pets-left": `${this.currentX}px` });
 		}
 
 		if (!wasAlreadyPaused) {
@@ -210,7 +210,7 @@ export abstract class Pet {
 	updateVerticalPosition(newFloor: Floor) {
 		this.floor = newFloor;
 		const newTop = this.getGroundTopValue();
-		this.petEl?.setCssProps({ "--top": newTop });
+		this.petEl?.setCssProps({ "--pixel-pets-top": newTop });
 	}
 
 	// Add an animation for the pet
@@ -227,16 +227,16 @@ export abstract class Pet {
 		}
 
 		const el = this.requirePetEl();
-		el.addClass("pet-restart");
+		el.addClass("pixel-pets-pet--restart");
 		void el.offsetHeight;
-		el.removeClass("pet-restart");
+		el.removeClass("pixel-pets-pet--restart");
 
 		el.setCssProps({
-			"--sprite-duration": `${animation.duration}ms`,
-			"--frame-count": `${animation.frameCount}`,
-			"--sprite-url": `url(${animation.spriteUrl})`,
-			"--sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
-			"--sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
+			"--pixel-pets-sprite-duration": `${animation.duration}ms`,
+			"--pixel-pets-frame-count": `${animation.frameCount}`,
+			"--pixel-pets-sprite-url": `url(${animation.spriteUrl})`,
+			"--pixel-pets-sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
+			"--pixel-pets-sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
 		});
 
 		// Update tracking for which animation it is
@@ -246,10 +246,10 @@ export abstract class Pet {
 	protected freezeAtCurrentPosition() {
 		const el = this.requirePetEl();
 		const computedLeft = window.getComputedStyle(el).left;
-		el.addClass("pet-frozen");
-		el.setCssProps({ "--left": computedLeft });
+		el.addClass("pixel-pets-pet--frozen");
+		el.setCssProps({ "--pixel-pets-left": computedLeft });
 		void el.offsetHeight;
-		el.removeClass("pet-frozen");
+		el.removeClass("pixel-pets-pet--frozen");
 		this.currentX = parseFloat(computedLeft);
 		this.interruptMove?.(); // directly stop on hover
 	}
@@ -309,11 +309,11 @@ export abstract class Pet {
 
 			void el.offsetWidth;
 			el.setCssProps({
-				"--left": `${targetX}px`,
-				"--scale-x": `${this.direction}`,
-				"--move-duration": `${duration}ms`,
+				"--pixel-pets-left": `${targetX}px`,
+				"--pixel-pets-scale-x": `${this.direction}`,
+				"--pixel-pets-move-duration": `${duration}ms`,
 			});
-			this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
+			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 		});
 	}
 

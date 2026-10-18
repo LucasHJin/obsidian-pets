@@ -154,7 +154,7 @@ export class Stage {
 		for (const { pet } of this.pets) {
 			pet.scale = this.plugin.data.petSize;
 			pet.petEl?.setCssProps({
-				"--scale": `${this.plugin.data.petSize}`,
+				"--pixel-pets-scale": `${this.plugin.data.petSize}`,
 			});
 			void pet.clampToContainer();
 		}
@@ -162,7 +162,7 @@ export class Stage {
 			if (ball.ballEl) {
 				ball.scale = this.plugin.data.petSize;
 				ball.ballEl.setCssProps({
-					"--scale": `${this.plugin.data.petSize}`,
+					"--pixel-pets-scale": `${this.plugin.data.petSize}`,
 				});
 			}
 		}

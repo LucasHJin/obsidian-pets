@@ -41,7 +41,7 @@ export class Ghost extends Pet {
 	}
 
 	protected override async playDeathAnimation() {
-		this.requirePetEl().addClass("pet-fading");
+		this.requirePetEl().addClass("pixel-pets-pet--fading");
 		await new Promise((resolve) => window.setTimeout(resolve, 1000));
 	}
 }

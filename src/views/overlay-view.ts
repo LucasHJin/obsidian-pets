@@ -12,7 +12,7 @@ export class OverlayPetView {
 	constructor(plugin: PetPlugin, doc: Document) {
 		this.doc = doc;
 		this.win = doc.win;
-		this.overlayEl = doc.body.createDiv({ cls: "pet-overlay-container" });
+		this.overlayEl = doc.body.createDiv({ cls: "pixel-pets-overlay" });
 		this.stage = new Stage(this.overlayEl, plugin, {
 			getFloor: () => ({ kind: "bottom" }),
 			ballLifetime: 6000,
@@ -51,7 +51,7 @@ export class OverlayPetView {
 			if (rect.bottom > topOffset) topOffset = rect.bottom;
 		}
 
-		this.overlayEl.setCssProps({ "--overlay-top": `${topOffset}px` });
+		this.overlayEl.setCssProps({ "--pixel-pets-overlay-top": `${topOffset}px` });
 	}
 
 	destroy() {

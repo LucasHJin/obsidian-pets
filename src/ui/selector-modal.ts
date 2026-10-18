@@ -29,7 +29,7 @@ export class SelectorModal extends Modal {
 			// Make the button
 			const button = contentEl.createEl("button", {
 				text: option.label,
-				cls: "selector-button",
+				cls: "pixel-pets-selector__button",
 			});
 
 			// Call the chooser function when it is clicked
@@ -55,23 +55,23 @@ export class SelectorModal extends Modal {
 		contentEl.empty();
 
 		const container = contentEl.createDiv({
-			cls: "pet-name-form-container",
+			cls: "pixel-pets-name-form__container",
 		});
 
 		// Title
 		container.createDiv({
 			text: "Enter a name:",
-			cls: "pet-name-title setting-item-heading",
+			cls: "pixel-pets-name-form__title setting-item-heading",
 		});
 
 		// Input form
 		const form = container.createEl("form", {
-			cls: "pet-name-form",
+			cls: "pixel-pets-name-form",
 		});
 		const input = form.createEl("input", {
 			type: "text",
 			placeholder: "Pet name...",
-			cls: "pet-name-input",
+			cls: "pixel-pets-name-form__input",
 		});
 		input.focus();
 
@@ -79,7 +79,7 @@ export class SelectorModal extends Modal {
 		form.createEl("button", {
 			type: "submit",
 			text: "Submit",
-			cls: "pet-name-button",
+			cls: "pixel-pets-name-form__button",
 		});
 
 		form.addEventListener("submit", (e) => {

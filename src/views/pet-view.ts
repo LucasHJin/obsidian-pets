@@ -65,7 +65,7 @@ export class PetView extends ItemView {
 			this.plugin.openAddPetPicker();
 		});
 
-		const wrapper = this.contentEl.createDiv({ cls: "pet-view-wrapper" });
+		const wrapper = this.contentEl.createDiv({ cls: "pixel-pets-view" });
 		this.stage = new Stage(wrapper, this.plugin, {
 			getFloor: () => this.getFloor(),
 			ballLifetime: 5000,
@@ -111,7 +111,7 @@ export class PetView extends ItemView {
 						src: image,
 						alt: "Background",
 					},
-					cls: "pet-view-background",
+					cls: "pixel-pets-view__background",
 				});
 			} catch (error) {
 				console.error(`Failed to load background: ${background}`, error);
@@ -125,7 +125,7 @@ export class PetView extends ItemView {
 						src: SNOW_ANIMATION,
 						alt: "Snow falling animation",
 					},
-					cls: "pet-view-background-animation",
+					cls: "pixel-pets-view__background-animation",
 				});
 			} catch (error) {
 				console.error("Failed to load snow animation", error);

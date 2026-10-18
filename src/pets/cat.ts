@@ -160,10 +160,10 @@ export class Cat extends Pet {
 			this.currentX = newX;
 
 			el.setCssProps({
-				"--left": `${this.currentX}px`,
-				"--scale-x": `${this.direction}`,
+				"--pixel-pets-left": `${this.currentX}px`,
+				"--pixel-pets-scale-x": `${this.direction}`,
 			});
-			this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
+			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 			this.setAnimation("run");
 
 			// Wait a second to make it more smooth (not teleporting)
@@ -193,9 +193,9 @@ export class Cat extends Pet {
 
 		this.setAnimation("run");
 		el.setCssProps({
-			"--left": `${this.currentX}px`,
-			"--scale-x": `${this.direction}`,
+			"--pixel-pets-left": `${this.currentX}px`,
+			"--pixel-pets-scale-x": `${this.direction}`,
 		});
-		this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
+		this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 	}
 }

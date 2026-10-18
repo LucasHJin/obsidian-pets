@@ -53,15 +53,15 @@ export class Ball {
 
 	// Creates the HTML for ball element
 	private createBallElement(spriteUrl: string): HTMLElement {
-		const el = this.container.createDiv({ cls: "ball" });
+		const el = this.container.createDiv({ cls: "pixel-pets-ball" });
 
 		const BALL_SIZE = 10;
 		this.radius = BALL_SIZE / 2;
 		el.createEl("img", { attr: { src: spriteUrl } });
 		el.setCssProps({
-			"--ballwidth": `${Math.round(BALL_SIZE)}px`,
-			"--ballheight": `${Math.round(BALL_SIZE)}px`,
-			"--scale": `${this.scale}`,
+			"--pixel-pets-ball-width": `${Math.round(BALL_SIZE)}px`,
+			"--pixel-pets-ball-height": `${Math.round(BALL_SIZE)}px`,
+			"--pixel-pets-scale": `${this.scale}`,
 		});
 
 		return el;
@@ -114,8 +114,8 @@ export class Ball {
 		this.vy *= this.airRes;
 
 		this.ballEl.setCssProps({
-			"--x": `${this.x - this.radius}px`,
-			"--y": `${this.y - this.radius}px`,
+			"--pixel-pets-ball-x": `${this.x - this.radius}px`,
+			"--pixel-pets-ball-y": `${this.y - this.radius}px`,
 		});
 
 		// Loop (schedule itself to run on next frame)
