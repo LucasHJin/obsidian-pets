@@ -1,5 +1,5 @@
 import { AnimationConfig } from "./pet";
-import { getPetAsset, getToyAsset } from "../catalog/assets";
+import { getPetAsset } from "../catalog/assets";
 
 // Allow for optional pet animations
 type PetAnimations = {
@@ -180,9 +180,4 @@ export function getGhostAnimations(type: string): PetAnimations {
 		},
 	};
 	return animations;
-}
-
-export function getBallAnimations(type: string): string {
-	const ball = getToyAsset(type);
-	return ball;
 }

@@ -7,6 +7,7 @@ import { PetSettingTab } from "./ui/settings-tab";
 import { SelectorModal } from "./ui/selector-modal";
 import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
+import { BALLS } from "./catalog/balls";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 
 export default class PetPlugin extends Plugin {
@@ -15,16 +16,6 @@ export default class PetPlugin extends Plugin {
 	private catToyActive = false;
 	private catToyOverlay: CatToyOverlay | null = null;
 	private currentMouseX = 0;
-	protected BALLS: string[] = [
-		"toys/blue-ball",
-		"toys/cyan-ball",
-		"toys/green-ball",
-		"toys/orange-ball",
-		"toys/pink-ball",
-		"toys/purple-ball",
-		"toys/red-ball",
-		"toys/yellow-ball",
-	];
 
 	private get mainDocument(): Document {
 		return this.app.workspace.containerEl.doc;
@@ -233,8 +224,8 @@ export default class PetPlugin extends Plugin {
 	}
 
 	throwRandomBall() {
-		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
-		void this.addBall(randomBall);
+		const randomBall = BALLS[Math.floor(Math.random() * BALLS.length)];
+		void this.addBall(randomBall.id);
 	}
 
 	openBackgroundPicker() {
@@ -383,9 +374,9 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	async addBall(type: string): Promise<void> {
+	async addBall(id: string): Promise<void> {
 		if (this.data.overlayMode) {
-			this.overlayView?.spawnBall(type);
+			this.overlayView?.spawnBall(id);
 			return;
 		}
 
@@ -396,7 +387,7 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
-				view.addBallToView(view.getWrapper(), type);
+				view.addBallToView(view.getWrapper(), id);
 			}
 		}
 	}

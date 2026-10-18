@@ -1,17 +1,13 @@
 import PetPlugin from "../main";
 import { PetInstance } from "../data";
 import { getPetType } from "../catalog/pets";
+import { getBallImage } from "../catalog/balls";
 import { Pet } from "../pets/pet";
 import { Cat } from "../pets/cat";
 import { Bunny } from "../pets/bunny";
 import { Ghost } from "../pets/ghost";
 import { Ball } from "../toys/ball";
-import {
-	getCatAnimations,
-	getBunnyAnimations,
-	getGhostAnimations,
-	getBallAnimations,
-} from "../pets/pet-animations";
+import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "../pets/pet-animations";
 
 export class OverlayPetView {
 	private overlayEl: HTMLElement;
@@ -126,17 +122,15 @@ export class OverlayPetView {
 		this.pets = [];
 	}
 
-	spawnBall(type: string) {
+	spawnBall(id: string) {
 		try {
-			const cleanBallId = type.replace(/^toys\//, "");
-			const ballAnimation = getBallAnimations(cleanBallId);
 			const ball = new Ball(
 				this.overlayEl,
-				ballAnimation,
+				getBallImage(id),
 				"overlay",
 				this.plugin.data.petSize,
 			);
-			this.balls.push({ id: cleanBallId, ball });
+			this.balls.push({ id, ball });
 
 			const cats = this.pets.filter((p) => p.pet instanceof Cat);
 			if (cats.length > 0) {
@@ -144,7 +138,7 @@ export class OverlayPetView {
 				randomCat.startChasingBall(ball);
 				ball.onDestroy = () => {
 					randomCat.stopChasingBall();
-					const index = this.balls.findIndex((b) => b.id === cleanBallId);
+					const index = this.balls.findIndex((b) => b.id === id);
 					if (index !== -1) {
 						this.balls.splice(index, 1);
 					}

@@ -8,12 +8,8 @@ import { Ghost } from "../pets/ghost";
 import { Ball } from "../toys/ball";
 import { SNOW_ANIMATION, getBackground } from "../catalog/backgrounds";
 import { getPetType } from "../catalog/pets";
-import {
-	getCatAnimations,
-	getBunnyAnimations,
-	getGhostAnimations,
-	getBallAnimations,
-} from "../pets/pet-animations";
+import { getBallImage } from "../catalog/balls";
+import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "../pets/pet-animations";
 
 // Unique ID for the view
 export const VIEW_TYPE_PET = "pet-view";
@@ -264,15 +260,11 @@ export class PetView extends ItemView {
 		}
 	}
 
-	addBallToView(wrapper: HTMLElement, type: string) {
+	addBallToView(wrapper: HTMLElement, id: string) {
 		try {
 			const background = this.plugin.getSelectedBackground();
-			const cleanBallId = type.replace(/^toys\//, "");
-
-			// Add the ball to the view
-			const ballAnimation = getBallAnimations(cleanBallId);
-			const ball = new Ball(wrapper, ballAnimation, background, this.plugin.data.petSize);
-			this.balls.push({ id: cleanBallId, ball });
+			const ball = new Ball(wrapper, getBallImage(id), background, this.plugin.data.petSize);
+			this.balls.push({ id, ball });
 
 			// Choose a random cat to chase after the ball
 			const cats = this.pets.filter((p) => p.pet instanceof Cat);
@@ -283,7 +275,7 @@ export class PetView extends ItemView {
 				ball.onDestroy = () => {
 					// Stop chasing + remove ball from array
 					randomCat.stopChasingBall();
-					const index = this.balls.findIndex((b) => b.id === cleanBallId);
+					const index = this.balls.findIndex((b) => b.id === id);
 					if (index !== -1) {
 						this.balls.splice(index, 1);
 					}

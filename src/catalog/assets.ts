@@ -189,16 +189,6 @@ import greyBunnyDie from "../../assets/pets/grey-bunny/die-bunny.png";
 
 import ghostIdle from "../../assets/pets/ghost/idle-ghost.png";
 
-// Ball animations
-import blueBall from "../../assets/toys/blue-ball.png";
-import cyanBall from "../../assets/toys/cyan-ball.png";
-import greenBall from "../../assets/toys/green-ball.png";
-import orangeBall from "../../assets/toys/orange-ball.png";
-import pinkBall from "../../assets/toys/pink-ball.png";
-import purpleBall from "../../assets/toys/purple-ball.png";
-import redBall from "../../assets/toys/red-ball.png";
-import yellowBall from "../../assets/toys/yellow-ball.png";
-
 // Cat toy animations
 import catToy from "../../assets/toys/cat-toy.png";
 
@@ -420,17 +410,6 @@ export const petAssets = {
 	},
 };
 
-export const toyAssets = {
-	"blue-ball": blueBall,
-	"cyan-ball": cyanBall,
-	"green-ball": greenBall,
-	"orange-ball": orangeBall,
-	"pink-ball": pinkBall,
-	"purple-ball": purpleBall,
-	"red-ball": redBall,
-	"yellow-ball": yellowBall,
-};
-
 export const catToyAsset = catToy;
 
 export const heartAsset = heart;
@@ -444,15 +423,6 @@ export function getPetAsset(petType: string, assetName: string): string {
 	const asset = assets[assetName as keyof typeof assets];
 	if (!asset) {
 		throw new Error(`Asset "${assetName}" not found for pet type "${petType}"`);
-	}
-	return asset;
-}
-
-// Helper function to get toy asset
-export function getToyAsset(toyName: string): string {
-	const asset = toyAssets[toyName as keyof typeof toyAssets];
-	if (!asset) {
-		throw new Error(`Toy "${toyName}" not found`);
 	}
 	return asset;
 }
