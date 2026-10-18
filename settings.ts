@@ -9,14 +9,9 @@ const SETTING_KEYS = [
 	"animatedBackground",
 	"petSize",
 	"soundEnabled",
-	"geminiApiKey",
-	"openAiApiKey",
-	"selectedModel",
 ] as const;
 
 type SettingKey = (typeof SETTING_KEYS)[number];
-
-type ChatModel = "gemini" | "openai";
 
 const BACKGROUND_OPTIONS: Record<string, string> = {
 	none: "None",
@@ -44,14 +39,6 @@ export class PetSettingTab extends PluginSettingTab {
 	}
 
 	getSettingDefinitions(): SettingDefinitionItem<SettingKey>[] {
-		const modelOptions: Record<string, string> = { none: "" };
-		if (this.hasApiKey("gemini")) {
-			modelOptions.gemini = "Gemini";
-		}
-		if (this.hasApiKey("openai")) {
-			modelOptions.openai = "OpenAI";
-		}
-
 		return [
 			{
 				name: "Overlay mode",
@@ -92,32 +79,6 @@ export class PetSettingTab extends PluginSettingTab {
 				desc: "Enable sounds for your pets and actions.",
 				control: { type: "toggle", key: "soundEnabled", defaultValue: false },
 			},
-			{
-				type: "group",
-				heading: "Chatbot API keys",
-				items: [
-					{
-						name: "Gemini API key",
-						desc: "Enter your Gemini API key to use the plugin's chat feature (this is optional given the OpenAI key).",
-						control: { type: "text", key: "geminiApiKey", defaultValue: "" },
-					},
-					{
-						name: "OpenAI API key",
-						desc: "Enter your OpenAI API key to use the plugin's chat feature (this is mandatory).",
-						control: { type: "text", key: "openAiApiKey", defaultValue: "" },
-					},
-					{
-						name: "Active AI model",
-						desc: "Choose which model to use for chat interactions.",
-						control: {
-							type: "dropdown",
-							key: "selectedModel",
-							defaultValue: "none",
-							options: modelOptions,
-						},
-					},
-				],
-			},
 		];
 	}
 
@@ -152,42 +113,6 @@ export class PetSettingTab extends PluginSettingTab {
 					this.plugin.toggleSound(value);
 				}
 				break;
-			case "geminiApiKey":
-				if (typeof value === "string") {
-					this.setApiKey("gemini", value);
-				}
-				break;
-			case "openAiApiKey":
-				if (typeof value === "string") {
-					this.setApiKey("openai", value);
-				}
-				break;
-			case "selectedModel":
-				if (typeof value === "string") {
-					this.plugin.updateChosenModel(value);
-				}
-				break;
 		}
-	}
-
-	private setApiKey(model: ChatModel, value: string) {
-		const hadKey = this.hasApiKey(model);
-		if (model === "gemini") {
-			this.plugin.updateGeminiApiKey(value);
-		} else {
-			this.plugin.updateOpenAiApiKey(value);
-		}
-		if (!value.trim() && this.plugin.instanceData.selectedModel === model) {
-			this.plugin.updateChosenModel("none");
-		}
-		if (hadKey !== this.hasApiKey(model)) {
-			this.update();
-		}
-	}
-
-	private hasApiKey(model: ChatModel): boolean {
-		const { geminiApiKey, openAiApiKey } = this.plugin.instanceData;
-		const apiKey = model === "gemini" ? geminiApiKey : openAiApiKey;
-		return !!apiKey?.trim();
 	}
 }

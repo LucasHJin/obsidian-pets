@@ -28,9 +28,5 @@
 		"tslib": "2.4.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "8.71.1"
-	},
-	"dependencies": {
-		"@google/genai": "^1.21.0",
-		"openai": "^6.3.0"
 	}
 }

@@ -4,14 +4,7 @@ import { OverlayPetView } from "./overlay";
 import { CatToyOverlay } from "./pet-utils/cat-toy";
 import { setSoundEnabled, playPetSound, startToySound } from "./pet-utils/sounds";
 import { PetSettingTab } from "./settings";
-import { SelectorModal, SelectorOption, ChatModal } from "./modals";
-import { askModel, reformulateQuery } from "./chatmodels";
-import { GoogleGenAI } from "@google/genai";
-import { VectorDB } from "./chat-utils/vector-db";
-import { indexVault } from "./chat-utils/indexer";
-import { answerQuery } from "./chat-utils/retriever";
-import { initModel } from "./chatmodels";
-import OpenAI from "openai";
+import { SelectorModal, SelectorOption } from "./modals";
 
 export interface PetInstance {
 	id: string; // Unique id
@@ -28,10 +21,6 @@ interface PetPluginData {
 	petSize: number; // Overall size of pets (1 = normal size)
 	overlayMode: boolean; // Whether pets render in overlay mode vs panel mode
 	soundEnabled: boolean; // Whether pet click sounds play
-	geminiApiKey: string; // Gemini API key for chat feature
-	openAiApiKey: string; // OpenAI API key for RAG
-	indexedFiles?: Record<string, number>; // To track already indexed files in vault
-	selectedModel?: string; // Selected model for chat
 }
 
 const DEFAULT_DATA: Partial<PetPluginData> = {
@@ -42,16 +31,11 @@ const DEFAULT_DATA: Partial<PetPluginData> = {
 	soundEnabled: false,
 };
 
-export interface ConversationMessage {
-	role: "user" | "assistant";
-	content: string;
-	timestamp: number;
-}
+const REMOVED_CHAT_DATA_KEYS = ["geminiApiKey", "openAiApiKey", "selectedModel", "indexedFiles"];
+const REMOVED_CHAT_DATABASE = "obsidian-rag-db";
 
 export default class PetPlugin extends Plugin {
 	instanceData!: PetPluginData;
-	ragDb!: VectorDB;
-	private chatmodel: GoogleGenAI | OpenAI | null = null;
 	private overlayView: OverlayPetView | null = null;
 	private catToyActive = false;
 	private catToyOverlay: CatToyOverlay | null = null;
@@ -172,29 +156,11 @@ export default class PetPlugin extends Plugin {
 		// Loads saved data and merges with current data
 		try {
 			await this.loadSettings();
-			// NEED TO HANDLE ERROR BETTER IF NO API KEY
-			if (this.instanceData.selectedModel && this.instanceData.selectedModel !== "none") {
-				try {
-					this.chatmodel = initModel(
-						this.instanceData.selectedModel,
-						this.instanceData.geminiApiKey,
-						this.instanceData.openAiApiKey,
-					);
-				} catch (e) {
-					console.warn("Failed to initialize chat model:", e);
-					new Notice(
-						"Could not initialize AI model. Check API keys and model selection in settings.",
-					);
-				}
-			}
 		} catch (err) {
 			console.error("Failed to load pet plugin data:", err);
 		}
 
 		setSoundEnabled(this.instanceData.soundEnabled ?? false);
-
-		// Initialize the vector database
-		this.ragDb = new VectorDB();
 
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
@@ -286,68 +252,8 @@ export default class PetPlugin extends Plugin {
 			},
 		});
 
-		this.addCommand({
-			id: "chat-with-pets",
-			name: "Chat with your pets",
-			callback: () => {
-				if (
-					!this.instanceData.selectedModel ||
-					this.instanceData.selectedModel === "none"
-				) {
-					new Notice("Please select a chat model in settings first.");
-					return;
-				}
-				if (!this.chatmodel) {
-					new Notice("Please set your API key(s) in settings first.");
-					return;
-				}
-
-				new ChatModal(this.app, this, (msg, history) =>
-					this.chatWithPet(msg, history),
-				).open(); // Pass reference to this plugin to use the markdown
-			},
-		});
-
-		// Add command to manually index vault (also do this onload if not indexed yet)
-		this.addCommand({
-			id: "manual-index-vault",
-			name: "Index vault for RAG",
-			callback: async () => {
-				if (!this.instanceData.openAiApiKey) {
-					new Notice("Set your OpenAI API key first.");
-					return;
-				}
-
-				await indexVault(
-					this.app,
-					this.ragDb,
-					this.instanceData.openAiApiKey,
-					this.instanceData.indexedFiles,
-				);
-				await this.saveData(this.instanceData);
-				new Notice("Vault indexed successfully.");
-			},
-		});
-
 		// Add settings
 		this.addSettingTab(new PetSettingTab(this.app, this));
-
-		// Add initial indexing if vault not indexed yet
-		if (this.instanceData.openAiApiKey && this.ragDb) {
-			if (
-				!this.instanceData.indexedFiles ||
-				Object.keys(this.instanceData.indexedFiles).length === 0
-			) {
-				// console.log("Indexing all vault files for the first time...");
-				await indexVault(
-					this.app,
-					this.ragDb,
-					this.instanceData.openAiApiKey,
-					this.instanceData.indexedFiles,
-				);
-				await this.saveData(this.instanceData);
-			}
-		}
 
 		const NEW_NOTE_MESSAGES = [
 			"Meow! A new note! 😸",
@@ -466,110 +372,6 @@ export default class PetPlugin extends Plugin {
 		}).open();
 	}
 
-	// Function to handle chat messages
-	async chatWithPet(
-		question: string,
-		conversationHistory: ConversationMessage[] = [],
-	): Promise<string> {
-		// Need a chat model to exist
-		if (!this.chatmodel) {
-			return "Please set your API key(s) in settings first.";
-		}
-
-		let searchQuery = question;
-
-		// Reformulate follow up questions with context from previous questions (so that semantic searching works better)
-		if (conversationHistory.length > 0) {
-			const recentContext = conversationHistory
-				.slice(-6)
-				.map((msg) => `${msg.role}: ${msg.content}`)
-				.join("\n");
-
-			searchQuery = await reformulateQuery(
-				question,
-				recentContext,
-				this.chatmodel,
-				this.instanceData.selectedModel || "none",
-			);
-		}
-
-		// If OpenAI key exists -> fetch context (retrieval)
-		let context = "";
-		if (this.instanceData.openAiApiKey && this.ragDb) {
-			try {
-				context = await answerQuery(
-					searchQuery,
-					this.instanceData.openAiApiKey,
-					this.ragDb,
-				);
-			} catch (e) {
-				console.error("RAG error:", e);
-				new Notice("Failed to retrieve context from vault");
-				// Continue without context
-			}
-		}
-
-		// Try to get response from Model
-		try {
-			return await askModel(
-				context || "No context available.",
-				question,
-				this.chatmodel,
-				this.instanceData.selectedModel || "none",
-				conversationHistory,
-			);
-		} catch (e) {
-			console.error("Chat model error:", e);
-			return "Sorry, I couldn't process your request. Please check your selected model and API key.";
-		}
-	}
-
-	public updateGeminiApiKey(geminiApiKey: string): void {
-		this.instanceData.geminiApiKey = geminiApiKey;
-		void this.saveData(this.instanceData);
-	}
-
-	public updateOpenAiApiKey(openAiApiKey: string): void {
-		this.instanceData.openAiApiKey = openAiApiKey;
-		void this.saveData(this.instanceData);
-	}
-
-	public updateChosenModel(selectedModel: string): void {
-		this.instanceData.selectedModel = selectedModel;
-		void this.saveData(this.instanceData);
-
-		try {
-			if (selectedModel === "gemini" && !this.instanceData.geminiApiKey) {
-				new Notice("Set your Gemini API key first.");
-				this.chatmodel = null;
-				return;
-			}
-			if (selectedModel === "openai" && !this.instanceData.openAiApiKey) {
-				new Notice("Set your OpenAI API key first.");
-				this.chatmodel = null;
-				return;
-			}
-
-			this.chatmodel = initModel(
-				selectedModel,
-				this.instanceData.geminiApiKey,
-				this.instanceData.openAiApiKey,
-			);
-
-			if (selectedModel === "gemini") {
-				new Notice(`Model set to Gemini.`);
-			} else if (selectedModel === "openai") {
-				new Notice(`Model set to OpenAI.`);
-			} else {
-				new Notice("No model selected.");
-			}
-		} catch (e) {
-			console.error("Failed to initialize model after selection:", e);
-			new Notice("Could not initialize model. Check API keys.");
-			this.chatmodel = null;
-		}
-	}
-
 	// Function to get a clean id label
 	getCleanLabel(id: string): string {
 		// Don't want the general /pets
@@ -606,7 +408,11 @@ export default class PetPlugin extends Plugin {
 
 	// Merges current data with default data
 	async loadSettings() {
-		const savedData = (await this.loadData()) as Partial<PetPluginData> | null;
+		const savedData = ((await this.loadData()) ?? {}) as Record<string, unknown>;
+		const chatKeys = REMOVED_CHAT_DATA_KEYS.filter((key) => key in savedData);
+		for (const key of chatKeys) {
+			delete savedData[key];
+		}
 		this.instanceData = Object.assign({}, DEFAULT_DATA, savedData) as PetPluginData;
 
 		// Make sure id counter exists
@@ -614,10 +420,15 @@ export default class PetPlugin extends Plugin {
 			this.instanceData.nextPetIdCounters = {};
 		}
 
-		// Make sure indexedFiles exists
-		if (!this.instanceData.indexedFiles) {
-			this.instanceData.indexedFiles = {};
+		if (chatKeys.length > 0) {
+			await this.saveData(this.instanceData);
+			this.deleteChatDatabase();
 		}
+	}
+
+	private deleteChatDatabase() {
+		const request = window.indexedDB.deleteDatabase(REMOVED_CHAT_DATABASE);
+		request.onerror = () => console.warn("Failed to delete the old chat index:", request.error);
 	}
 
 	public async chooseBackground(backgroundFile: string): Promise<void> {
