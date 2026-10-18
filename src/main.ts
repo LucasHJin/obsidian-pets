@@ -431,25 +431,13 @@ export default class PetPlugin extends Plugin {
 		return null;
 	}
 
-	// Don't detach individual leafs
 	private petLeafHasSiblings(leaf: WorkspaceLeaf): boolean {
-		const parent = (leaf as unknown as { parent?: unknown }).parent;
-		if (!parent) return false;
-		const iterate = (
-			this.app.workspace as unknown as {
-				iterateLeaves?: (cb: (l: WorkspaceLeaf) => unknown, item: unknown) => unknown;
-			}
-		).iterateLeaves;
-		if (typeof iterate !== "function") return false;
-
 		let hasSibling = false;
-		iterate.call(
-			this.app.workspace,
-			(l: WorkspaceLeaf) => {
-				if (l !== leaf) hasSibling = true;
-			},
-			parent,
-		);
+		this.app.workspace.iterateAllLeaves((other) => {
+			if (other !== leaf && other.parent === leaf.parent) {
+				hasSibling = true;
+			}
+		});
 		return hasSibling;
 	}
 
