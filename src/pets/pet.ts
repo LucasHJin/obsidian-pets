@@ -53,9 +53,6 @@ export class Pet {
 	private floor: Floor;
 	scale: number;
 	protected petName: string;
-	protected chasingCursor = false;
-	private getCursorX: (() => number) | null = null;
-	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
 	protected tooltipEl!: HTMLElement;
 	protected actionLoopPaused = false;
 	private pauseWaiters: (() => void)[] = [];
@@ -72,8 +69,6 @@ export class Pet {
 		this.container = container;
 		this.animations = animations;
 		this.moveDist = moveDist;
-		// Randomize cursor follow speed per pet (±30%) so cats spread out instead of clumping
-		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 		this.floor = floor;
 		this.scale = scale;
 		this.petName = petName;
@@ -377,39 +372,6 @@ export class Pet {
 
 	protected movingAnimation(): AnimationName {
 		return "run";
-	}
-
-	startFollowingCursor(getCursorX: () => number): void {
-		this.getCursorX = getCursorX;
-		this.chasingCursor = true;
-	}
-
-	stopFollowingCursor(): void {
-		this.chasingCursor = false;
-		this.getCursorX = null;
-	}
-
-	protected async followCursorStep(): Promise<void> {
-		if (!this.getCursorX || this.isDestroyed) return;
-		const { minLeft, maxLeft } = this.getHorizontalBounds();
-
-		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
-		const dx = targetX - this.currentX;
-		if (Math.abs(dx) < 2) {
-			this.setAnimation("idle");
-			return;
-		}
-
-		this.direction = dx < 0 ? -1 : 1;
-		const step = Math.sign(dx) * Math.min(Math.abs(dx), this.cursorMoveDist);
-		this.currentX = Math.max(minLeft, Math.min(maxLeft, this.currentX + step));
-
-		this.setAnimation("run");
-		this.petEl.setCssProps({
-			"--left": `${this.currentX}px`,
-			"--scale-x": `${this.direction}`,
-		});
-		this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 	}
 
 	// Destroys pet instance

@@ -8,6 +8,9 @@ const PASS_GUARD_DELAY = 100;
 export class Cat extends Pet {
 	private canFly: boolean;
 	private chasingBall: Ball | null = null;
+	private chasingCursor = false;
+	private getCursorX: (() => number) | null = null;
+	private cursorMoveDist: number;
 	private interruptAction = false;
 
 	constructor(
@@ -21,6 +24,7 @@ export class Cat extends Pet {
 	) {
 		super(container, animations, moveDist, floor, scale, petName);
 		this.canFly = canFly;
+		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 	}
 
 	protected override async performAction(name: AnimationName, repeats = 1): Promise<void> {
@@ -66,13 +70,15 @@ export class Cat extends Pet {
 		playPetSound("cat");
 	}
 
-	override startFollowingCursor(getCursorX: () => number): void {
-		super.startFollowingCursor(getCursorX);
+	startFollowingCursor(getCursorX: () => number): void {
+		this.getCursorX = getCursorX;
+		this.chasingCursor = true;
 		this.interruptAction = true;
 	}
 
-	override stopFollowingCursor(): void {
-		super.stopFollowingCursor();
+	stopFollowingCursor(): void {
+		this.chasingCursor = false;
+		this.getCursorX = null;
 		this.interruptAction = false;
 	}
 
@@ -166,5 +172,28 @@ export class Cat extends Pet {
 			}
 		}
 		this.setAnimation("idle");
+	}
+
+	private async followCursorStep(): Promise<void> {
+		if (!this.getCursorX || this.isDestroyed) return;
+		const { minLeft, maxLeft } = this.getHorizontalBounds();
+
+		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
+		const dx = targetX - this.currentX;
+		if (Math.abs(dx) < 2) {
+			this.setAnimation("idle");
+			return;
+		}
+
+		this.direction = dx < 0 ? -1 : 1;
+		const step = Math.sign(dx) * Math.min(Math.abs(dx), this.cursorMoveDist);
+		this.currentX = Math.max(minLeft, Math.min(maxLeft, this.currentX + step));
+
+		this.setAnimation("run");
+		this.petEl.setCssProps({
+			"--left": `${this.currentX}px`,
+			"--scale-x": `${this.direction}`,
+		});
+		this.tooltipEl?.setCssProps({ "--scale-x": `${this.direction}` });
 	}
 }
