@@ -525,12 +525,11 @@ export default class PetPlugin extends Plugin {
 			return;
 		}
 
-		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET);
-		if (leaves.length === 0) {
+		if (this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length === 0) {
 			await this.openView();
 		}
 
-		for (const leaf of leaves) {
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
 				view.addBallToView(view.getWrapper(), type);
