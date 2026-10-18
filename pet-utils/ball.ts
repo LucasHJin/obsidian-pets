@@ -1,8 +1,8 @@
 import { playBallSound } from "./sounds";
 
 export class Ball {
-	private container: Element;
-	public ballEl: HTMLElement;
+	private container: HTMLElement;
+	ballEl: HTMLElement;
 	private backgroundName: string;
 	private backgroundHeights: Record<string, string> = {
 		default: "80%", // Just in case no others
@@ -28,11 +28,11 @@ export class Ball {
 	private damping = 0.99; // Bounce energy retention (1 = all)
 	private airRes = 0.99; // Air resistance (1 = none)
 	private frameId: number | null = null;
-	public scale: number; // For different ball sizes
+	scale: number;
 
-	public onDestroy?: () => void; // Callback to tie cat to ball being deleted
+	onDestroy?: () => void;
 
-	constructor(container: Element, spriteUrl: string, backgroundImage: string, scale: number) {
+	constructor(container: HTMLElement, spriteUrl: string, backgroundImage: string, scale: number) {
 		this.container = container;
 		this.backgroundName = backgroundImage;
 		this.scale = scale;
@@ -126,11 +126,11 @@ export class Ball {
 	}
 
 	// For tracking for pets
-	public getPosition(): { x: number; y: number } {
+	getPosition(): { x: number; y: number } {
 		return { x: this.x, y: this.y };
 	}
 
-	public destroy() {
+	destroy() {
 		if (this.frameId) {
 			window.cancelAnimationFrame(this.frameId);
 		}

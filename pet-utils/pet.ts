@@ -1,20 +1,20 @@
 import { heartAsset } from "./pet-assets";
 
 // Defines shape for parameters needed to pass in an animation
-export type AnimationConfig = {
+export interface AnimationConfig {
 	name: string;
 	spriteUrl: string; // Link to the spritesheet
 	frameCount: number; // Number of frames in spritesheet
 	frameWidth: number;
 	duration: number; // Of animation (ms)
 	action?: (multiples?: number) => Promise<void> | void;
-};
+}
 
 // Make size changeable
 
 export class Pet {
-	protected container: Element;
-	public petEl!: HTMLElement;
+	protected container: HTMLElement;
+	petEl!: HTMLElement;
 	protected currentX!: number;
 	protected direction = 1; // 1 right, -1 left
 	private currentAnimation = "none";
@@ -35,7 +35,7 @@ export class Pet {
 		"backgrounds/castlebg-1.png": "82.1%",
 		"backgrounds/castlebg-2.png": "74%",
 	};
-	public scale: number; // For different pet sizes
+	scale: number;
 	protected petName: string;
 	protected chasingCursor = false;
 	private getCursorX: (() => number) | null = null;
@@ -45,7 +45,7 @@ export class Pet {
 	private interruptMove: (() => void) | null = null;
 
 	constructor(
-		container: Element,
+		container: HTMLElement,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
@@ -65,7 +65,7 @@ export class Pet {
 
 		window.requestAnimationFrame(() => {
 			// Randomized spawn within middle 80% of container
-			const containerWidth = (this.container as HTMLElement).offsetWidth;
+			const containerWidth = this.container.offsetWidth;
 			const minX = containerWidth * 0.1;
 			const maxX = containerWidth * 0.9;
 			this.currentX = Math.random() * (maxX - minX) + minX;
@@ -151,7 +151,7 @@ export class Pet {
 	protected setupActions() {}
 
 	// Clamp current position within the container (if container resizes)
-	public async clampToContainer() {
+	async clampToContainer() {
 		if (!this.petEl || this.isDestroyed) return;
 
 		const wasAlreadyPaused = this.actionLoopPaused;
@@ -162,7 +162,7 @@ export class Pet {
 
 		// currentX is now the actual visual position (accurate post-freeze)
 		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const containerWidth = this.container.offsetWidth;
 		const minX = petWidth / 2;
 		const maxX = containerWidth - petWidth / 2;
 		const clampedX = Math.max(minX, Math.min(maxX, this.currentX));
@@ -177,7 +177,7 @@ export class Pet {
 	}
 
 	// Update height when background change
-	public updateVerticalPosition(newBackground: string) {
+	updateVerticalPosition(newBackground: string) {
 		this.backgroundName = newBackground;
 		const newTop = this.getGroundTopValue();
 		// Pass a prop for the new height -> CSS instantly reacts to this change
@@ -229,7 +229,7 @@ export class Pet {
 	protected move(duration: number, action?: string): Promise<void> {
 		if (this.actionLoopPaused) return Promise.resolve();
 		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const containerWidth = this.container.offsetWidth;
 
 		// Boundaries for the view
 		const maxLeft = containerWidth - petWidth / 2;
@@ -333,12 +333,12 @@ export class Pet {
 		}
 	}
 
-	public startFollowingCursor(getCursorX: () => number): void {
+	startFollowingCursor(getCursorX: () => number): void {
 		this.getCursorX = getCursorX;
 		this.chasingCursor = true;
 	}
 
-	public stopFollowingCursor(): void {
+	stopFollowingCursor(): void {
 		this.chasingCursor = false;
 		this.getCursorX = null;
 	}
@@ -346,7 +346,7 @@ export class Pet {
 	protected async followCursorStep(): Promise<void> {
 		if (!this.getCursorX || this.isDestroyed) return;
 		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const containerWidth = this.container.offsetWidth;
 		const minLeft = petWidth / 2;
 		const maxLeft = containerWidth - petWidth / 2;
 
@@ -370,7 +370,7 @@ export class Pet {
 	}
 
 	// Destroys pet instance
-	public async destroy() {
+	async destroy() {
 		this.isDestroyed = true;
 		// Death animation (wait for the animation to finish)
 		this.setAnimation("die");
@@ -379,7 +379,7 @@ export class Pet {
 		this.petEl.remove();
 	}
 
-	public destroyImmediate() {
+	destroyImmediate() {
 		this.isDestroyed = true;
 		this.petEl?.remove();
 	}

@@ -4,7 +4,7 @@ import { playPetSound } from "./sounds";
 
 export class Ghost extends Pet {
 	constructor(
-		container: Element,
+		container: HTMLElement,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
@@ -47,7 +47,7 @@ export class Ghost extends Pet {
 		}
 	}
 
-	public override async destroy() {
+	override async destroy() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
 
@@ -61,7 +61,7 @@ export class Ghost extends Pet {
 		}, 1000);
 	}
 
-	public override destroyImmediate() {
+	override destroyImmediate() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
 		this.petEl?.remove();

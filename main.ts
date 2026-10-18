@@ -314,13 +314,13 @@ export default class PetPlugin extends Plugin {
 		});
 	}
 
-	public showAddPetCommand() {
+	showAddPetCommand() {
 		new SelectorModal(this.app, this.PETS, async (value: string, name: string) => {
 			await this.addPet(value, name);
 		}).open();
 	}
 
-	public changeMouseCommand(): void {
+	changeMouseCommand(): void {
 		this.catToyActive = !this.catToyActive;
 		if (this.catToyActive) {
 			this.catToyOverlay = new CatToyOverlay(
@@ -345,7 +345,7 @@ export default class PetPlugin extends Plugin {
 		} else {
 			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
 				if (leaf.view instanceof PetView) {
-					const containerEl = leaf.view.getWrapper() as HTMLElement;
+					const containerEl = leaf.view.getWrapper();
 					const getCursorX = () => {
 						const rect = containerEl.getBoundingClientRect();
 						return this.currentMouseX - rect.left;
@@ -368,12 +368,12 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	public throwBallCommand() {
+	throwBallCommand() {
 		const randomBall = this.BALLS[Math.floor(Math.random() * this.BALLS.length)];
 		void this.addBall(randomBall);
 	}
 
-	public showChooseBackgroundCommand() {
+	showChooseBackgroundCommand() {
 		new SelectorModal(this.app, this.BACKGROUNDS, async (value: string, _name: string) => {
 			await this.chooseBackground(value); // Pass chooseBackground() function to modal
 		}).open();
@@ -411,7 +411,7 @@ export default class PetPlugin extends Plugin {
 		request.onerror = () => console.warn("Failed to delete the old chat index:", request.error);
 	}
 
-	public async chooseBackground(backgroundFile: string): Promise<void> {
+	async chooseBackground(backgroundFile: string): Promise<void> {
 		if (this.instanceData.overlayMode) return;
 
 		// Make sure not already selected background
@@ -441,11 +441,11 @@ export default class PetPlugin extends Plugin {
 	}
 
 	// Getter function to get background in petview.ts
-	public getSelectedBackground(): string {
+	getSelectedBackground(): string {
 		return this.instanceData.selectedBackground;
 	}
 
-	public toggleBackgroundAnimation(value: boolean): void {
+	toggleBackgroundAnimation(value: boolean): void {
 		this.instanceData.animatedBackground = value;
 		void this.saveData(this.instanceData);
 
@@ -460,14 +460,14 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	public toggleSound(value: boolean): void {
+	toggleSound(value: boolean): void {
 		this.instanceData.soundEnabled = value;
 		void this.saveData(this.instanceData);
 		setSoundEnabled(value);
 		if (value && this.catToyActive) startToySound();
 	}
 
-	public updatePetSize(value: number): void {
+	updatePetSize(value: number): void {
 		this.instanceData.petSize = value;
 		void this.saveData(this.instanceData);
 
@@ -490,7 +490,7 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	public async addPet(type: string, name: string): Promise<void> {
+	async addPet(type: string, name: string): Promise<void> {
 		if (!(type in this.instanceData.nextPetIdCounters)) {
 			this.instanceData.nextPetIdCounters[type] = 1;
 		}
@@ -525,7 +525,7 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	public async addBall(type: string): Promise<void> {
+	async addBall(type: string): Promise<void> {
 		if (this.instanceData.overlayMode) {
 			this.overlayView?.spawnBall(type);
 			return;
@@ -544,11 +544,11 @@ export default class PetPlugin extends Plugin {
 	}
 
 	// Getter function to get pet list in petview.ts
-	public getPetList(): PetInstance[] {
+	getPetList(): PetInstance[] {
 		return this.instanceData.pets;
 	}
 
-	public async removePetById(id: string): Promise<void> {
+	async removePetById(id: string): Promise<void> {
 		// Filters out the one with the same id
 		this.instanceData.pets = this.instanceData.pets.filter((p) => p.id !== id);
 		await this.saveData(this.instanceData);
@@ -568,7 +568,7 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
-	public async clearAllPets(): Promise<void> {
+	async clearAllPets(): Promise<void> {
 		// Empties out the entire pet list
 		this.instanceData.pets = [];
 		// Reset all counters back to 1
@@ -593,7 +593,7 @@ export default class PetPlugin extends Plugin {
 	}
 
 	// Switch between panel mode and overlay mode
-	public async setOverlayMode(enabled: boolean): Promise<void> {
+	async setOverlayMode(enabled: boolean): Promise<void> {
 		if (this.instanceData.overlayMode === enabled) return;
 
 		this.instanceData.overlayMode = enabled;

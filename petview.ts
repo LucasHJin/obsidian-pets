@@ -173,7 +173,7 @@ export class PetView extends ItemView {
 		}
 	}
 
-	addPetToView(wrapper: Element, singlePet: PetInstance) {
+	addPetToView(wrapper: HTMLElement, singlePet: PetInstance) {
 		try {
 			const background = this.plugin.getSelectedBackground();
 
@@ -262,7 +262,7 @@ export class PetView extends ItemView {
 		}
 	}
 
-	addBallToView(wrapper: Element, type: string) {
+	addBallToView(wrapper: HTMLElement, type: string) {
 		try {
 			const background = this.plugin.getSelectedBackground();
 			const cleanBallId = type.replace(/^toys\//, "");
@@ -298,8 +298,8 @@ export class PetView extends ItemView {
 	}
 
 	// Getter function to get wrapper of entire pet view
-	getWrapper() {
-		const wrapper = this.containerEl.querySelector(".pet-view-wrapper");
+	getWrapper(): HTMLElement {
+		const wrapper = this.containerEl.querySelector<HTMLElement>(".pet-view-wrapper");
 		if (!wrapper) {
 			throw new Error("pet-view-wrapper not found");
 		}

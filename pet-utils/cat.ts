@@ -8,7 +8,7 @@ export class Cat extends Pet {
 	private interruptAction = false;
 
 	constructor(
-		container: Element,
+		container: HTMLElement,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
@@ -60,23 +60,23 @@ export class Cat extends Pet {
 		playPetSound("cat");
 	}
 
-	public override startFollowingCursor(getCursorX: () => number): void {
+	override startFollowingCursor(getCursorX: () => number): void {
 		super.startFollowingCursor(getCursorX);
 		this.interruptAction = true;
 	}
 
-	public override stopFollowingCursor(): void {
+	override stopFollowingCursor(): void {
 		super.stopFollowingCursor();
 		this.interruptAction = false;
 	}
 
 	// Function to start chasing the ball
-	public startChasingBall(ball: Ball) {
+	startChasingBall(ball: Ball) {
 		this.chasingBall = ball;
 		this.interruptAction = true;
 	}
 	// Function to stop chasing the ball
-	public stopChasingBall() {
+	stopChasingBall() {
 		this.chasingBall = null;
 		this.interruptAction = false;
 	}
@@ -148,7 +148,7 @@ export class Cat extends Pet {
 		}
 		// Container boundaries (stay within the leaf)
 		const petWidth = this.animations["idle"].frameWidth;
-		const containerWidth = (this.container as HTMLElement).offsetWidth;
+		const containerWidth = this.container.offsetWidth;
 		const minLeft = petWidth / 2;
 		const maxLeft = containerWidth - petWidth / 2;
 

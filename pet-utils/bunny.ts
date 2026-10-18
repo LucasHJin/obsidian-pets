@@ -3,7 +3,7 @@ import { playPetSound } from "./sounds";
 
 export class Bunny extends Pet {
 	constructor(
-		container: Element,
+		container: HTMLElement,
 		animations: Record<string, AnimationConfig>,
 		moveDist: number,
 		backgroundName: string,
