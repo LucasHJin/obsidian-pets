@@ -16,6 +16,8 @@ const ANIMATION_NAMES = [
 
 export type AnimationName = (typeof ANIMATION_NAMES)[number];
 
+const MOVE_TIMEOUT_MARGIN = 200;
+
 function isAnimationName(key: string): key is AnimationName {
 	return (ANIMATION_NAMES as readonly string[]).includes(key);
 }
@@ -281,6 +283,7 @@ export class Pet {
 				// settle stops movement
 				if (settled) return;
 				settled = true;
+				window.clearTimeout(timeout);
 				this.petEl.removeEventListener("transitionend", done);
 				this.interruptMove = null;
 				res();
@@ -293,6 +296,7 @@ export class Pet {
 				settle();
 			};
 			this.petEl.addEventListener("transitionend", done);
+			const timeout = window.setTimeout(() => done(), duration + MOVE_TIMEOUT_MARGIN);
 
 			this.interruptMove = settle;
 
