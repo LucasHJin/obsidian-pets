@@ -16,6 +16,8 @@ export class Ball {
 	private damping = 0.99; // Bounce energy retention (1 = all)
 	private airRes = 0.99; // Air resistance (1 = none)
 	private frameId: number | null = null;
+	private readonly lifetimeTimer: number;
+	private isDestroyed = false;
 	scale: number;
 
 	onDestroy?: () => void;
@@ -45,7 +47,7 @@ export class Ball {
 		// Start physics loop
 		this.frameId = window.requestAnimationFrame(() => this.update());
 
-		window.setTimeout(() => this.destroy(), lifetime);
+		this.lifetimeTimer = window.setTimeout(() => this.destroy(), lifetime);
 	}
 
 	// Creates the HTML for ball element
@@ -121,6 +123,9 @@ export class Ball {
 	}
 
 	destroy() {
+		if (this.isDestroyed) return;
+		this.isDestroyed = true;
+		window.clearTimeout(this.lifetimeTimer);
 		if (this.frameId) {
 			window.cancelAnimationFrame(this.frameId);
 		}

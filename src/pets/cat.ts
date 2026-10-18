@@ -79,8 +79,8 @@ export class Cat extends Pet {
 		this.chasingBall = ball;
 		this.interruptAction = true;
 	}
-	// Function to stop chasing the ball
-	stopChasingBall() {
+	stopChasingBall(ball: Ball) {
+		if (this.chasingBall !== ball) return;
 		this.chasingBall = null;
 		this.interruptAction = false;
 	}

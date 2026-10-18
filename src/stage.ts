@@ -100,17 +100,16 @@ export class Stage {
 			this.balls.push({ id, ball });
 
 			const cats = this.pets.filter((p) => p.pet instanceof Cat);
-			if (cats.length > 0) {
-				const randomCat = cats[Math.floor(Math.random() * cats.length)].pet as Cat;
-				randomCat.startChasingBall(ball);
-				ball.onDestroy = () => {
-					randomCat.stopChasingBall();
-					const index = this.balls.findIndex((b) => b.id === id);
-					if (index !== -1) {
-						this.balls.splice(index, 1);
-					}
-				};
-			}
+			const randomCat =
+				cats.length > 0 ? (cats[Math.floor(Math.random() * cats.length)].pet as Cat) : null;
+			randomCat?.startChasingBall(ball);
+			ball.onDestroy = () => {
+				randomCat?.stopChasingBall(ball);
+				const index = this.balls.findIndex((b) => b.ball === ball);
+				if (index !== -1) {
+					this.balls.splice(index, 1);
+				}
+			};
 		} catch (error) {
 			console.error("Failed to add ball:", error);
 		}
@@ -162,10 +161,7 @@ export class Stage {
 			pet.destroyImmediate();
 		}
 		this.pets = [];
-		for (const { ball } of this.balls) {
-			ball.destroy();
-		}
-		this.balls = [];
+		this.destroyBalls();
 	}
 
 	async destroyPets() {
@@ -173,7 +169,7 @@ export class Stage {
 	}
 
 	destroyBalls() {
-		for (const { ball } of this.balls) {
+		for (const { ball } of [...this.balls]) {
 			ball.destroy();
 		}
 	}
