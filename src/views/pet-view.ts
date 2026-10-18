@@ -10,6 +10,8 @@ export const VIEW_TYPE_PET = "pet-view";
 export class PetView extends ItemView {
 	plugin: PetPlugin;
 	stage: Stage | null = null;
+	private backgroundEl: HTMLImageElement | null = null;
+	private snowEl: HTMLImageElement | null = null;
 	private resizeObserver?: ResizeObserver;
 	private resizeTimeout?: number;
 
@@ -62,28 +64,21 @@ export class PetView extends ItemView {
 		this.addAction("plus", "Add a pet", () => {
 			this.plugin.openAddPetPicker();
 		});
+
+		const wrapper = this.contentEl.createDiv({ cls: "pet-view-wrapper" });
+		this.stage = new Stage(wrapper, this.plugin, {
+			getFloor: () => this.getFloor(),
+			ballLifetime: 5000,
+		});
 		this.updateView();
 		this.setupResizeObserver();
 	}
 
 	updateView() {
-		// Get main container (DOM) of the view
-		const container = this.containerEl.children[1];
-
-		// Find/Create wrapper div for the view specifically
-		let wrapper = container.querySelector(".pet-view-wrapper") as HTMLDivElement;
-		if (!wrapper) {
-			wrapper = container.createDiv({ cls: "pet-view-wrapper" });
-		}
-		if (!this.stage) {
-			this.stage = new Stage(wrapper, this.plugin, {
-				getFloor: () => this.getFloor(),
-				ballLifetime: 5000,
-			});
-		}
+		if (!this.stage) return;
 
 		// Update the background
-		this.updateBackground(wrapper);
+		this.updateBackground(this.stage.container);
 		this.stage.updateFloor();
 
 		// Create a set of pet-ids in the view (unique ids, faster lookup)
@@ -102,23 +97,16 @@ export class PetView extends ItemView {
 		// Get selected background
 		const background = this.plugin.getSelectedBackground();
 		const { image, snow } = getBackground(background);
-		const existingBg = wrapper.querySelector(".pet-view-background");
 
-		// Remove existing background
-		if (existingBg) {
-			existingBg.remove();
-		}
-
-		// Remove existing snow gif
-		const existingSnow = wrapper.querySelector(".pet-view-background-animation");
-		if (existingSnow) {
-			existingSnow.remove();
-		}
+		this.backgroundEl?.remove();
+		this.backgroundEl = null;
+		this.snowEl?.remove();
+		this.snowEl = null;
 
 		// Add the new backgrounds
 		if (image) {
 			try {
-				wrapper.createEl("img", {
+				this.backgroundEl = wrapper.createEl("img", {
 					attr: {
 						src: image,
 						alt: "Background",
@@ -132,7 +120,7 @@ export class PetView extends ItemView {
 
 		if (snow && this.plugin.data.animatedBackground) {
 			try {
-				wrapper.createEl("img", {
+				this.snowEl = wrapper.createEl("img", {
 					attr: {
 						src: SNOW_ANIMATION,
 						alt: "Snow falling animation",
@@ -152,15 +140,6 @@ export class PetView extends ItemView {
 		};
 	}
 
-	// Getter function to get wrapper of entire pet view
-	getWrapper(): HTMLElement {
-		const wrapper = this.containerEl.querySelector<HTMLElement>(".pet-view-wrapper");
-		if (!wrapper) {
-			throw new Error("pet-view-wrapper not found");
-		}
-		return wrapper;
-	}
-
 	// Recreates pets from scratch (avoids pet animations getting stuck)
 	resetPets() {
 		this.stage?.clearImmediately();
@@ -168,8 +147,7 @@ export class PetView extends ItemView {
 	}
 
 	private setupResizeObserver() {
-		const container = this.containerEl.children[1] as HTMLElement | undefined;
-		if (!container || typeof ResizeObserver === "undefined") return;
+		if (typeof ResizeObserver === "undefined") return;
 
 		let initialized = false;
 		let lastWidth = 0;
@@ -201,7 +179,7 @@ export class PetView extends ItemView {
 				this.resetPets();
 			}, 250);
 		});
-		this.resizeObserver.observe(container);
+		this.resizeObserver.observe(this.contentEl);
 	}
 
 	// Used to clean up content after view is closed

@@ -403,19 +403,11 @@ export default class PetPlugin extends Plugin {
 	async openView() {
 		if (this.data.overlayMode) return;
 
-		const { workspace } = this.app;
-
-		const leaves = workspace.getLeavesOfType(VIEW_TYPE_PET);
-		if (leaves.length > 0) {
-			await workspace.revealLeaf(leaves[0]);
-			return;
-		}
-
-		const leaf = workspace.getLeftLeaf(true);
-		if (leaf) {
-			await leaf.setViewState({ type: VIEW_TYPE_PET, active: true });
-			await workspace.revealLeaf(leaf);
-		}
+		await this.app.workspace.ensureSideLeaf(VIEW_TYPE_PET, "left", {
+			active: true,
+			split: true,
+			reveal: true,
+		});
 	}
 
 	// Remove the leaf (view) based on its ID
