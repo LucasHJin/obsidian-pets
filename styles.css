@@ -73,7 +73,21 @@
 	background-size: var(--sprite-size);
 	image-rendering: pixelated;
 	transition: left var(--move-duration, 300ms) linear;
+	animation: pet-sprite var(--sprite-duration) steps(var(--frame-count)) infinite;
 	z-index: 100;
+}
+
+.pet-restart {
+	animation: none;
+}
+
+.pet-frozen {
+	transition: none;
+}
+
+.pet-fading {
+	transition: opacity 1s ease;
+	opacity: 0;
 }
 
 .pet-name-tooltip {
@@ -207,7 +221,7 @@ body.cat-toy-hide-cursor {
 	image-rendering: pixelated;
 	pointer-events: none;
 	z-index: 99999;
-	animation: cat-toy-cursor var(--cat-toy-duration) steps(6) infinite;
+	animation: cat-toy-cursor var(--cat-toy-duration) steps(var(--cat-toy-frames)) infinite;
 }
 
 @keyframes pet-sprite {

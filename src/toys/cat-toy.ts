@@ -22,6 +22,7 @@ export class CatToyOverlay {
 			"--cat-toy-frame-size": `${FRAME_WIDTH}px`,
 			"--cat-toy-sprite-width": `${FRAME_COUNT * FRAME_WIDTH}px`,
 			"--cat-toy-offset": `${-FRAME_WIDTH / 4}px`,
+			"--cat-toy-frames": `${FRAME_COUNT}`,
 			"--cat-toy-duration": `${FRAME_COUNT * 100}ms`,
 		});
 

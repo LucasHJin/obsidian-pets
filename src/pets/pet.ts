@@ -225,14 +225,13 @@ export abstract class Pet {
 		}
 
 		const el = this.requirePetEl();
-		el.setCssStyles({ animation: "none" });
+		el.addClass("pet-restart");
 		void el.offsetHeight;
-
-		el.setCssStyles({
-			animation: `pet-sprite ${animation.duration}ms steps(${animation.frameCount}) infinite`,
-		});
+		el.removeClass("pet-restart");
 
 		el.setCssProps({
+			"--sprite-duration": `${animation.duration}ms`,
+			"--frame-count": `${animation.frameCount}`,
 			"--sprite-url": `url(${animation.spriteUrl})`,
 			"--sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
 			"--sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
@@ -245,10 +244,10 @@ export abstract class Pet {
 	protected freezeAtCurrentPosition() {
 		const el = this.requirePetEl();
 		const computedLeft = window.getComputedStyle(el).left;
-		el.setCssStyles({ transition: "none" });
+		el.addClass("pet-frozen");
 		el.setCssProps({ "--left": computedLeft });
 		void el.offsetHeight;
-		el.setCssStyles({ transition: "" });
+		el.removeClass("pet-frozen");
 		this.currentX = parseFloat(computedLeft);
 		this.interruptMove?.(); // directly stop on hover
 	}
@@ -298,7 +297,6 @@ export abstract class Pet {
 
 			const done = (e?: TransitionEvent) => {
 				if (e && (e.target !== el || e.propertyName !== "left")) return;
-				el.setCssStyles({ transition: "" });
 				this.currentX = targetX;
 				settle();
 			};
