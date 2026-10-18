@@ -1,4 +1,4 @@
-import { playBallSound } from "./sounds";
+import { playBallSound } from "../audio/sounds";
 
 export class Ball {
 	private container: HTMLElement;

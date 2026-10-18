@@ -1,5 +1,5 @@
 import { AnimationConfig } from "./pet";
-import { getPetAsset, getToyAsset } from "./pet-assets";
+import { getPetAsset, getToyAsset } from "../catalog/assets";
 
 // Allow for optional pet animations
 type PetAnimations = {

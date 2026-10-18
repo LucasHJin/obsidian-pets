@@ -1,10 +1,10 @@
 import { Plugin, Notice, TFile, WorkspaceLeaf } from "obsidian";
-import { PetView, VIEW_TYPE_PET } from "./petview";
-import { OverlayPetView } from "./overlay";
-import { CatToyOverlay } from "./pet-utils/cat-toy";
-import { setSoundEnabled, playPetSound, startToySound } from "./pet-utils/sounds";
-import { PetSettingTab } from "./settings";
-import { SelectorModal, SelectorOption } from "./modals";
+import { PetView, VIEW_TYPE_PET } from "./views/pet-view";
+import { OverlayPetView } from "./views/overlay-view";
+import { CatToyOverlay } from "./toys/cat-toy";
+import { setSoundEnabled, playPetSound, startToySound } from "./audio/sounds";
+import { PetSettingTab } from "./ui/settings-tab";
+import { SelectorModal, SelectorOption } from "./ui/selector-modal";
 
 export interface PetInstance {
 	id: string; // Unique id

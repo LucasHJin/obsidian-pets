@@ -1,6 +1,6 @@
 import { Pet } from "./pet";
 import { AnimationConfig } from "./pet";
-import { playPetSound } from "./sounds";
+import { playPetSound } from "../audio/sounds";
 
 export class Ghost extends Pet {
 	constructor(

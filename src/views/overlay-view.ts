@@ -1,15 +1,15 @@
-import PetPlugin, { PetInstance } from "./main";
-import { Pet } from "./pet-utils/pet";
-import { Cat } from "./pet-utils/cat";
-import { Bunny } from "./pet-utils/bunny";
-import { Ghost } from "./pet-utils/ghost";
-import { Ball } from "./pet-utils/ball";
+import PetPlugin, { PetInstance } from "../main";
+import { Pet } from "../pets/pet";
+import { Cat } from "../pets/cat";
+import { Bunny } from "../pets/bunny";
+import { Ghost } from "../pets/ghost";
+import { Ball } from "../toys/ball";
 import {
 	getCatAnimations,
 	getBunnyAnimations,
 	getGhostAnimations,
 	getBallAnimations,
-} from "./pet-utils/pet-animations";
+} from "../pets/pet-animations";
 
 export class OverlayPetView {
 	private overlayEl: HTMLElement;

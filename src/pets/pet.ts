@@ -1,4 +1,4 @@
-import { heartAsset } from "./pet-assets";
+import { heartAsset } from "../catalog/assets";
 
 // Defines shape for parameters needed to pass in an animation
 export interface AnimationConfig {

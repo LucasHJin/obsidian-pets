@@ -1,5 +1,5 @@
 import { Pet, AnimationConfig } from "./pet";
-import { playPetSound } from "./sounds";
+import { playPetSound } from "../audio/sounds";
 
 export class Bunny extends Pet {
 	constructor(

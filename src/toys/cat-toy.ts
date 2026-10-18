@@ -1,5 +1,5 @@
-import { catToyAsset } from "./pet-assets";
-import { startToySound, stopToySound } from "./sounds";
+import { catToyAsset } from "../catalog/assets";
+import { startToySound, stopToySound } from "../audio/sounds";
 
 const FRAME_COUNT = 6;
 const FRAME_WIDTH = 32;

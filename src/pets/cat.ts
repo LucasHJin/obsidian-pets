@@ -1,6 +1,6 @@
 import { Pet, AnimationConfig } from "./pet";
-import { Ball } from "./ball";
-import { playPetSound } from "./sounds";
+import { Ball } from "../toys/ball";
+import { playPetSound } from "../audio/sounds";
 
 export class Cat extends Pet {
 	private canFly: boolean;
