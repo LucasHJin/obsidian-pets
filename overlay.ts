@@ -17,7 +17,7 @@ export class OverlayPetView {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
 	private resizeHandler: () => void;
-	private resizeTimer: ReturnType<typeof setTimeout> | null = null;
+	private resizeTimer: number | null = null;
 
 	constructor(plugin: PetPlugin) {
 		this.plugin = plugin;
