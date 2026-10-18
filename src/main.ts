@@ -25,6 +25,8 @@ export default class PetPlugin extends Plugin {
 
 		setSoundEnabled(this.data.soundEnabled);
 
+		const hadPetLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+
 		// Add instance of the view
 		this.registerView(VIEW_TYPE_PET, (leaf) => new PetView(leaf, this));
 
@@ -38,7 +40,8 @@ export default class PetPlugin extends Plugin {
 					this.overlayView.stage.addPet(pet);
 				}
 			} else {
-				const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
+				const isOpen =
+					hadPetLeaf || this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
 				if (!isOpen) {
 					await this.openView();
 				}
