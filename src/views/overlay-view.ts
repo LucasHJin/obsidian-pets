@@ -60,8 +60,7 @@ export class OverlayPetView {
 			window.clearTimeout(this.resizeTimer);
 			this.resizeTimer = null;
 		}
-		void this.stage.destroyPets();
-		this.stage.destroyBalls();
+		this.stage.clearImmediately();
 		this.overlayEl.remove();
 	}
 }

@@ -44,23 +44,11 @@ export class Ghost extends Pet {
 		}
 	}
 
-	override async destroy() {
-		if (this.isDestroyed) return;
-		this.isDestroyed = true;
-
-		// Fade out and then remove (to replace death animation)
+	protected override async playDeathAnimation() {
 		this.petEl.setCssProps({
 			transition: "opacity 1s ease",
 			opacity: "0",
 		});
-		window.setTimeout(() => {
-			this.petEl.remove();
-		}, 1000);
-	}
-
-	override destroyImmediate() {
-		if (this.isDestroyed) return;
-		this.isDestroyed = true;
-		this.petEl?.remove();
+		await new Promise((resolve) => window.setTimeout(resolve, 1000));
 	}
 }

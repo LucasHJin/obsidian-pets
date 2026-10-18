@@ -192,7 +192,6 @@ export class PetView extends ItemView {
 			window.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;
 		}
-		await this.stage?.destroyPets();
-		this.stage?.destroyBalls();
+		this.stage?.clearImmediately();
 	}
 }

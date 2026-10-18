@@ -173,14 +173,6 @@ export class Stage {
 			pet.destroyImmediate();
 		}
 		this.pets = [];
-		this.destroyBalls();
-	}
-
-	async destroyPets() {
-		await Promise.all(this.pets.map(({ pet }) => pet.destroy()));
-	}
-
-	destroyBalls() {
 		for (const { ball } of [...this.balls]) {
 			ball.destroy();
 		}

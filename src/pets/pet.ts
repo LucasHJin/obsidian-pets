@@ -73,6 +73,7 @@ export class Pet {
 		this.petName = petName;
 
 		window.requestAnimationFrame(() => {
+			if (this.isDestroyed) return;
 			// Randomized spawn within middle 80% of container
 			const containerWidth = this.container.offsetWidth;
 			const bounds = this.getHorizontalBounds();
@@ -202,8 +203,7 @@ export class Pet {
 	updateVerticalPosition(newFloor: Floor) {
 		this.floor = newFloor;
 		const newTop = this.getGroundTopValue();
-		// Pass a prop for the new height -> CSS instantly reacts to this change
-		this.petEl.setCssProps({ "--top": newTop });
+		this.petEl?.setCssProps({ "--top": newTop });
 	}
 
 	// Add an animation for the pet
@@ -386,14 +386,18 @@ export class Pet {
 
 	// Destroys pet instance
 	async destroy() {
+		if (this.isDestroyed) return;
 		this.isDestroyed = true;
-		// Death animation (wait for the animation to finish)
+		if (!this.petEl) return;
+		await this.playDeathAnimation();
+		this.petEl.remove();
+	}
+
+	protected async playDeathAnimation() {
 		this.setAnimation("die");
 		await new Promise((resolve) =>
 			window.setTimeout(resolve, this.requireAnimation("die").duration),
 		);
-		// Removes instance from DOM
-		this.petEl.remove();
 	}
 
 	destroyImmediate() {
