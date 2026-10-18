@@ -36,7 +36,7 @@ export default class PetPlugin extends Plugin {
 				await this.closeView();
 				this.overlayView = new OverlayPetView(this, this.mainDocument);
 				for (const pet of this.data.pets) {
-					this.overlayView.addPet(pet);
+					this.overlayView.stage.addPet(pet);
 				}
 			} else {
 				const isOpen = this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
@@ -196,7 +196,7 @@ export default class PetPlugin extends Plugin {
 	private startCursorFollowMode() {
 		if (this.data.overlayMode) {
 			const getCursorX = () => this.currentMouseX;
-			this.overlayView?.startCursorFollow(getCursorX);
+			this.overlayView?.stage.startCursorFollow(getCursorX);
 		} else {
 			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
 				if (leaf.view instanceof PetView) {
@@ -205,7 +205,7 @@ export default class PetPlugin extends Plugin {
 						const rect = containerEl.getBoundingClientRect();
 						return this.currentMouseX - rect.left;
 					};
-					leaf.view.startCursorFollow(getCursorX);
+					leaf.view.stage?.startCursorFollow(getCursorX);
 				}
 			}
 		}
@@ -213,11 +213,11 @@ export default class PetPlugin extends Plugin {
 
 	private stopCursorFollowMode() {
 		if (this.data.overlayMode) {
-			this.overlayView?.stopCursorFollow();
+			this.overlayView?.stage.stopCursorFollow();
 		} else {
 			for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
 				if (leaf.view instanceof PetView) {
-					leaf.view.stopCursorFollow();
+					leaf.view.stage?.stopCursorFollow();
 				}
 			}
 		}
@@ -324,7 +324,7 @@ export default class PetPlugin extends Plugin {
 
 		// Update pet size in overlay mode as well
 		if (this.data.overlayMode) {
-			this.overlayView?.updatePetSize();
+			this.overlayView?.stage.updatePetSize();
 			return;
 		}
 
@@ -334,7 +334,7 @@ export default class PetPlugin extends Plugin {
 			const view = leaf.view;
 			// if is a PetView
 			if (view instanceof PetView) {
-				view.updatePetSize();
+				view.stage?.updatePetSize();
 			}
 		}
 	}
@@ -355,7 +355,7 @@ export default class PetPlugin extends Plugin {
 		playPetSound("spawn");
 
 		if (this.data.overlayMode) {
-			this.overlayView?.addPet({ id, type, name });
+			this.overlayView?.stage.addPet({ id, type, name });
 			return;
 		}
 
@@ -369,14 +369,14 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of leaves) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
-				view.addPetToView(view.getWrapper(), { id, type, name });
+				view.stage?.addPet({ id, type, name });
 			}
 		}
 	}
 
 	async addBall(id: string): Promise<void> {
 		if (this.data.overlayMode) {
-			this.overlayView?.spawnBall(id);
+			this.overlayView?.stage.throwBall(id);
 			return;
 		}
 
@@ -387,7 +387,7 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_PET)) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
-				view.addBallToView(view.getWrapper(), id);
+				view.stage?.throwBall(id);
 			}
 		}
 	}
@@ -403,7 +403,7 @@ export default class PetPlugin extends Plugin {
 		await this.saveSettings();
 
 		if (this.data.overlayMode) {
-			this.overlayView?.removePet(id);
+			this.overlayView?.stage.removePet(id);
 			return;
 		}
 
@@ -412,7 +412,7 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of leaves) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
-				view.removePet(id);
+				view.stage?.removePet(id);
 			}
 		}
 	}
@@ -427,7 +427,7 @@ export default class PetPlugin extends Plugin {
 		await this.saveSettings();
 
 		if (this.data.overlayMode) {
-			this.overlayView?.removeAllPets();
+			this.overlayView?.stage.removeAllPets();
 			return;
 		}
 
@@ -436,7 +436,7 @@ export default class PetPlugin extends Plugin {
 		for (const leaf of leaves) {
 			const view = leaf.view;
 			if (view instanceof PetView) {
-				view.removeAllPets();
+				view.stage?.removeAllPets();
 			}
 		}
 	}
@@ -452,7 +452,7 @@ export default class PetPlugin extends Plugin {
 			await this.closeView();
 			this.overlayView = new OverlayPetView(this, this.mainDocument);
 			for (const pet of this.data.pets) {
-				this.overlayView.addPet(pet);
+				this.overlayView.stage.addPet(pet);
 			}
 		} else {
 			if (this.overlayView) {
