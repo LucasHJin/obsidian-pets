@@ -97,26 +97,26 @@
 	opacity: 1;
 }
 
-.selector-button {
-	all: unset;
+.modal button.selector-button {
 	cursor: pointer;
 	display: block;
 	width: 100%;
+	height: auto;
 	padding: 1vh 0;
 	margin: 0.5vh 0;
+	border: none;
 	border-radius: 8px;
 	transition: background-color 0.2s ease;
 	text-align: center;
 	line-height: normal;
 	font-size: 1.1em;
-	background-color: var(
-		--background-primary
-	) !important; /* !important to override the default style */
-	box-shadow: none !important;
+	font-weight: inherit;
+	background-color: var(--background-primary);
+	box-shadow: none;
 }
 
-.selector-button:hover {
-	background-color: var(--background-secondary-alt) !important;
+.modal button.selector-button:hover {
+	background-color: var(--background-secondary-alt);
 }
 
 .pet-name-title {
@@ -133,10 +133,10 @@
 	align-items: flex-start;
 }
 
-.pet-name-input {
+.pet-name-form .pet-name-input {
 	width: 100%;
 	flex: 1;
-	padding: 0.5em !important;
+	padding: 0.5em;
 }
 
 .pet-name-button {
@@ -188,8 +188,8 @@
 	}
 }
 
-.cat-toy-hide-cursor {
-	cursor: none !important;
+body.cat-toy-hide-cursor {
+	cursor: none;
 }
 
 .cat-toy-cursor {
@@ -229,52 +229,47 @@
 }
 
 /* Make Pet View action buttons always visible */
-.workspace-leaf:has(.pet-view-wrapper) {
-	display: flex !important;
-	flex-direction: column-reverse !important;
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header {
+	display: flex;
+	min-height: 36px;
+	width: 100%;
+	order: 2;
 }
 
-.workspace-leaf:has(.pet-view-wrapper) .view-header {
-	display: flex !important;
-	min-height: 36px !important;
-	width: 100% !important;
-	order: 2 !important;
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-content {
+	order: 1;
+	flex: 1;
+	padding: 8px;
 }
 
-.workspace-leaf:has(.pet-view-wrapper) .view-content {
-	order: 1 !important;
-	flex: 1 !important;
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-title {
+	display: flex;
+	order: -1;
+	margin-right: auto;
 }
 
-.workspace-leaf:has(.pet-view-wrapper) .view-header-title {
-	display: flex !important;
-	order: -1 !important;
-	margin-right: auto !important;
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-actions {
+	display: flex;
+	width: auto;
+	height: auto;
+	visibility: visible;
+	opacity: 1;
 }
 
-.workspace-leaf:has(.pet-view-wrapper) .view-actions {
-	display: flex !important;
-	width: auto !important;
-	height: auto !important;
-	visibility: visible !important;
-	opacity: 1 !important;
-}
-
-.workspace-leaf:has(.pet-view-wrapper) .view-action {
-	display: flex !important;
-	width: 32px !important;
-	height: 32px !important;
-	opacity: 1 !important;
-}
-
-.workspace-leaf:has(.pet-view-wrapper) .view-content {
-	padding: 8px !important;
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-action {
+	display: flex;
+	width: 32px;
+	height: 32px;
+	opacity: 1;
 }
 
 /* Hide everything in the header except custom buttons */
-.workspace-leaf:has(.pet-view-wrapper) .view-header-nav-buttons,
-.workspace-leaf:has(.pet-view-wrapper) .view-header-icon,
-.workspace-leaf:has(.pet-view-wrapper) .view-action.mod-bookmark,
-.workspace-leaf:has(.pet-view-wrapper) .view-actions > .clickable-icon:last-child {
-	display: none !important;
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-nav-buttons,
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-icon,
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-action.mod-bookmark,
+.workspace-leaf
+	> .workspace-leaf-content[data-type="pet-view"]
+	.view-actions
+	> .clickable-icon:last-child {
+	display: none;
 }
