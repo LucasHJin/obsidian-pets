@@ -20,10 +20,7 @@ export default defineConfig([
 			},
 		},
 		rules: {
-			"obsidianmd/ui/sentence-case": [
-				"warn",
-				{ enforceCamelCaseLower: true, ignoreWords: ["RAG"] },
-			],
+			"obsidianmd/ui/sentence-case": ["warn", { enforceCamelCaseLower: true }],
 		},
 	},
 ]);
