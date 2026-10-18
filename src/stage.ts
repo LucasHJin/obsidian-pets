@@ -18,12 +18,18 @@ interface StageOptions {
 export class Stage {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
+	private getCursorX: (() => number) | null = null;
 
 	constructor(
 		readonly container: HTMLElement,
 		private readonly plugin: PetPlugin,
 		private readonly options: StageOptions,
-	) {}
+	) {
+		const getClientX = this.plugin.getCatToyClientX();
+		if (getClientX) {
+			this.startCursorFollow(getClientX);
+		}
+	}
 
 	addPet(singlePet: PetInstance) {
 		try {
@@ -42,6 +48,9 @@ export class Stage {
 					singlePet.name,
 					petType.flying,
 				);
+				if (this.getCursorX) {
+					cat.startFollowingCursor(this.getCursorX);
+				}
 				this.pets.push({ id: singlePet.id, pet: cat });
 			} else if (petType?.species === "bunny") {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
@@ -117,6 +126,7 @@ export class Stage {
 
 	startCursorFollow(getClientX: () => number) {
 		const getCursorX = () => getClientX() - this.container.getBoundingClientRect().left;
+		this.getCursorX = getCursorX;
 		for (const { pet } of this.pets) {
 			if (pet instanceof Cat) {
 				pet.startFollowingCursor(getCursorX);
@@ -125,6 +135,7 @@ export class Stage {
 	}
 
 	stopCursorFollow() {
+		this.getCursorX = null;
 		for (const { pet } of this.pets) {
 			if (pet instanceof Cat) {
 				pet.stopFollowingCursor();

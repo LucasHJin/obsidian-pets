@@ -189,6 +189,11 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
+	getCatToyClientX(): (() => number) | null {
+		const toy = this.catToy;
+		return toy ? () => toy.getClientX() : null;
+	}
+
 	private startCursorFollowMode(toy: CatToyOverlay) {
 		for (const stage of this.getStages()) {
 			stage.startCursorFollow(() => toy.getClientX());
