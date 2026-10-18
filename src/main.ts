@@ -14,9 +14,7 @@ import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from
 export default class PetPlugin extends Plugin {
 	data!: PetPluginData;
 	private overlayView: OverlayPetView | null = null;
-	private catToyActive = false;
-	private catToyOverlay: CatToyOverlay | null = null;
-	private currentMouseX = 0;
+	private catToy: CatToyOverlay | null = null;
 
 	private get mainDocument(): Document {
 		return this.app.workspace.containerEl.doc;
@@ -181,32 +179,19 @@ export default class PetPlugin extends Plugin {
 	}
 
 	toggleCatToy(): void {
-		this.catToyActive = !this.catToyActive;
-		if (this.catToyActive) {
-			this.catToyOverlay = new CatToyOverlay(this.mainDocument, this.data.petSize, (x) => {
-				this.currentMouseX = x;
-			});
-			this.startCursorFollowMode();
-		} else {
-			this.catToyOverlay?.destroy();
-			this.catToyOverlay = null;
+		if (this.catToy) {
+			this.catToy.destroy();
+			this.catToy = null;
 			this.stopCursorFollowMode();
+		} else {
+			this.catToy = new CatToyOverlay(this.mainDocument, this.data.petSize);
+			this.startCursorFollowMode(this.catToy);
 		}
 	}
 
-	private startCursorFollowMode() {
-		if (this.data.overlayMode) {
-			const getCursorX = () => this.currentMouseX;
-			this.overlayView?.stage.startCursorFollow(getCursorX);
-		} else {
-			for (const view of this.getPetViews()) {
-				const containerEl = view.getWrapper();
-				const getCursorX = () => {
-					const rect = containerEl.getBoundingClientRect();
-					return this.currentMouseX - rect.left;
-				};
-				view.stage?.startCursorFollow(getCursorX);
-			}
+	private startCursorFollowMode(toy: CatToyOverlay) {
+		for (const stage of this.getStages()) {
+			stage.startCursorFollow(() => toy.getClientX());
 		}
 	}
 
@@ -229,9 +214,9 @@ export default class PetPlugin extends Plugin {
 	}
 
 	override onunload() {
-		if (this.catToyOverlay) {
-			this.catToyOverlay.destroy();
-			this.catToyOverlay = null;
+		if (this.catToy) {
+			this.catToy.destroy();
+			this.catToy = null;
 		}
 		if (this.overlayView) {
 			this.overlayView.destroy();
@@ -291,14 +276,14 @@ export default class PetPlugin extends Plugin {
 		this.data.soundEnabled = enabled;
 		void this.saveSettings();
 		setSoundEnabled(enabled);
-		if (enabled && this.catToyActive) startToySound();
+		if (enabled && this.catToy) startToySound();
 	}
 
 	setPetSize(size: number): void {
 		this.data.petSize = size;
 		void this.saveSettings();
 
-		this.catToyOverlay?.updateSize(size);
+		this.catToy?.updateSize(size);
 
 		for (const stage of this.getStages()) {
 			stage.updatePetSize();

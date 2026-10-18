@@ -116,7 +116,8 @@ export class Stage {
 		}
 	}
 
-	startCursorFollow(getCursorX: () => number) {
+	startCursorFollow(getClientX: () => number) {
+		const getCursorX = () => getClientX() - this.container.getBoundingClientRect().left;
 		for (const { pet } of this.pets) {
 			if (pet instanceof Cat) {
 				pet.startFollowingCursor(getCursorX);

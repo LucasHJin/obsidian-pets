@@ -4,12 +4,14 @@ import { startToySound, stopToySound } from "../audio/sounds";
 const FRAME_COUNT = 6;
 const FRAME_WIDTH = 32;
 
+let lastClientX = 0;
+
 export class CatToyOverlay {
 	private doc: Document;
 	private cursorEl: HTMLElement;
 	private mouseMoveHandler: (e: MouseEvent) => void;
 
-	constructor(doc: Document, petSize: number, onMouseMove: (x: number) => void) {
+	constructor(doc: Document, petSize: number) {
 		this.doc = doc;
 		this.cursorEl = doc.body.createDiv({ cls: "cat-toy-cursor" });
 		this.cursorEl.setCssProps({
@@ -30,11 +32,15 @@ export class CatToyOverlay {
 				"--cursor-x": `${e.clientX}px`,
 				"--cursor-y": `${e.clientY}px`,
 			});
-			onMouseMove(e.clientX);
+			lastClientX = e.clientX;
 		};
 		doc.addEventListener("mousemove", this.mouseMoveHandler);
 
 		startToySound();
+	}
+
+	getClientX(): number {
+		return lastClientX;
 	}
 
 	updateSize(petSize: number) {
