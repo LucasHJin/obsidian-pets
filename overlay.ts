@@ -14,14 +14,18 @@ import {
 export class OverlayPetView {
 	private overlayEl: HTMLElement;
 	private plugin: PetPlugin;
+	private doc: Document;
+	private win: Window;
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
 	private resizeHandler: () => void;
 	private resizeTimer: number | null = null;
 
-	constructor(plugin: PetPlugin) {
+	constructor(plugin: PetPlugin, doc: Document) {
 		this.plugin = plugin;
-		this.overlayEl = activeDocument.body.createDiv({ cls: "pet-overlay-container" });
+		this.doc = doc;
+		this.win = doc.win;
+		this.overlayEl = doc.body.createDiv({ cls: "pet-overlay-container" });
 		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {
@@ -32,7 +36,7 @@ export class OverlayPetView {
 				void Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
 			}, 100);
 		};
-		window.addEventListener("resize", this.resizeHandler);
+		this.win.addEventListener("resize", this.resizeHandler);
 	}
 
 	// Lowers the overlay bound to not cover Obsidian top drag region (Electron's drag region ignores pointer events)
@@ -40,12 +44,12 @@ export class OverlayPetView {
 		const selectors = [".titlebar", ".workspace-tab-header-container"]; // Need second selector for mac
 		const candidates: HTMLElement[] = [];
 		for (const sel of selectors) {
-			candidates.push(...Array.from(activeDocument.body.querySelectorAll<HTMLElement>(sel)));
+			candidates.push(...Array.from(this.doc.body.querySelectorAll<HTMLElement>(sel)));
 		}
 
 		let topOffset = 0;
 		for (const el of candidates) {
-			const style = getComputedStyle(el);
+			const style = this.win.getComputedStyle(el);
 			const region =
 				style.getPropertyValue("-webkit-app-region") ||
 				(style as unknown as Record<string, string>)["webkitAppRegion"] ||
@@ -188,7 +192,7 @@ export class OverlayPetView {
 	}
 
 	destroy() {
-		window.removeEventListener("resize", this.resizeHandler);
+		this.win.removeEventListener("resize", this.resizeHandler);
 		if (this.resizeTimer !== null) {
 			window.clearTimeout(this.resizeTimer);
 			this.resizeTimer = null;

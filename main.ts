@@ -154,6 +154,10 @@ export default class PetPlugin extends Plugin {
 		{ value: "backgrounds/castlebg-2.png", label: "Castle #2" },
 	];
 
+	private get mainDocument(): Document {
+		return this.app.workspace.containerEl.doc;
+	}
+
 	async onload(): Promise<void> {
 		// Loads saved data and merges with current data
 		try {
@@ -172,7 +176,7 @@ export default class PetPlugin extends Plugin {
 			if (this.instanceData.overlayMode) {
 				// Close any leafs if they appear from a restored layout
 				await this.closeView();
-				this.overlayView = new OverlayPetView(this);
+				this.overlayView = new OverlayPetView(this, this.mainDocument);
 				for (const pet of this.instanceData.pets) {
 					this.overlayView.addPet(pet);
 				}
@@ -319,9 +323,13 @@ export default class PetPlugin extends Plugin {
 	public changeMouseCommand(): void {
 		this.catToyActive = !this.catToyActive;
 		if (this.catToyActive) {
-			this.catToyOverlay = new CatToyOverlay(this.instanceData.petSize, (x) => {
-				this.currentMouseX = x;
-			});
+			this.catToyOverlay = new CatToyOverlay(
+				this.mainDocument,
+				this.instanceData.petSize,
+				(x) => {
+					this.currentMouseX = x;
+				},
+			);
 			this.startCursorFollowMode();
 		} else {
 			this.catToyOverlay?.destroy();
@@ -593,7 +601,7 @@ export default class PetPlugin extends Plugin {
 
 		if (enabled) {
 			await this.closeView();
-			this.overlayView = new OverlayPetView(this);
+			this.overlayView = new OverlayPetView(this, this.mainDocument);
 			for (const pet of this.instanceData.pets) {
 				this.overlayView.addPet(pet);
 			}

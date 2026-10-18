@@ -5,11 +5,13 @@ const FRAME_COUNT = 6;
 const FRAME_WIDTH = 32;
 
 export class CatToyOverlay {
+	private doc: Document;
 	private cursorEl: HTMLElement;
 	private mouseMoveHandler: (e: MouseEvent) => void;
 
-	constructor(petSize: number, onMouseMove: (x: number) => void) {
-		this.cursorEl = activeDocument.body.createDiv({ cls: "cat-toy-cursor" });
+	constructor(doc: Document, petSize: number, onMouseMove: (x: number) => void) {
+		this.doc = doc;
+		this.cursorEl = doc.body.createDiv({ cls: "cat-toy-cursor" });
 		this.cursorEl.setCssProps({
 			"--cat-toy-url": `url(${catToyAsset})`,
 			"--cursor-x": "-100px",
@@ -21,7 +23,7 @@ export class CatToyOverlay {
 			"--cat-toy-duration": `${FRAME_COUNT * 100}ms`,
 		});
 
-		activeDocument.body.addClass("cat-toy-hide-cursor");
+		doc.body.addClass("cat-toy-hide-cursor");
 
 		this.mouseMoveHandler = (e: MouseEvent) => {
 			this.cursorEl.setCssProps({
@@ -30,7 +32,7 @@ export class CatToyOverlay {
 			});
 			onMouseMove(e.clientX);
 		};
-		activeDocument.addEventListener("mousemove", this.mouseMoveHandler);
+		doc.addEventListener("mousemove", this.mouseMoveHandler);
 
 		startToySound();
 	}
@@ -43,8 +45,8 @@ export class CatToyOverlay {
 
 	destroy() {
 		stopToySound();
-		activeDocument.removeEventListener("mousemove", this.mouseMoveHandler);
-		activeDocument.body.removeClass("cat-toy-hide-cursor");
+		this.doc.removeEventListener("mousemove", this.mouseMoveHandler);
+		this.doc.body.removeClass("cat-toy-hide-cursor");
 		this.cursorEl.remove();
 	}
 }
