@@ -3,6 +3,8 @@ import { Ball } from "../toys/ball";
 import { Floor } from "../floor";
 import { playPetSound } from "../audio/sounds";
 
+const PASS_GUARD_DELAY = 100;
+
 export class Cat extends Pet {
 	private canFly: boolean;
 	private chasingBall: Ball | null = null;
@@ -85,63 +87,42 @@ export class Cat extends Pet {
 		this.interruptAction = false;
 	}
 
-	// Overwrite action loop function to add flying for witch cat + chasing ball logic
-	protected override async startActionLoop() {
-		function getRandDelay(min: number, max: number, multiple: number): number {
-			const random = Math.random() * (max - min) + min;
-			return Math.round(random / multiple) * multiple;
-		}
-
-		const ACTIONS = this.getAnimationNames().filter(
-			(a) => a !== "die" && a !== "run" && a !== "fly",
-		);
-
-		while (!this.isDestroyed) {
-			// Check if cat should be following the cursor (more important than chasing a ball)
-			if (this.chasingCursor) {
-				this.interruptAction = false;
-				while (this.chasingCursor && !this.isDestroyed) {
-					await this.followCursorStep();
-					await new Promise((res) => window.setTimeout(res, 100));
-				}
-				this.freezeAtCurrentPosition();
-				this.setAnimation("idle");
-			} else if (this.chasingBall) {
-				// Check if the cat should be chasing a ball
-				// Reset interrupt immediately so it doesn't stop the loop ahead of time
-				this.interruptAction = false;
-				// Chase the ball until it's destroyed
-				while (this.chasingBall && !this.isDestroyed) {
-					await this.chaseBall();
-					await new Promise((res) => window.setTimeout(res, 100)); // Small delay to avoid tight loop
-				}
-				// Stop at current position to avoid gliding animation
-				this.freezeAtCurrentPosition();
-				this.setAnimation("idle");
-			} else {
-				// Check hover before and after
-				while (this.actionLoopPaused && !this.isDestroyed) {
-					await new Promise((resolve) => window.setTimeout(resolve, 100));
-				}
-				if (this.isDestroyed) break;
-
-				// Normal behavior
-				const randomAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
-				await this.performAction(randomAction);
-
-				while (this.actionLoopPaused && !this.isDestroyed) {
-					await new Promise((resolve) => window.setTimeout(resolve, 100));
-				}
-				if (this.isDestroyed) break;
-
-				const movingAnimation = this.canFly ? (Math.random() < 0.3 ? "fly" : "run") : "run";
-
-				const moving = this.requireAnimation(movingAnimation);
-				const delay = getRandDelay(3000, 8000, moving.duration);
-				await this.performAction(movingAnimation, Math.floor(delay / moving.duration));
-				await new Promise((resolve) => window.setTimeout(resolve, 100));
+	protected override async runPriorityBehaviour(): Promise<boolean> {
+		if (this.chasingCursor) {
+			this.interruptAction = false;
+			while (this.chasingCursor && !this.isDestroyed) {
+				await this.followCursorStep();
+				await new Promise((res) => window.setTimeout(res, 100));
 			}
+			this.freezeAtCurrentPosition();
+			this.setAnimation("idle");
+			return true;
 		}
+		if (this.chasingBall) {
+			this.interruptAction = false;
+			while (this.chasingBall && !this.isDestroyed) {
+				await this.chaseBall();
+				await new Promise((res) => window.setTimeout(res, 100));
+			}
+			this.freezeAtCurrentPosition();
+			this.setAnimation("idle");
+			return true;
+		}
+		return false;
+	}
+
+	protected override async runRoutine(): Promise<void> {
+		await super.runRoutine();
+		if (this.isDestroyed) return;
+		await new Promise((resolve) => window.setTimeout(resolve, PASS_GUARD_DELAY));
+	}
+
+	protected override routineActions(): AnimationName[] {
+		return super.routineActions().filter((name) => name !== "fly");
+	}
+
+	protected override movingAnimation(): AnimationName {
+		return this.canFly && Math.random() < 0.3 ? "fly" : "run";
 	}
 
 	// Function to chase the ball

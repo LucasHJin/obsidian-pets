@@ -24,24 +24,19 @@ export class Ghost extends Pet {
 		await new Promise((res) => window.setTimeout(res, this.animations["idle"].duration));
 	}
 
-	// Only idle + occasionally move
-	protected override async startActionLoop() {
-		while (!this.isDestroyed) {
-			// Random chance: either stay idle or move then idle again
-			const shouldMove = Math.random() < 0.9;
+	protected override async runRoutine(): Promise<void> {
+		const shouldMove = Math.random() < 0.9;
 
-			if (shouldMove) {
-				const repeats = 3 + Math.floor(Math.random() * 6);
-				for (let i = 0; i < repeats; i++) {
-					await this.move(this.animations["idle"].duration, "idle");
-				}
+		if (shouldMove) {
+			const repeats = 3 + Math.floor(Math.random() * 6);
+			for (let i = 0; i < repeats; i++) {
+				await this.move(this.animations["idle"].duration, "idle");
 			}
-
-			// Always idle afterwards (small amount of time)
-			await this.performAction("idle");
-			const delay2 = 2000 + Math.random() * 3000;
-			await new Promise((res) => window.setTimeout(res, delay2));
 		}
+
+		await this.performAction("idle");
+		const delay2 = 2000 + Math.random() * 3000;
+		await new Promise((res) => window.setTimeout(res, delay2));
 	}
 
 	protected override async playDeathAnimation() {

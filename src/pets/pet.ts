@@ -22,6 +22,11 @@ function isAnimationName(key: string): key is AnimationName {
 	return (ANIMATION_NAMES as readonly string[]).includes(key);
 }
 
+function getRandDelay(min: number, max: number, multiple: number): number {
+	const random = Math.random() * (max - min) + min;
+	return Math.round(random / multiple) * multiple;
+}
+
 // Defines shape for parameters needed to pass in an animation
 export interface AnimationConfig {
 	spriteUrl: string; // Link to the spritesheet
@@ -53,6 +58,7 @@ export class Pet {
 	protected cursorMoveDist: number; // Per-pet speed variation when following cursor
 	protected tooltipEl!: HTMLElement;
 	protected actionLoopPaused = false;
+	private pauseWaiters: (() => void)[] = [];
 	private interruptMove: (() => void) | null = null;
 
 	constructor(
@@ -127,13 +133,13 @@ export class Pet {
 	// Sets up the listeners on the pets
 	protected setupHoverListeners() {
 		this.petEl.addEventListener("mouseenter", () => {
-			this.actionLoopPaused = true;
+			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
 		});
 
 		this.petEl.addEventListener("mouseleave", () => {
-			this.actionLoopPaused = false;
+			this.resumeActionLoop();
 		});
 
 		this.petEl.addEventListener("click", () => {
@@ -184,7 +190,7 @@ export class Pet {
 
 		const wasAlreadyPaused = this.actionLoopPaused;
 		if (!wasAlreadyPaused) {
-			this.actionLoopPaused = true;
+			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
 		}
 
@@ -196,7 +202,7 @@ export class Pet {
 		}
 
 		if (!wasAlreadyPaused) {
-			this.actionLoopPaused = false;
+			this.resumeActionLoop();
 		}
 	}
 
@@ -311,44 +317,66 @@ export class Pet {
 		});
 	}
 
-	// Main loop -> picks random actions
+	protected pauseActionLoop() {
+		this.actionLoopPaused = true;
+	}
+
+	protected resumeActionLoop() {
+		this.actionLoopPaused = false;
+		this.releasePauseWaiters();
+	}
+
+	protected async waitWhilePaused(): Promise<void> {
+		while (this.actionLoopPaused && !this.isDestroyed) {
+			await new Promise<void>((resolve) => {
+				this.pauseWaiters.push(resolve);
+			});
+		}
+	}
+
+	private releasePauseWaiters() {
+		const waiters = this.pauseWaiters;
+		this.pauseWaiters = [];
+		for (const resolve of waiters) {
+			resolve();
+		}
+	}
+
 	protected async startActionLoop() {
-		// Gets random delay that is a multiple of the run animation time
-		function getRandDelay(min: number, max: number, multiple: number): number {
-			const random = Math.random() * (max - min) + min;
-			return Math.round(random / multiple) * multiple;
-		}
-
-		// Possible actions excluding dieing and running
-		const ACTIONS = this.getAnimationNames().filter((a) => a !== "die" && a !== "run");
-
 		while (!this.isDestroyed) {
-			// Check if is hovered
-			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise((resolve) => window.setTimeout(resolve, 100));
+			const tookOver = await this.runPriorityBehaviour();
+			if (!tookOver) {
+				await this.runRoutine();
 			}
-
-			if (this.isDestroyed) {
-				break;
-			}
-
-			// Pick and run a random action
-			const randomAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
-			await this.performAction(randomAction);
-
-			while (this.actionLoopPaused && !this.isDestroyed) {
-				await new Promise((resolve) => window.setTimeout(resolve, 100));
-			}
-
-			if (this.isDestroyed) {
-				break;
-			}
-
-			// Go back to the running action
-			const run = this.requireAnimation("run");
-			const delay = getRandDelay(3000, 8000, run.duration);
-			await this.performAction("run", Math.floor(delay / run.duration));
 		}
+	}
+
+	protected runPriorityBehaviour(): Promise<boolean> {
+		return Promise.resolve(false);
+	}
+
+	protected async runRoutine(): Promise<void> {
+		await this.waitWhilePaused();
+		if (this.isDestroyed) return;
+
+		const actions = this.routineActions();
+		await this.performAction(actions[Math.floor(Math.random() * actions.length)]);
+
+		await this.waitWhilePaused();
+		if (this.isDestroyed) return;
+
+		const movingAnimation = this.movingAnimation();
+		const moving = this.requireAnimation(movingAnimation);
+		const delay = getRandDelay(3000, 8000, moving.duration);
+		await this.performAction(movingAnimation, Math.floor(delay / moving.duration));
+	}
+
+	protected routineActions(): AnimationName[] {
+		return this.getAnimationNames().filter((name) => name !== "die" && name !== "run");
+	}
+
+	protected movingAnimation(): AnimationName {
+		return "run";
 	}
 
 	startFollowingCursor(getCursorX: () => number): void {
@@ -388,6 +416,7 @@ export class Pet {
 	async destroy() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
+		this.releasePauseWaiters();
 		if (!this.petEl) return;
 		await this.playDeathAnimation();
 		this.petEl.remove();
@@ -402,6 +431,7 @@ export class Pet {
 
 	destroyImmediate() {
 		this.isDestroyed = true;
+		this.releasePauseWaiters();
 		this.petEl?.remove();
 	}
 }
