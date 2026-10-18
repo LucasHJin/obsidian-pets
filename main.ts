@@ -1,4 +1,4 @@
-import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
+import { Plugin, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./petview";
 import { OverlayPetView } from "./overlay";
 import { CatToyOverlay } from "./pet-utils/cat-toy";
@@ -299,16 +299,14 @@ export default class PetPlugin extends Plugin {
 		];
 
 		this.app.workspace.onLayoutReady(() => {
-			// Small delay to let initial file loading finish (so that not all files are processed in refresh)
-			window.setTimeout(() => {
-				this.registerEvent(
-					this.app.vault.on("create", (file) => {
-						const randomMessage =
-							NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
-						new Notice(randomMessage);
-					}),
-				);
-			}, 1000); // Wait 1 second after layout is ready
+			this.registerEvent(
+				this.app.vault.on("create", (file) => {
+					if (!(file instanceof TFile) || file.extension !== "md") return;
+					const randomMessage =
+						NEW_NOTE_MESSAGES[Math.floor(Math.random() * NEW_NOTE_MESSAGES.length)];
+					new Notice(randomMessage);
+				}),
+			);
 		});
 	}
 
