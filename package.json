@@ -10,7 +10,8 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write .",
-		"format:check": "prettier --check ."
+		"format:check": "prettier --check .",
+		"test": "vitest run"
 	},
 	"keywords": [],
 	"author": "Lucas Jin",
@@ -24,6 +25,8 @@
 		"obsidian": "1.14.4",
 		"prettier": "3.9.9",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "8.71.1"
+		"typescript-eslint": "8.71.1",
+		"vite": "8.3.2",
+		"vitest": "5.0.3"
 	}
 }

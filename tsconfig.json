@@ -11,5 +11,5 @@
 		"lib": ["DOM", "ES2018"],
 		"types": []
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts", "tests/**/*.ts"]
 }
