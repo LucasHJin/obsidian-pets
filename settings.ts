@@ -55,7 +55,7 @@ export class PetSettingTab extends PluginSettingTab {
 
 			new Setting(containerEl)
 				.setName("Animations")
-				.setDesc("Toggle the background's animation ON or OFF.")
+				.setDesc("Toggle the background's animation on or off.")
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.instanceData.animatedBackground)
@@ -126,7 +126,7 @@ export class PetSettingTab extends PluginSettingTab {
 		const hasGemini = !!this.plugin.instanceData.geminiApiKey?.trim();
 		const hasOpenAI = !!this.plugin.instanceData.openAiApiKey?.trim();
 		new Setting(containerEl)
-			.setName("Active AI Model")
+			.setName("Active AI model")
 			.setDesc("Choose which model to use for chat interactions.")
 			.addDropdown((dropdown) => {
 				dropdown.addOption("none", "");

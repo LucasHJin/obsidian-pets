@@ -57,12 +57,11 @@ export class Ball {
 		this.vy = (Math.random() - 0.5) * 8;
 
 		// Start physics loop
-		this.update = this.update.bind(this);
-		this.frameId = requestAnimationFrame(this.update);
+		this.frameId = window.requestAnimationFrame(() => this.update());
 
 		// Auto-destroy (longer in overlay mode since there's more space to bounce around)
 		const lifetime = this.backgroundName === "overlay" ? 6000 : 5000;
-		activeWindow.setTimeout(() => this.destroy(), lifetime);
+		window.setTimeout(() => this.destroy(), lifetime);
 	}
 
 	// Creates the HTML for ball element
@@ -131,7 +130,7 @@ export class Ball {
 		});
 
 		// Loop (schedule itself to run on next frame)
-		this.frameId = requestAnimationFrame(this.update);
+		this.frameId = window.requestAnimationFrame(() => this.update());
 	}
 
 	// For tracking for pets
@@ -141,7 +140,7 @@ export class Ball {
 
 	public destroy() {
 		if (this.frameId) {
-			cancelAnimationFrame(this.frameId);
+			window.cancelAnimationFrame(this.frameId);
 		}
 		this.ballEl.remove();
 		// Run the onDestroy callback to cleanup the pet action and ball array

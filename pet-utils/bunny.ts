@@ -31,19 +31,13 @@ export class Bunny extends Pet {
 				} else if (key === "like" || key === "sleep" || key == "liedown") {
 					const extensionAmount = Math.floor(Math.random() * 7) + 6;
 					await new Promise((resolve) =>
-						activeWindow.setTimeout(
-							resolve,
-							this.animations[key].duration * extensionAmount,
-						),
+						window.setTimeout(resolve, this.animations[key].duration * extensionAmount),
 					);
 				} else {
 					// Idle
 					const extensionAmount = Math.floor(Math.random() * 2) + 2;
 					await new Promise((resolve) =>
-						activeWindow.setTimeout(
-							resolve,
-							this.animations[key].duration * extensionAmount,
-						),
+						window.setTimeout(resolve, this.animations[key].duration * extensionAmount),
 					);
 				}
 			};

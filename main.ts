@@ -311,7 +311,7 @@ export default class PetPlugin extends Plugin {
 		// Add command to manually index vault (also do this onload if not indexed yet)
 		this.addCommand({
 			id: "manual-index-vault",
-			name: "Index Vault for RAG",
+			name: "Index vault for RAG",
 			callback: async () => {
 				if (!this.instanceData.openAiApiKey) {
 					new Notice("Set your OpenAI API key first.");
@@ -393,7 +393,7 @@ export default class PetPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => {
 			// Small delay to let initial file loading finish (so that not all files are processed in refresh)
-			activeWindow.setTimeout(() => {
+			window.setTimeout(() => {
 				this.registerEvent(
 					this.app.vault.on("create", (file) => {
 						const randomMessage =
@@ -606,7 +606,8 @@ export default class PetPlugin extends Plugin {
 
 	// Merges current data with default data
 	async loadSettings() {
-		this.instanceData = Object.assign({}, DEFAULT_DATA, await this.loadData());
+		const savedData = (await this.loadData()) as Partial<PetPluginData> | null;
+		this.instanceData = Object.assign({}, DEFAULT_DATA, savedData) as PetPluginData;
 
 		// Make sure id counter exists
 		if (!this.instanceData.nextPetIdCounters) {

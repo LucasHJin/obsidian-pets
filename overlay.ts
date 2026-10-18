@@ -25,11 +25,11 @@ export class OverlayPetView {
 		this.updateOverlayBounds();
 
 		this.resizeHandler = () => {
-			if (this.resizeTimer !== null) activeWindow.clearTimeout(this.resizeTimer);
-			this.resizeTimer = activeWindow.setTimeout(async () => {
+			if (this.resizeTimer !== null) window.clearTimeout(this.resizeTimer);
+			this.resizeTimer = window.setTimeout(() => {
 				this.resizeTimer = null;
 				this.updateOverlayBounds();
-				await Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
+				void Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
 			}, 100);
 		};
 		window.addEventListener("resize", this.resizeHandler);
@@ -190,7 +190,7 @@ export class OverlayPetView {
 	destroy() {
 		window.removeEventListener("resize", this.resizeHandler);
 		if (this.resizeTimer !== null) {
-			activeWindow.clearTimeout(this.resizeTimer);
+			window.clearTimeout(this.resizeTimer);
 			this.resizeTimer = null;
 		}
 		for (const { pet } of this.pets) {

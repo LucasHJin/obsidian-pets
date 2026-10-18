@@ -34,7 +34,7 @@ export class VectorDB {
 				}
 			};
 			req.onsuccess = () => res(req.result);
-			req.onerror = () => rej(req.error);
+			req.onerror = () => rej(req.error ?? new Error("Failed to open the vector database"));
 		});
 	}
 
@@ -45,7 +45,7 @@ export class VectorDB {
 			const tx = db.transaction(this.storeName, "readwrite"); // Uses transactions to avoid crash on failure
 			tx.objectStore(this.storeName).put(item); // Access vectors table
 			tx.oncomplete = () => resolve();
-			tx.onerror = () => reject(tx.error);
+			tx.onerror = () => reject(tx.error ?? new Error("Failed to store the vector entry"));
 		});
 	}
 
@@ -58,7 +58,7 @@ export class VectorDB {
 			const tx = db.transaction(this.storeName, "readonly");
 			const req = tx.objectStore(this.storeName).getAll();
 			req.onsuccess = () => res(req.result || []);
-			req.onerror = () => rej(req.error);
+			req.onerror = () => rej(req.error ?? new Error("Failed to read the vector entries"));
 		});
 	}
 
@@ -80,7 +80,7 @@ export class VectorDB {
 			};
 
 			tx.oncomplete = () => resolve();
-			tx.onerror = () => reject(tx.error);
+			tx.onerror = () => reject(tx.error ?? new Error("Failed to remove the note's vectors"));
 		});
 	}
 
@@ -92,7 +92,7 @@ export class VectorDB {
 			const tx = db.transaction(this.storeName, "readwrite");
 			tx.objectStore(this.storeName).clear();
 			tx.oncomplete = () => resolve();
-			tx.onerror = () => reject(tx.error);
+			tx.onerror = () => reject(tx.error ?? new Error("Failed to clear the vector database"));
 		});
 	}
 

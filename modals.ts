@@ -40,15 +40,19 @@ export class SelectorModal extends Modal {
 			});
 
 			// Call the chooser function when it is clicked
-			button.addEventListener("click", async () => {
-				if (option.requiresName) {
-					this.showNameForm(option.value);
-				} else {
-					// No name needed (background)
-					await this.onSubmit(option.value, "");
-					this.close();
-				}
+			button.addEventListener("click", () => {
+				void this.chooseOption(option);
 			});
+		}
+	}
+
+	private async chooseOption(option: SelectorOption) {
+		if (option.requiresName) {
+			this.showNameForm(option.value);
+		} else {
+			// No name needed (background)
+			await this.onSubmit(option.value, "");
+			this.close();
 		}
 	}
 
@@ -199,7 +203,7 @@ Cat (chat) with me anything about~
 				await this.addMessage("bot", response, chatContainer); // Wait for response from the bot
 
 				// Scroll to bottom
-				activeWindow.setTimeout(() => {
+				window.setTimeout(() => {
 					chatContainer.scrollTop = chatContainer.scrollHeight;
 				}, 0);
 			})();
@@ -234,7 +238,7 @@ Cat (chat) with me anything about~
 
 		const span = typingBox.createSpan();
 		let dots = 0;
-		this.activeTypingInterval = activeWindow.setInterval(() => {
+		this.activeTypingInterval = window.setInterval(() => {
 			dots = (dots + 1) % 3;
 			span.setText("meow." + ".".repeat(dots));
 		}, 400);
@@ -243,7 +247,7 @@ Cat (chat) with me anything about~
 
 	private removeTypingIndicator(typingBox: HTMLElement) {
 		if (this.activeTypingInterval) {
-			activeWindow.clearInterval(this.activeTypingInterval); // Clean up the interval animation
+			window.clearInterval(this.activeTypingInterval); // Clean up the interval animation
 		}
 		this.activeTypingInterval = null;
 		typingBox.remove();
@@ -251,7 +255,7 @@ Cat (chat) with me anything about~
 
 	onClose() {
 		if (this.activeTypingInterval) {
-			activeWindow.clearInterval(this.activeTypingInterval);
+			window.clearInterval(this.activeTypingInterval);
 			this.activeTypingInterval = null;
 		}
 

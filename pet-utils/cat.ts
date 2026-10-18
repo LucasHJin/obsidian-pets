@@ -40,7 +40,7 @@ export class Cat extends Pet {
 					for (let i = 0; i < extensionAmount; i++) {
 						if (this.interruptAction) break;
 						await new Promise((resolve) =>
-							activeWindow.setTimeout(resolve, this.animations[key].duration),
+							window.setTimeout(resolve, this.animations[key].duration),
 						);
 					}
 				} else {
@@ -48,7 +48,7 @@ export class Cat extends Pet {
 					for (let i = 0; i < extensionAmount; i++) {
 						if (this.interruptAction) break;
 						await new Promise((resolve) =>
-							activeWindow.setTimeout(resolve, this.animations[key].duration),
+							window.setTimeout(resolve, this.animations[key].duration),
 						);
 					}
 				}
@@ -94,7 +94,7 @@ export class Cat extends Pet {
 				this.interruptAction = false;
 				while (this.chasingCursor && !this.isDestroyed) {
 					await this.followCursorStep();
-					await new Promise((res) => activeWindow.setTimeout(res, 100));
+					await new Promise((res) => window.setTimeout(res, 100));
 				}
 				this.freezeAtCurrentPosition();
 				this.setAnimation("idle");
@@ -105,7 +105,7 @@ export class Cat extends Pet {
 				// Chase the ball until it's destroyed
 				while (this.chasingBall && !this.isDestroyed) {
 					await this.chaseBall();
-					await new Promise((res) => activeWindow.setTimeout(res, 100)); // Small delay to avoid tight loop
+					await new Promise((res) => window.setTimeout(res, 100)); // Small delay to avoid tight loop
 				}
 				// Stop at current position to avoid gliding animation
 				this.freezeAtCurrentPosition();
@@ -113,7 +113,7 @@ export class Cat extends Pet {
 			} else {
 				// Check hover before and after
 				while (this.actionLoopPaused && !this.isDestroyed) {
-					await new Promise((resolve) => activeWindow.setTimeout(resolve, 100));
+					await new Promise((resolve) => window.setTimeout(resolve, 100));
 				}
 				if (this.isDestroyed) break;
 
@@ -122,7 +122,7 @@ export class Cat extends Pet {
 				await this.animations[randomAction].action?.();
 
 				while (this.actionLoopPaused && !this.isDestroyed) {
-					await new Promise((resolve) => activeWindow.setTimeout(resolve, 100));
+					await new Promise((resolve) => window.setTimeout(resolve, 100));
 				}
 				if (this.isDestroyed) break;
 
@@ -175,7 +175,7 @@ export class Cat extends Pet {
 			this.setAnimation("run");
 
 			// Wait a second to make it more smooth (not teleporting)
-			await new Promise((res) => activeWindow.setTimeout(res, 200));
+			await new Promise((res) => window.setTimeout(res, 200));
 			if (this.interruptAction) {
 				break;
 			}
