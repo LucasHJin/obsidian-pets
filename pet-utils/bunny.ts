@@ -28,7 +28,7 @@ export class Bunny extends Pet {
 					}
 				} else if (key === "jump") {
 					await this.move(this.animations[key].duration, key);
-				} else if (key === "like" || key === "sleep" || key == "liedown") {
+				} else if (key === "sit" || key === "sleep" || key === "idle2") {
 					const extensionAmount = Math.floor(Math.random() * 7) + 6;
 					await new Promise((resolve) =>
 						window.setTimeout(resolve, this.animations[key].duration * extensionAmount),
