@@ -5,9 +5,9 @@
 A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
 
 ## Key Features
-- 🐱 22 different cats with 7+ different animations (and more pets on the way!)
+- 🐱 22 pets (20 cats, a bunny and a ghost) with up to 9 animations each (and more pets on the way!)
     - Customizable with individual names
-- 🖼️ 10 different backgrounds for your pets to play in
+- 🖼️ 9 different backgrounds for your pets to play in
 - 🎾 Pet interactivity 
     - You can play fetch and throw balls for your pets to retrieve
     - You can pet your pets
@@ -22,8 +22,8 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
 3. Click **Install**, then **Enable** the plugin.
 
 #### Method 2: Manual Installation
-1. Download or clone this repository.
-2. Copy the entire folder into your vault's `.obsidian/plugins/` directory.
+1. Open the [releases page](https://github.com/LucasHJin/obsidian-pets/releases) and download `main.js`, `manifest.json` and `styles.css` from the latest release.
+2. Create a `pixel-pets` folder in your vault's `.obsidian/plugins/` directory (the name must match the `id` in `manifest.json`) and copy the three files into it.
 3. In Obsidian, go to **Settings > Community Plugins** and click **Reload plugins**.
 4. Enable **Pixel Pets** in the list of installed plugins.
 
@@ -63,6 +63,15 @@ Here is what it looks like if you enable the full vault overlay.
     - `Cat toy mouse toggle`: Changes your mouse to a cat toy for your cats to follow.
 - Background
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
+
+## Settings
+- **Overlay mode**: pets roam the whole Obsidian window instead of the side panel. The background options are hidden while it is on.
+- **Background**: the background for the pet view.
+- **Animations**: animates the snow backgrounds.
+- **Pet size**: how large the pets are, from 1 to 2.
+- **Sound**: sounds for your pets and actions. Off by default.
+
+Creating a new Markdown note also shows a short pet notice. There is no setting to turn it off.
 
 ## Contacts
 If you have any kind of feedback or questions, feel free to reach out via GitHub issues or @hi.bye_2025 on the [Obsidian Discord server](https://discord.gg/obsidianmd).
