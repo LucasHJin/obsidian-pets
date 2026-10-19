@@ -45,6 +45,7 @@ describe("resolveSavedData", () => {
 			petSize: 1.5,
 			overlayMode: true,
 			soundEnabled: true,
+			newNoteNotices: false,
 		};
 		for (const key of Object.keys(saved) as (keyof PetPluginData)[]) {
 			expect(saved[key], key).not.toEqual(DEFAULT_DATA[key]);
@@ -58,6 +59,16 @@ describe("resolveSavedData", () => {
 	it("fills in the defaults for keys missing from the saved data", () => {
 		const { data } = resolveSavedData({ petSize: 2, soundEnabled: true });
 		expect(data).toEqual({ ...DEFAULT_DATA, petSize: 2, soundEnabled: true });
+	});
+
+	it("turns new note notices on for saved data that predates the setting", () => {
+		const { data } = resolveSavedData({ petSize: 2, soundEnabled: true });
+		expect(data.newNoteNotices).toBe(true);
+	});
+
+	it("keeps new note notices off when it was saved as off", () => {
+		const { data } = resolveSavedData({ newNoteNotices: false });
+		expect(data.newNoteNotices).toBe(false);
 	});
 
 	it.each(Object.keys(CATBOT_DATA))("strips %s and reports a migration", (key) => {

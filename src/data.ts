@@ -12,6 +12,7 @@ export interface PetPluginData {
 	petSize: number;
 	overlayMode: boolean;
 	soundEnabled: boolean;
+	newNoteNotices: boolean;
 }
 
 export const DEFAULT_DATA: PetPluginData = {
@@ -22,6 +23,7 @@ export const DEFAULT_DATA: PetPluginData = {
 	petSize: 1,
 	overlayMode: false,
 	soundEnabled: false,
+	newNoteNotices: true,
 };
 
 const REMOVED_CHAT_DATA_KEYS = ["geminiApiKey", "openAiApiKey", "selectedModel", "indexedFiles"];

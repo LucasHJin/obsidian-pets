@@ -9,6 +9,7 @@ const SETTING_KEYS = [
 	"animatedBackground",
 	"petSize",
 	"soundEnabled",
+	"newNoteNotices",
 ] as const;
 
 type SettingKey = (typeof SETTING_KEYS)[number];
@@ -83,6 +84,15 @@ export class PetSettingTab extends PluginSettingTab {
 					defaultValue: DEFAULT_DATA.soundEnabled,
 				},
 			},
+			{
+				name: "New note notices",
+				desc: "Show a message from your pets when you create a note.",
+				control: {
+					type: "toggle",
+					key: "newNoteNotices",
+					defaultValue: DEFAULT_DATA.newNoteNotices,
+				},
+			},
 		];
 	}
 
@@ -115,6 +125,11 @@ export class PetSettingTab extends PluginSettingTab {
 			case "soundEnabled":
 				if (typeof value === "boolean") {
 					this.plugin.setSound(value);
+				}
+				break;
+			case "newNoteNotices":
+				if (typeof value === "boolean") {
+					this.plugin.setNewNoteNotices(value);
 				}
 				break;
 		}

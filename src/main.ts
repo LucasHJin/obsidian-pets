@@ -226,6 +226,11 @@ export default class PetPlugin extends Plugin {
 		if (enabled && this.catToy) this.sounds.startToy();
 	}
 
+	setNewNoteNotices(enabled: boolean): void {
+		this.data.newNoteNotices = enabled;
+		void this.saveSettings();
+	}
+
 	setPetSize(size: number): void {
 		this.data.petSize = size;
 		void this.saveSettings();

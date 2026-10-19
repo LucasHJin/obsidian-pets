@@ -70,8 +70,7 @@ Here is what it looks like if you enable the full vault overlay.
 - **Animations**: animates the snow backgrounds.
 - **Pet size**: how large the pets are, from 1 to 2.
 - **Sound**: sounds for your pets and actions. Off by default.
-
-Creating a new Markdown note also shows a short pet notice. There is no setting to turn it off.
+- **New note notices**: a short pet message when you create a new Markdown note. On by default.
 
 ## Contacts
 If you have any kind of feedback or questions, feel free to reach out via GitHub issues or @hi.bye_2025 on the [Obsidian Discord server](https://discord.gg/obsidianmd).
