@@ -259,13 +259,13 @@ export abstract class Pet {
 		if (possibleX < minLeft || possibleX > maxLeft) {
 			dx = -dx;
 		}
-		const targetX = this.currentX + dx;
+		const targetX = Math.max(minLeft, Math.min(maxLeft, this.currentX + dx));
 
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
 
-		this.direction = dx < 0 ? -1 : 1;
+		this.direction = targetX < this.currentX ? -1 : 1;
 
 		return new Promise((res) => {
 			let settled = false;
