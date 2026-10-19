@@ -112,8 +112,12 @@ export abstract class Pet {
 		if (!this.startedUnsized || !el || this.container.offsetWidth === 0) return;
 		this.startedUnsized = false;
 		this.currentX = this.pickStartX();
+		this.snapTo(el, this.currentX);
+	}
+
+	private snapTo(el: HTMLElement, x: number) {
 		el.addClass("pixel-pets-pet--frozen");
-		el.setCssProps({ "--pixel-pets-left": `${this.currentX}px` });
+		el.setCssProps({ "--pixel-pets-left": `${x}px` });
 		void el.offsetHeight;
 		el.removeClass("pixel-pets-pet--frozen");
 	}
@@ -241,7 +245,7 @@ export abstract class Pet {
 		const clampedX = Math.max(minLeft, Math.min(maxLeft, this.currentX));
 		if (clampedX !== this.currentX) {
 			this.currentX = clampedX;
-			el.setCssProps({ "--pixel-pets-left": `${this.currentX}px` });
+			this.snapTo(el, clampedX);
 		}
 
 		if (!wasAlreadyPaused) {
