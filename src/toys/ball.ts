@@ -6,10 +6,10 @@ export class Ball {
 	ballEl: HTMLElement;
 	private readonly floor: Floor;
 
-	private x: number;
-	private y: number;
-	private vx: number;
-	private vy: number;
+	private x = 0;
+	private y = 0;
+	private vx = 0;
+	private vy = 0;
 	private radius!: number;
 	private gravity = 0.42;
 	private damping = 0.99;
@@ -20,6 +20,7 @@ export class Ball {
 	private lifetimeStartedAt = 0;
 	private isPaused = false;
 	private isDestroyed = false;
+	private startedUnsized = false;
 	scale: number;
 
 	onDestroy?: () => void;
@@ -38,12 +39,7 @@ export class Ball {
 		this.lifetimeLeft = lifetime;
 
 		this.ballEl = this.createBallElement(spriteUrl);
-
-		const rect = this.container.getBoundingClientRect();
-		this.x = Math.random() * (rect.width - this.radius * 2) + this.radius;
-		this.y = Math.random() * (rect.height * 0.15 - this.radius * 2) + this.radius;
-		this.vx = (Math.random() - 0.5) * 15;
-		this.vy = (Math.random() - 0.5) * 8;
+		this.placeAtStart();
 
 		this.frameId = window.requestAnimationFrame(() => this.update());
 
@@ -68,6 +64,15 @@ export class Ball {
 		});
 
 		return el;
+	}
+
+	private placeAtStart() {
+		const rect = this.container.getBoundingClientRect();
+		this.startedUnsized = rect.width === 0 || rect.height === 0;
+		this.x = Math.random() * (rect.width - this.radius * 2) + this.radius;
+		this.y = Math.random() * (rect.height * 0.15 - this.radius * 2) + this.radius;
+		this.vx = (Math.random() - 0.5) * 15;
+		this.vy = (Math.random() - 0.5) * 8;
 	}
 
 	private getGroundHeight(): number {
@@ -110,12 +115,16 @@ export class Ball {
 		this.vx *= this.airRes;
 		this.vy *= this.airRes;
 
+		this.renderPosition();
+
+		this.frameId = window.requestAnimationFrame(() => this.update());
+	}
+
+	private renderPosition() {
 		this.ballEl.setCssProps({
 			"--pixel-pets-ball-x": `${this.x - this.radius}px`,
 			"--pixel-pets-ball-y": `${this.y - this.radius}px`,
 		});
-
-		this.frameId = window.requestAnimationFrame(() => this.update());
 	}
 
 	getPosition(): { x: number; y: number } {
@@ -139,6 +148,10 @@ export class Ball {
 	resume() {
 		if (!this.isPaused || this.isDestroyed) return;
 		this.isPaused = false;
+		if (this.startedUnsized) {
+			this.placeAtStart();
+			this.renderPosition();
+		}
 		this.frameId = window.requestAnimationFrame(() => this.update());
 		this.startLifetimeTimer();
 	}

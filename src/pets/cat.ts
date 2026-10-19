@@ -137,7 +137,6 @@ export class Cat extends Pet {
 			return;
 		}
 		const el = this.requirePetEl();
-		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		const steps = 3;
 		for (let i = 0; i < steps; i++) {
@@ -145,6 +144,7 @@ export class Cat extends Pet {
 				break;
 			}
 
+			const { minLeft, maxLeft } = this.getHorizontalBounds();
 			const ballPos = this.chasingBall.getPosition();
 			const dx = ballPos.x - (this.currentX ?? 0);
 			this.direction = dx < 0 ? -1 : 1;

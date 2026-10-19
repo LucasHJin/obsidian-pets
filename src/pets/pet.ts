@@ -60,6 +60,7 @@ export abstract class Pet {
 	protected actionLoopPaused = false;
 	private hovered = false;
 	private stagePaused = false;
+	private startedUnsized = false;
 	private sleeper: Sleeper | null = null;
 	private pauseWaiters: (() => void)[] = [];
 	private interruptMove: (() => void) | null = null;
@@ -84,11 +85,8 @@ export abstract class Pet {
 	start(): void {
 		window.requestAnimationFrame(() => {
 			if (this.isDestroyed) return;
-			const containerWidth = this.container.offsetWidth;
-			const bounds = this.getHorizontalBounds();
-			const minX = Math.max(containerWidth * 0.1, bounds.minLeft);
-			const maxX = Math.min(containerWidth * 0.9, bounds.maxLeft);
-			this.currentX = Math.random() * (maxX - minX) + minX;
+			this.startedUnsized = this.container.offsetWidth === 0;
+			this.currentX = this.pickStartX();
 
 			this.petEl = this.createPetElement();
 			this.setupHoverListeners();
@@ -98,6 +96,25 @@ export abstract class Pet {
 				await this.startActionLoop();
 			})();
 		});
+	}
+
+	private pickStartX(): number {
+		const containerWidth = this.container.offsetWidth;
+		const bounds = this.getHorizontalBounds();
+		const minX = Math.max(containerWidth * 0.1, bounds.minLeft);
+		const maxX = Math.min(containerWidth * 0.9, bounds.maxLeft);
+		return Math.random() * (maxX - minX) + minX;
+	}
+
+	private placeAfterStartingUnsized() {
+		const el = this.petEl;
+		if (!this.startedUnsized || !el || this.container.offsetWidth === 0) return;
+		this.startedUnsized = false;
+		this.currentX = this.pickStartX();
+		el.addClass("pixel-pets-pet--frozen");
+		el.setCssProps({ "--pixel-pets-left": `${this.currentX}px` });
+		void el.offsetHeight;
+		el.removeClass("pixel-pets-pet--frozen");
 	}
 
 	protected requirePetEl(): HTMLElement {
@@ -333,6 +350,7 @@ export abstract class Pet {
 	resume() {
 		if (!this.stagePaused) return;
 		this.stagePaused = false;
+		this.placeAfterStartingUnsized();
 		this.hovered = this.petEl?.matches(":hover") ?? false;
 		if (!this.hovered) {
 			this.resumeActionLoop();
