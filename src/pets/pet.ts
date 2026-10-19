@@ -131,7 +131,7 @@ export abstract class Pet {
 
 	private getGroundTopValue(): string {
 		if (this.floor.kind === "bottom") {
-			return "calc(100% - 14px * var(--pixel-pets-scale, 1))";
+			return "calc(100% - 16px * var(--pixel-pets-scale, 1))";
 		}
 		return `${this.floor.value}%`;
 	}
