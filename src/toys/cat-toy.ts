@@ -4,8 +4,6 @@ import { SoundPlayer } from "../audio/sounds";
 const FRAME_COUNT = 6;
 const FRAME_WIDTH = 32;
 
-let lastClientX = 0;
-
 export class CatToyOverlay {
 	private doc: Document;
 	private cursorEl: HTMLElement;
@@ -15,6 +13,7 @@ export class CatToyOverlay {
 		doc: Document,
 		petSize: number,
 		private readonly sounds: SoundPlayer,
+		private clientX: number,
 	) {
 		this.doc = doc;
 		this.cursorEl = doc.body.createDiv({ cls: "pixel-pets-cat-toy" });
@@ -37,7 +36,7 @@ export class CatToyOverlay {
 				"--pixel-pets-cursor-x": `${e.clientX}px`,
 				"--pixel-pets-cursor-y": `${e.clientY}px`,
 			});
-			lastClientX = e.clientX;
+			this.clientX = e.clientX;
 		};
 		doc.addEventListener("mousemove", this.mouseMoveHandler);
 
@@ -45,7 +44,7 @@ export class CatToyOverlay {
 	}
 
 	getClientX(): number {
-		return lastClientX;
+		return this.clientX;
 	}
 
 	updateSize(petSize: number) {

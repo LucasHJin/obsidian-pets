@@ -18,6 +18,7 @@ export default class PetPlugin extends Plugin {
 	readonly sounds = new SoundPlayer();
 	private overlayView: OverlayPetView | null = null;
 	private catToy: CatToyOverlay | null = null;
+	private lastCatToyClientX = 0;
 
 	private get mainDocument(): Document {
 		return this.app.workspace.containerEl.doc;
@@ -125,11 +126,17 @@ export default class PetPlugin extends Plugin {
 
 	toggleCatToy(): void {
 		if (this.catToy) {
+			this.lastCatToyClientX = this.catToy.getClientX();
 			this.catToy.destroy();
 			this.catToy = null;
 			this.stopCursorFollowMode();
 		} else {
-			this.catToy = new CatToyOverlay(this.mainDocument, this.data.petSize, this.sounds);
+			this.catToy = new CatToyOverlay(
+				this.mainDocument,
+				this.data.petSize,
+				this.sounds,
+				this.lastCatToyClientX,
+			);
 			this.startCursorFollowMode(this.catToy);
 		}
 	}
