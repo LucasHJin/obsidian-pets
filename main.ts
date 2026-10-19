@@ -281,7 +281,13 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
 			callback: () => {
-				const options = this.instanceData.pets.map((pet) => ({
+				const pets = this.instanceData.pets ?? [];
+				if (pets.length === 0) {
+					new Notice("There are no pets to remove.");
+					return;
+				}
+
+				const options = pets.map((pet) => ({
 					value: pet.id,
 					// Label of name and type
 					label: `${pet.name} (${this.getCleanLabel(pet.id)})`,
