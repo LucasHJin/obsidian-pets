@@ -92,7 +92,7 @@ export default class PetPlugin extends Plugin {
 			id: "clear-all-pets",
 			name: "Remove all pets",
 			callback: async () => {
-				await this.clearAllPets();
+				await this.removeAllPetsWithNotice();
 			},
 		});
 
@@ -163,6 +163,10 @@ export default class PetPlugin extends Plugin {
 	}
 
 	throwRandomBall() {
+		if (this.data.pets.length === 0) {
+			new Notice("Add a pet to play with the ball.");
+			return;
+		}
 		const randomBall = BALLS[Math.floor(Math.random() * BALLS.length)];
 		void this.addBall(randomBall.id);
 	}
@@ -303,6 +307,14 @@ export default class PetPlugin extends Plugin {
 		for (const stage of this.getStages()) {
 			stage.removeAllPets();
 		}
+	}
+
+	async removeAllPetsWithNotice(): Promise<void> {
+		if (this.data.pets.length === 0) {
+			new Notice("You have no pets to remove.");
+			return;
+		}
+		await this.clearAllPets();
 	}
 
 	async setOverlayMode(enabled: boolean): Promise<void> {

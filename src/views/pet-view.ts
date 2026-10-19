@@ -47,7 +47,7 @@ export class PetView extends ItemView {
 		});
 
 		this.addAction("minus", "Remove all pets", async () => {
-			await this.plugin.clearAllPets();
+			await this.plugin.removeAllPetsWithNotice();
 		});
 
 		this.addAction("circle-dashed", "Throw a ball", () => {
