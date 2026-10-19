@@ -22,7 +22,7 @@ export class Ghost extends Pet {
 	protected override async performAction(name: AnimationName): Promise<void> {
 		if (name !== "idle") return;
 		this.setAnimation("idle");
-		await new Promise((res) => window.setTimeout(res, this.animations["idle"].duration));
+		await this.sleep(this.animations["idle"].duration);
 	}
 
 	protected override async runRoutine(): Promise<void> {
@@ -37,7 +37,7 @@ export class Ghost extends Pet {
 
 		await this.performAction("idle");
 		const delay2 = 2000 + Math.random() * 3000;
-		await new Promise((res) => window.setTimeout(res, delay2));
+		await this.sleep(delay2);
 	}
 
 	protected override async playDeathAnimation() {

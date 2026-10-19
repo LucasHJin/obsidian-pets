@@ -19,6 +19,7 @@ export class Stage {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
 	private getCursorX: (() => number) | null = null;
+	private paused = false;
 
 	constructor(
 		readonly container: HTMLElement,
@@ -53,6 +54,7 @@ export class Stage {
 					cat.startFollowingCursor(this.getCursorX);
 				}
 				this.pets.push({ id: singlePet.id, pet: cat });
+				if (this.paused) cat.pause();
 				cat.start();
 			} else if (petType?.species === "bunny") {
 				const bunnyAnimations = getBunnyAnimations(singlePet.type);
@@ -67,6 +69,7 @@ export class Stage {
 					this.plugin.sounds,
 				);
 				this.pets.push({ id: singlePet.id, pet: bunny });
+				if (this.paused) bunny.pause();
 				bunny.start();
 			} else if (petType?.species === "ghost") {
 				const ghostAnimations = getGhostAnimations(singlePet.type);
@@ -81,6 +84,7 @@ export class Stage {
 					this.plugin.sounds,
 				);
 				this.pets.push({ id: singlePet.id, pet: ghost });
+				if (this.paused) ghost.pause();
 				ghost.start();
 			}
 		} catch (error) {
@@ -114,6 +118,7 @@ export class Stage {
 				this.plugin.sounds,
 			);
 			this.balls.push({ id, ball });
+			if (this.paused) ball.pause();
 
 			const cats = this.pets.filter((p) => p.pet instanceof Cat);
 			const randomCat =
@@ -128,6 +133,28 @@ export class Stage {
 			};
 		} catch (error) {
 			console.error("Failed to add ball:", error);
+		}
+	}
+
+	pause() {
+		if (this.paused) return;
+		this.paused = true;
+		for (const { pet } of this.pets) {
+			pet.pause();
+		}
+		for (const { ball } of this.balls) {
+			ball.pause();
+		}
+	}
+
+	resume() {
+		if (!this.paused) return;
+		this.paused = false;
+		for (const { pet } of this.pets) {
+			pet.resume();
+		}
+		for (const { ball } of this.balls) {
+			ball.resume();
 		}
 	}
 

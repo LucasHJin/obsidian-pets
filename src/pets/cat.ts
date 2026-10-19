@@ -52,7 +52,7 @@ export class Cat extends Pet {
 				const extensionAmount = Math.floor(Math.random() * 8) + 5;
 				for (let i = 0; i < extensionAmount; i++) {
 					if (this.interruptAction) break;
-					await new Promise((resolve) => window.setTimeout(resolve, animation.duration));
+					await this.sleep(animation.duration);
 				}
 				break;
 			}
@@ -60,7 +60,7 @@ export class Cat extends Pet {
 				const extensionAmount = Math.floor(Math.random() * 2) + 2;
 				for (let i = 0; i < extensionAmount; i++) {
 					if (this.interruptAction) break;
-					await new Promise((resolve) => window.setTimeout(resolve, animation.duration));
+					await this.sleep(animation.duration);
 				}
 			}
 		}
@@ -97,7 +97,7 @@ export class Cat extends Pet {
 			this.interruptAction = false;
 			while (this.chasingCursor && !this.isDestroyed) {
 				await this.followCursorStep();
-				await new Promise((res) => window.setTimeout(res, 100));
+				await this.sleep(100);
 			}
 			this.freezeAtCurrentPosition();
 			this.setAnimation("idle");
@@ -107,7 +107,7 @@ export class Cat extends Pet {
 			this.interruptAction = false;
 			while (this.chasingBall && !this.isDestroyed) {
 				await this.chaseBall();
-				await new Promise((res) => window.setTimeout(res, 100));
+				await this.sleep(100);
 			}
 			this.freezeAtCurrentPosition();
 			this.setAnimation("idle");
@@ -119,7 +119,7 @@ export class Cat extends Pet {
 	protected override async runRoutine(): Promise<void> {
 		await super.runRoutine();
 		if (this.isDestroyed) return;
-		await new Promise((resolve) => window.setTimeout(resolve, PASS_GUARD_DELAY));
+		await this.sleep(PASS_GUARD_DELAY);
 	}
 
 	protected override routineActions(): AnimationName[] {
@@ -160,7 +160,7 @@ export class Cat extends Pet {
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 			this.setAnimation("run");
 
-			await new Promise((res) => window.setTimeout(res, 200));
+			await this.sleep(200);
 			if (this.interruptAction) {
 				break;
 			}

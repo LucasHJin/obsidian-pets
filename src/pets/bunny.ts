@@ -37,16 +37,12 @@ export class Bunny extends Pet {
 			case "sleep":
 			case "idle2": {
 				const extensionAmount = Math.floor(Math.random() * 7) + 6;
-				await new Promise((resolve) =>
-					window.setTimeout(resolve, animation.duration * extensionAmount),
-				);
+				await this.sleep(animation.duration * extensionAmount);
 				break;
 			}
 			default: {
 				const extensionAmount = Math.floor(Math.random() * 2) + 2;
-				await new Promise((resolve) =>
-					window.setTimeout(resolve, animation.duration * extensionAmount),
-				);
+				await this.sleep(animation.duration * extensionAmount);
 			}
 		}
 	}

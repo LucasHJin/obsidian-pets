@@ -15,7 +15,10 @@ export class Ball {
 	private damping = 0.99;
 	private airRes = 0.99;
 	private frameId: number | null = null;
-	private readonly lifetimeTimer: number;
+	private lifetimeTimer: number | undefined;
+	private lifetimeLeft: number;
+	private lifetimeStartedAt = 0;
+	private isPaused = false;
 	private isDestroyed = false;
 	scale: number;
 
@@ -32,6 +35,7 @@ export class Ball {
 		this.container = container;
 		this.floor = floor;
 		this.scale = scale;
+		this.lifetimeLeft = lifetime;
 
 		this.ballEl = this.createBallElement(spriteUrl);
 
@@ -43,7 +47,12 @@ export class Ball {
 
 		this.frameId = window.requestAnimationFrame(() => this.update());
 
-		this.lifetimeTimer = window.setTimeout(() => this.destroy(), lifetime);
+		this.startLifetimeTimer();
+	}
+
+	private startLifetimeTimer() {
+		this.lifetimeStartedAt = window.performance.now();
+		this.lifetimeTimer = window.setTimeout(() => this.destroy(), this.lifetimeLeft);
 	}
 
 	private createBallElement(spriteUrl: string): HTMLElement {
@@ -111,6 +120,27 @@ export class Ball {
 
 	getPosition(): { x: number; y: number } {
 		return { x: this.x, y: this.y };
+	}
+
+	pause() {
+		if (this.isPaused || this.isDestroyed) return;
+		this.isPaused = true;
+		window.clearTimeout(this.lifetimeTimer);
+		this.lifetimeLeft = Math.max(
+			0,
+			this.lifetimeLeft - (window.performance.now() - this.lifetimeStartedAt),
+		);
+		if (this.frameId !== null) {
+			window.cancelAnimationFrame(this.frameId);
+			this.frameId = null;
+		}
+	}
+
+	resume() {
+		if (!this.isPaused || this.isDestroyed) return;
+		this.isPaused = false;
+		this.frameId = window.requestAnimationFrame(() => this.update());
+		this.startLifetimeTimer();
 	}
 
 	destroy() {

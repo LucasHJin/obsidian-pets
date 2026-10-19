@@ -139,6 +139,11 @@ export class PetView extends ItemView {
 			const entry = entries[0];
 			if (!entry) return;
 			const { width, height } = entry.contentRect;
+			if (width === 0 || height === 0) {
+				this.stage?.pause();
+			} else {
+				this.stage?.resume();
+			}
 
 			if (!initialized) {
 				initialized = true;

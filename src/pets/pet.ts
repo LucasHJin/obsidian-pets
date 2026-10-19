@@ -39,6 +39,11 @@ export type PetAnimations = { idle: AnimationConfig } & Partial<
 	Record<AnimationName, AnimationConfig>
 >;
 
+interface Sleeper {
+	timer: number | undefined;
+	finish: () => void;
+}
+
 export abstract class Pet {
 	protected container: HTMLElement;
 	petEl: HTMLElement | null = null;
@@ -53,6 +58,9 @@ export abstract class Pet {
 	protected petName: string;
 	protected tooltipEl: HTMLElement | null = null;
 	protected actionLoopPaused = false;
+	private hovered = false;
+	private stagePaused = false;
+	private sleeper: Sleeper | null = null;
 	private pauseWaiters: (() => void)[] = [];
 	private interruptMove: (() => void) | null = null;
 
@@ -129,13 +137,17 @@ export abstract class Pet {
 	protected setupHoverListeners() {
 		const el = this.requirePetEl();
 		el.addEventListener("mouseenter", () => {
+			this.hovered = true;
 			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
 		});
 
 		el.addEventListener("mouseleave", () => {
-			this.resumeActionLoop();
+			this.hovered = false;
+			if (!this.stagePaused) {
+				this.resumeActionLoop();
+			}
 		});
 
 		el.addEventListener("click", () => {
@@ -308,6 +320,49 @@ export abstract class Pet {
 		this.releasePauseWaiters();
 	}
 
+	pause() {
+		if (this.stagePaused) return;
+		this.stagePaused = true;
+		this.pauseActionLoop();
+		if (this.sleeper) {
+			window.clearTimeout(this.sleeper.timer);
+			this.sleeper.timer = undefined;
+		}
+	}
+
+	resume() {
+		if (!this.stagePaused) return;
+		this.stagePaused = false;
+		this.hovered = this.petEl?.matches(":hover") ?? false;
+		if (!this.hovered) {
+			this.resumeActionLoop();
+		}
+		this.sleeper?.finish();
+	}
+
+	protected sleep(ms: number): Promise<void> {
+		return new Promise((resolve) => {
+			if (this.isDestroyed) {
+				resolve();
+				return;
+			}
+			const sleeper: Sleeper = {
+				timer: undefined,
+				finish: () => {
+					window.clearTimeout(sleeper.timer);
+					if (this.sleeper === sleeper) {
+						this.sleeper = null;
+					}
+					resolve();
+				},
+			};
+			this.sleeper = sleeper;
+			if (!this.stagePaused) {
+				sleeper.timer = window.setTimeout(sleeper.finish, ms);
+			}
+		});
+	}
+
 	protected async waitWhilePaused(): Promise<void> {
 		while (this.actionLoopPaused && !this.isDestroyed) {
 			await new Promise<void>((resolve) => {
@@ -365,6 +420,7 @@ export abstract class Pet {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
 		this.releasePauseWaiters();
+		this.sleeper?.finish();
 		if (!this.petEl) return;
 		await this.playDeathAnimation();
 		this.petEl.remove();
@@ -380,6 +436,7 @@ export abstract class Pet {
 	destroyImmediate() {
 		this.isDestroyed = true;
 		this.releasePauseWaiters();
+		this.sleeper?.finish();
 		this.petEl?.remove();
 	}
 }
