@@ -4,6 +4,8 @@ import { Floor } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 
 const PASS_GUARD_DELAY = 100;
+const STEP_PAUSE = 100;
+const CHASE_STEP_DELAY = 200;
 
 export class Cat extends Pet {
 	private canFly: boolean;
@@ -97,7 +99,7 @@ export class Cat extends Pet {
 			this.interruptAction = false;
 			while (this.chasingCursor && !this.isDestroyed) {
 				await this.followCursorStep();
-				await this.sleep(100);
+				await this.sleep(STEP_PAUSE);
 			}
 			this.freezeAtCurrentPosition();
 			this.setAnimation("idle");
@@ -107,7 +109,7 @@ export class Cat extends Pet {
 			this.interruptAction = false;
 			while (this.chasingBall && !this.isDestroyed) {
 				await this.chaseBall();
-				await this.sleep(100);
+				await this.sleep(STEP_PAUSE);
 			}
 			this.freezeAtCurrentPosition();
 			this.setAnimation("idle");
@@ -153,14 +155,16 @@ export class Cat extends Pet {
 			if (newX > maxLeft) newX = maxLeft;
 			this.currentX = newX;
 
+			const slideMs = i === steps - 1 ? CHASE_STEP_DELAY + STEP_PAUSE : CHASE_STEP_DELAY;
 			el.setCssProps({
 				"--pixel-pets-left": `${this.currentX}px`,
 				"--pixel-pets-scale-x": `${this.direction}`,
+				"--pixel-pets-move-duration": `${slideMs}ms`,
 			});
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 			this.setAnimation("run");
 
-			await this.sleep(200);
+			await this.sleep(CHASE_STEP_DELAY);
 			if (this.interruptAction) {
 				break;
 			}
@@ -188,6 +192,7 @@ export class Cat extends Pet {
 		el.setCssProps({
 			"--pixel-pets-left": `${this.currentX}px`,
 			"--pixel-pets-scale-x": `${this.direction}`,
+			"--pixel-pets-move-duration": `${STEP_PAUSE}ms`,
 		});
 		this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 	}
