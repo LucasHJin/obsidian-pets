@@ -100,7 +100,12 @@
 	position: absolute;
 	bottom: 100%;
 	left: 50%;
-	transform: translateX(-50%) translateY(-2px) scaleX(var(--pixel-pets-scale-x, 1));
+	--pixel-pets-tooltip-offset: calc(
+		var(--pixel-pets-tooltip-shift, 0px) * var(--pixel-pets-scale-x, 1) /
+			var(--pixel-pets-scale, 1)
+	);
+	transform: translateX(calc(-50% + var(--pixel-pets-tooltip-offset))) translateY(-2px)
+		scaleX(var(--pixel-pets-scale-x, 1));
 	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
 	color: var(--text-normal);
 	padding: 4px 8px;

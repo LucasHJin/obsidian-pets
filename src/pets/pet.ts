@@ -1,6 +1,7 @@
 import { heartAsset } from "../catalog/assets";
 import { Floor } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
+import { getTooltipShift } from "./tooltip-shift";
 
 const ANIMATION_NAMES = [
 	"idle",
@@ -158,6 +159,13 @@ export abstract class Pet {
 			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
 			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
+			this.fitTooltip();
+		});
+
+		el.addEventListener("transitionend", (e) => {
+			if (e.target === el && e.propertyName === "left") {
+				this.fitTooltip();
+			}
 		});
 
 		el.addEventListener("mouseleave", () => {
@@ -171,6 +179,18 @@ export abstract class Pet {
 			this.showHeart();
 			this.playSound();
 		});
+	}
+
+	private fitTooltip() {
+		const tooltip = this.tooltipEl;
+		if (!tooltip || !this.hovered || this.container.offsetWidth === 0) return;
+
+		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": "0px" });
+		const shift = getTooltipShift(
+			tooltip.getBoundingClientRect(),
+			this.container.getBoundingClientRect(),
+		);
+		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": `${shift}px` });
 	}
 
 	protected playSound(): void {}
@@ -227,6 +247,7 @@ export abstract class Pet {
 		if (!wasAlreadyPaused) {
 			this.resumeActionLoop();
 		}
+		this.fitTooltip();
 	}
 
 	updateVerticalPosition(newFloor: Floor) {
