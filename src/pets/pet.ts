@@ -294,7 +294,7 @@ export abstract class Pet {
 	}
 
 	protected move(duration: number, action?: AnimationName): Promise<void> {
-		if (this.actionLoopPaused) return Promise.resolve();
+		if (this.actionLoopPaused || this.isDestroyed) return Promise.resolve();
 		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
@@ -460,6 +460,7 @@ export abstract class Pet {
 		this.isDestroyed = true;
 		this.releasePauseWaiters();
 		this.sleeper?.finish();
+		this.interruptMove?.();
 		if (!this.petEl) return;
 		await this.playDeathAnimation();
 		this.petEl.remove();
@@ -476,6 +477,7 @@ export abstract class Pet {
 		this.isDestroyed = true;
 		this.releasePauseWaiters();
 		this.sleeper?.finish();
+		this.interruptMove?.();
 		this.petEl?.remove();
 	}
 }
