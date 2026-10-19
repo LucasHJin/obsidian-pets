@@ -15,9 +15,11 @@ const PET_SOUNDS: Record<PetSound, string> = {
 };
 
 const BALL_MAX_SPEED = 10;
+const BOUNCE_MIN_GAP_MS = 80;
 
 export class SoundPlayer {
 	private toyAudio: HTMLAudioElement | null = null;
+	private lastBounceAt = Number.NEGATIVE_INFINITY;
 
 	constructor(private enabled = false) {}
 
@@ -59,6 +61,9 @@ export class SoundPlayer {
 
 	playBounce(speed: number): void {
 		if (!this.enabled) return;
+		const now = window.performance.now();
+		if (now - this.lastBounceAt < BOUNCE_MIN_GAP_MS) return;
+		this.lastBounceAt = now;
 		try {
 			const audio = new Audio(bounceSound);
 			const t = Math.min(speed / BALL_MAX_SPEED, 1);

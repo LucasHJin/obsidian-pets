@@ -1,6 +1,11 @@
 import { SoundPlayer } from "../audio/sounds";
 import { Floor } from "../floor";
 
+const MIN_SOUND_SPEED = 3;
+const REST_SPEED = 1.5;
+const ROLL_FRICTION = 0.95;
+const STOP_SPEED = 0.05;
+
 export class Ball {
 	private container: HTMLElement;
 	ballEl: HTMLElement;
@@ -96,28 +101,47 @@ export class Ball {
 		this.y += this.vy;
 		if (this.x - this.radius < 0) {
 			this.x = this.radius;
-			this.sounds.playBounce(Math.abs(this.vx));
+			this.playBounce(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		} else if (this.x + this.radius > rect.width) {
 			this.x = rect.width - this.radius;
-			this.sounds.playBounce(Math.abs(this.vx));
+			this.playBounce(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		}
 		const ground = this.getGroundHeight();
+		let resting = false;
 		if (this.y - this.radius < 0) {
 			this.y = this.radius;
 			this.vy *= -this.damping;
 		} else if (this.y + this.radius > ground) {
 			this.y = ground - this.radius;
-			this.sounds.playBounce(Math.abs(this.vy));
-			this.vy *= -this.damping;
+			const impact = Math.abs(this.vy);
+			if (impact < REST_SPEED) {
+				this.vy = 0;
+				this.vx *= ROLL_FRICTION;
+				resting = true;
+			} else {
+				this.playBounce(impact);
+				this.vy *= -this.damping;
+			}
 		}
 		this.vx *= this.airRes;
 		this.vy *= this.airRes;
 
 		this.renderPosition();
 
+		if (resting && Math.abs(this.vx) < STOP_SPEED) {
+			this.vx = 0;
+			this.frameId = null;
+			return;
+		}
 		this.frameId = window.requestAnimationFrame(() => this.update());
+	}
+
+	private playBounce(speed: number) {
+		if (speed >= MIN_SOUND_SPEED) {
+			this.sounds.playBounce(speed);
+		}
 	}
 
 	private renderPosition() {
@@ -129,6 +153,11 @@ export class Ball {
 
 	getPosition(): { x: number; y: number } {
 		return { x: this.x, y: this.y };
+	}
+
+	wake() {
+		if (this.isPaused || this.isDestroyed || this.frameId !== null) return;
+		this.frameId = window.requestAnimationFrame(() => this.update());
 	}
 
 	pause() {

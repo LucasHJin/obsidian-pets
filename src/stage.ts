@@ -203,6 +203,9 @@ export class Stage {
 	}
 
 	async clampPets() {
+		for (const { ball } of this.balls) {
+			ball.wake();
+		}
 		await Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
 	}
 
