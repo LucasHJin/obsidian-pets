@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { PetView, VIEW_TYPE_PET } from "./views/pet-view";
 import { OverlayPetView } from "./views/overlay-view";
 import { Stage } from "./stage";
@@ -100,6 +100,10 @@ export default class PetPlugin extends Plugin {
 			id: "remove-pet-by-id",
 			name: "Remove a specific pet",
 			callback: () => {
+				if (this.data.pets.length === 0) {
+					new Notice("You have no pets to remove.");
+					return;
+				}
 				const options = this.data.pets.map((pet) => {
 					const typeLabel = getPetType(pet.type)?.label;
 					return { value: pet.id, label: `${pet.name} (${typeLabel ?? pet.type})` };
