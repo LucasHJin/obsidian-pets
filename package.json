@@ -28,5 +28,12 @@
 		"typescript-eslint": "8.71.1",
 		"vite": "8.3.2",
 		"vitest": "5.0.3"
+	},
+	"overrides": {
+		"eslint-plugin-obsidianmd": {
+			"obsidian": {
+				"moment": "2.31.0"
+			}
+		}
 	}
 }
