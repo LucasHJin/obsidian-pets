@@ -117,52 +117,6 @@
 	opacity: 1;
 }
 
-.modal button.pixel-pets-selector__button {
-	cursor: pointer;
-	display: block;
-	width: 100%;
-	height: auto;
-	padding: 1vh 0;
-	margin: 0.5vh 0;
-	border: none;
-	border-radius: 8px;
-	transition: background-color 0.2s ease;
-	text-align: center;
-	line-height: normal;
-	font-size: 1.1em;
-	font-weight: inherit;
-	background-color: var(--background-primary);
-	box-shadow: none;
-}
-
-.modal button.pixel-pets-selector__button:hover {
-	background-color: var(--background-secondary-alt);
-}
-
-.pixel-pets-name-form__title {
-	margin-top: 0;
-	margin-bottom: 0.5rem;
-	line-height: 1.1;
-	font-size: 1.1em;
-}
-
-.pixel-pets-name-form {
-	display: flex;
-	flex-direction: column;
-	gap: 0.8rem;
-	align-items: flex-start;
-}
-
-.pixel-pets-name-form .pixel-pets-name-form__input {
-	width: 100%;
-	flex: 1;
-	padding: 0.5em;
-}
-
-.pixel-pets-name-form__button {
-	transition: background-color 0.2s ease;
-}
-
 .pixel-pets-ball {
 	position: absolute;
 	transform: translate(calc(var(--pixel-pets-ball-x, 0)), calc(var(--pixel-pets-ball-y, 0)))

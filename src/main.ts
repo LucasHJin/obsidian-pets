@@ -6,6 +6,7 @@ import { CatToyOverlay } from "./toys/cat-toy";
 import { SoundPlayer } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
 import { SelectorModal } from "./ui/selector-modal";
+import { PetNameModal } from "./ui/pet-name-modal";
 import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
 import { BALLS } from "./catalog/balls";
@@ -102,8 +103,8 @@ export default class PetPlugin extends Plugin {
 					const typeLabel = getPetType(pet.type)?.label;
 					return { value: pet.id, label: `${pet.name} (${typeLabel ?? pet.type})` };
 				});
-				new SelectorModal(this.app, options, async (value: string, _name: string) => {
-					await this.removePetById(value);
+				new SelectorModal(this.app, options, "Search pets to remove", (id) => {
+					void this.removePetById(id);
 				}).open();
 			},
 		});
@@ -114,9 +115,11 @@ export default class PetPlugin extends Plugin {
 	}
 
 	openAddPetPicker() {
-		const options = PETS.map(({ id, label }) => ({ value: id, label, requiresName: true }));
-		new SelectorModal(this.app, options, async (value: string, name: string) => {
-			await this.addPet(value, name);
+		const options = PETS.map(({ id, label }) => ({ value: id, label }));
+		new SelectorModal(this.app, options, "Search pets", (type) => {
+			new PetNameModal(this.app, (name) => {
+				void this.addPet(type, name);
+			}).open();
 		}).open();
 	}
 
@@ -155,8 +158,8 @@ export default class PetPlugin extends Plugin {
 
 	openBackgroundPicker() {
 		const options = BACKGROUNDS.map(({ id, label }) => ({ value: id, label }));
-		new SelectorModal(this.app, options, async (value: string, _name: string) => {
-			await this.setBackground(value);
+		new SelectorModal(this.app, options, "Search backgrounds", (id) => {
+			void this.setBackground(id);
 		}).open();
 	}
 
