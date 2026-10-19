@@ -9,6 +9,7 @@ export default defineConfig([
 		"esbuild.config.mjs",
 		"version-bump.mjs",
 		"vitest.config.mjs",
+		"scripts/",
 	]),
 	...obsidianmd.configs.recommended,
 	{
