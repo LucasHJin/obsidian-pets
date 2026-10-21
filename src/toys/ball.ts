@@ -4,7 +4,8 @@ import { Floor, getGroundY } from "../floor";
 const MIN_SOUND_SPEED = 3;
 const REST_SPEED = 1.5;
 const ROLL_FRICTION = 0.95;
-const STOP_SPEED = 0.05;
+const VANISH_SPEED = 0.3;
+const VANISH_MS = 250;
 
 export class Ball {
 	private container: HTMLElement;
@@ -25,6 +26,7 @@ export class Ball {
 	private lifetimeStartedAt = 0;
 	private isPaused = false;
 	private isDestroyed = false;
+	private isVanishing = false;
 	private startedUnsized = false;
 	scale: number;
 
@@ -130,12 +132,21 @@ export class Ball {
 
 		this.renderPosition();
 
-		if (resting && Math.abs(this.vx) < STOP_SPEED) {
+		if (resting && Math.abs(this.vx) < VANISH_SPEED) {
 			this.vx = 0;
 			this.frameId = null;
+			this.vanish();
 			return;
 		}
 		this.frameId = window.requestAnimationFrame(() => this.update());
+	}
+
+	private vanish() {
+		this.isVanishing = true;
+		this.ballEl.addClass("pixel-pets-ball--vanishing");
+		window.clearTimeout(this.lifetimeTimer);
+		this.lifetimeLeft = VANISH_MS;
+		this.startLifetimeTimer();
 	}
 
 	private playBounce(speed: number) {
@@ -155,8 +166,12 @@ export class Ball {
 		return { x: this.x, y: this.y };
 	}
 
+	getHeightAboveGround(): number {
+		return this.getGroundHeight() - (this.y + this.getDrawnRadius());
+	}
+
 	wake() {
-		if (this.isPaused || this.isDestroyed || this.frameId !== null) return;
+		if (this.isPaused || this.isDestroyed || this.isVanishing || this.frameId !== null) return;
 		this.frameId = window.requestAnimationFrame(() => this.update());
 	}
 
@@ -181,7 +196,9 @@ export class Ball {
 			this.placeAtStart();
 			this.renderPosition();
 		}
-		this.frameId = window.requestAnimationFrame(() => this.update());
+		if (!this.isVanishing) {
+			this.frameId = window.requestAnimationFrame(() => this.update());
+		}
 		this.startLifetimeTimer();
 	}
 

@@ -5,7 +5,10 @@ import { SoundPlayer } from "../audio/sounds";
 
 const PASS_GUARD_DELAY = 100;
 const STEP_PAUSE = 100;
-const CHASE_STEP_DELAY = 200;
+const CHASE_SPEED = 4.5;
+const CATCH_DISTANCE = 4;
+const ESCAPE_DISTANCE = 16;
+const MAX_FRAME_MS = 50;
 
 export class Cat extends Pet {
 	private canFly: boolean;
@@ -13,6 +16,7 @@ export class Cat extends Pet {
 	private chasingCursor = false;
 	private getCursorX: (() => number) | null = null;
 	private cursorMoveDist: number;
+	private readonly chaseSpeed: number;
 	private interruptAction = false;
 
 	constructor(
@@ -28,6 +32,7 @@ export class Cat extends Pet {
 		super(container, animations, moveDist, floor, scale, petName, sounds);
 		this.canFly = canFly;
 		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
+		this.chaseSpeed = moveDist * CHASE_SPEED;
 	}
 
 	protected override async performAction(name: AnimationName, repeats = 1): Promise<void> {
@@ -107,11 +112,11 @@ export class Cat extends Pet {
 		}
 		if (this.chasingBall) {
 			this.interruptAction = false;
-			while (this.chasingBall && !this.isDestroyed) {
-				await this.chaseBall();
-				await this.sleep(STEP_PAUSE);
-			}
-			this.freezeAtCurrentPosition();
+			await this.pursue(
+				() => this.chasingBall?.getPosition().x ?? null,
+				this.chaseSpeed,
+				() => this.pounce(),
+			);
 			this.setAnimation("idle");
 			return true;
 		}
@@ -132,44 +137,71 @@ export class Cat extends Pet {
 		return this.canFly && Math.random() < 0.3 ? "fly" : "run";
 	}
 
-	private async chaseBall() {
-		if (!this.chasingBall || this.isDestroyed) {
-			return;
-		}
-		const el = this.requirePetEl();
+	private nextFrame(): Promise<number> {
+		return new Promise((resolve) => window.requestAnimationFrame(resolve));
+	}
 
-		const steps = 3;
-		for (let i = 0; i < steps; i++) {
-			if (!this.chasingBall) {
-				break;
+	private async pursue(
+		getTargetX: () => number | null,
+		speed: number,
+		onCatch: () => Promise<boolean>,
+	): Promise<void> {
+		const el = this.requirePetEl();
+		let caught = false;
+		let lastFrame: number | null = null;
+		while (!this.isDestroyed) {
+			if (this.actionLoopPaused) {
+				await this.waitWhilePaused();
+				lastFrame = null;
+				continue;
 			}
+			const now = await this.nextFrame();
+			const targetX = getTargetX();
+			if (targetX === null || this.isDestroyed) return;
+			if (this.actionLoopPaused) continue;
+			const elapsed = lastFrame === null ? 0 : Math.min(now - lastFrame, MAX_FRAME_MS);
+			lastFrame = now;
 
 			const { minLeft, maxLeft } = this.getHorizontalBounds();
-			const ballPos = this.chasingBall.getPosition();
-			const dx = ballPos.x - (this.currentX ?? 0);
+			const dx = Math.max(minLeft, Math.min(maxLeft, targetX)) - this.currentX;
+			const distance = Math.abs(dx);
+			if (distance <= (caught ? ESCAPE_DISTANCE : CATCH_DISTANCE)) {
+				if (!caught) {
+					caught = await onCatch();
+					lastFrame = null;
+				}
+				continue;
+			}
+			caught = false;
+
 			this.direction = dx < 0 ? -1 : 1;
-			const moveAmount = Math.sign(dx) * Math.min(Math.abs(dx), this.moveDist);
-
-			let newX = this.currentX + moveAmount;
-			if (newX < minLeft) newX = minLeft;
-			if (newX > maxLeft) newX = maxLeft;
-			this.currentX = newX;
-
-			const slideMs = i === steps - 1 ? CHASE_STEP_DELAY + STEP_PAUSE : CHASE_STEP_DELAY;
+			this.currentX += this.direction * Math.min(distance, (speed * elapsed) / 1000);
+			this.setAnimation("run");
 			el.setCssProps({
 				"--pixel-pets-left": `${this.currentX}px`,
 				"--pixel-pets-scale-x": `${this.direction}`,
-				"--pixel-pets-move-duration": `${slideMs}ms`,
+				"--pixel-pets-move-duration": "0ms",
 			});
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
-			this.setAnimation("run");
-
-			await this.sleep(CHASE_STEP_DELAY);
-			if (this.interruptAction) {
-				break;
-			}
 		}
-		this.setAnimation("idle");
+	}
+
+	private async pounce(): Promise<boolean> {
+		const ball = this.chasingBall;
+		const reach = this.animations.idle.frameWidth * this.scale;
+		if (!ball || ball.getHeightAboveGround() > reach) {
+			this.setAnimation("idle");
+			return false;
+		}
+		const jump = this.animations.jump2;
+		if (jump) {
+			this.setAnimation("jump2");
+			await this.sleep(jump.duration);
+		}
+		if (!this.actionLoopPaused) {
+			this.setAnimation("idle");
+		}
+		return true;
 	}
 
 	private async followCursorStep(): Promise<void> {

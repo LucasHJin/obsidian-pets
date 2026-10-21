@@ -130,6 +130,11 @@
 	height: var(--pixel-pets-ball-height);
 	z-index: var(--pixel-pets-layer-ball);
 }
+
+.pixel-pets-ball--vanishing {
+	opacity: 0;
+	transition: opacity 250ms ease-out;
+}
 .pixel-pets-ball img {
 	display: block;
 	image-rendering: pixelated;
