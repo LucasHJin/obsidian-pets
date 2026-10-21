@@ -11,6 +11,12 @@
 	initial-value: 1;
 }
 
+@property --pixel-pets-tooltip-pop {
+	syntax: "<number>";
+	inherits: false;
+	initial-value: 1;
+}
+
 .pixel-pets-view,
 .pixel-pets-overlay {
 	--pixel-pets-layer-background: 0;
@@ -105,7 +111,8 @@
 			var(--pixel-pets-scale, 1)
 	);
 	transform: translateX(calc(-50% + var(--pixel-pets-tooltip-offset))) translateY(-2px)
-		scaleX(var(--pixel-pets-scale-x, 1));
+		scaleX(var(--pixel-pets-scale-x, 1)) scale(var(--pixel-pets-tooltip-pop));
+	transform-origin: bottom center;
 	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
 	color: var(--text-normal);
 	padding: 4px 8px;
@@ -120,6 +127,25 @@
 
 .pixel-pets-pet:hover .pixel-pets-pet__tooltip {
 	opacity: 1;
+	animation: pixel-pets-tooltip-pop 300ms ease-out;
+}
+
+@keyframes pixel-pets-tooltip-pop {
+	0% {
+		--pixel-pets-tooltip-pop: 0.8;
+	}
+	55% {
+		--pixel-pets-tooltip-pop: 1.1;
+	}
+	100% {
+		--pixel-pets-tooltip-pop: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pixel-pets-pet:hover .pixel-pets-pet__tooltip {
+		animation: none;
+	}
 }
 
 .pixel-pets-ball {

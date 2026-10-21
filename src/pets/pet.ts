@@ -19,6 +19,7 @@ const ANIMATION_NAMES = [
 export type AnimationName = (typeof ANIMATION_NAMES)[number];
 
 const MOVE_TIMEOUT_MARGIN = 200;
+const TOOLTIP_POP_PEAK = 1.1;
 
 function isAnimationName(key: string): key is AnimationName {
 	return (ANIMATION_NAMES as readonly string[]).includes(key);
@@ -190,8 +191,15 @@ export abstract class Pet {
 		if (!tooltip || !this.hovered || this.container.offsetWidth === 0) return;
 
 		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": "0px" });
+		const rect = tooltip.getBoundingClientRect();
+		const center = (rect.left + rect.right) / 2;
+		const pop =
+			parseFloat(
+				window.getComputedStyle(tooltip).getPropertyValue("--pixel-pets-tooltip-pop"),
+			) || 1;
+		const halfWidth = ((rect.right - rect.left) / pop) * (TOOLTIP_POP_PEAK / 2);
 		const shift = getTooltipShift(
-			tooltip.getBoundingClientRect(),
+			{ left: center - halfWidth, right: center + halfWidth },
 			this.container.getBoundingClientRect(),
 		);
 		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": `${shift}px` });
