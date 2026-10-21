@@ -12,6 +12,7 @@ export class PetView extends ItemView {
 	private backgroundEl: HTMLImageElement | null = null;
 	private snowEl: HTMLImageElement | null = null;
 	private resizeObserver?: ResizeObserver;
+	private statusBarObserver?: ResizeObserver;
 	private resizeTimeout?: number;
 
 	constructor(leaf: WorkspaceLeaf, plugin: PetPlugin) {
@@ -65,6 +66,7 @@ export class PetView extends ItemView {
 		});
 		this.updateView();
 		this.setupResizeObserver();
+		this.keepActionsClearOfStatusBar();
 	}
 
 	updateView() {
@@ -128,6 +130,41 @@ export class PetView extends ItemView {
 		};
 	}
 
+	private keepActionsClearOfStatusBar() {
+		const statusBar = this.containerEl.doc.body.querySelector<HTMLElement>(".status-bar");
+		this.registerEvent(
+			this.app.workspace.on("layout-change", () => this.fitHeaderToStatusBar()),
+		);
+		this.registerEvent(this.app.workspace.on("resize", () => this.fitHeaderToStatusBar()));
+		if (statusBar && typeof ResizeObserver !== "undefined") {
+			this.statusBarObserver = new ResizeObserver(() => this.fitHeaderToStatusBar());
+			this.statusBarObserver.observe(statusBar);
+		}
+		this.fitHeaderToStatusBar();
+	}
+
+	private fitHeaderToStatusBar() {
+		const header = this.containerEl.querySelector<HTMLElement>(".view-header");
+		if (!header) return;
+		const statusBar = this.containerEl.doc.body.querySelector<HTMLElement>(".status-bar");
+		header.setCssProps({ "--pixel-pets-status-bar-inset": "0px" });
+		if (!statusBar) return;
+
+		const headerRect = header.getBoundingClientRect();
+		const barRect = statusBar.getBoundingClientRect();
+		const overlaps =
+			barRect.width > 0 &&
+			barRect.left < headerRect.right &&
+			barRect.right > headerRect.left &&
+			barRect.top < headerRect.bottom &&
+			barRect.bottom > headerRect.top;
+		if (overlaps) {
+			header.setCssProps({
+				"--pixel-pets-status-bar-inset": `${headerRect.right - barRect.left}px`,
+			});
+		}
+	}
+
 	private setupResizeObserver() {
 		if (typeof ResizeObserver === "undefined") return;
 
@@ -153,6 +190,7 @@ export class PetView extends ItemView {
 			}
 
 			if (width === lastWidth && height === lastHeight) return;
+			this.fitHeaderToStatusBar();
 			lastWidth = width;
 			lastHeight = height;
 
@@ -172,6 +210,8 @@ export class PetView extends ItemView {
 			this.resizeObserver.disconnect();
 			this.resizeObserver = undefined;
 		}
+		this.statusBarObserver?.disconnect();
+		this.statusBarObserver = undefined;
 		if (this.resizeTimeout !== undefined) {
 			window.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = undefined;

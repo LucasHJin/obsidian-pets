@@ -237,6 +237,7 @@ body.pixel-pets-hide-cursor {
 
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-actions {
 	display: flex;
+	margin-right: var(--pixel-pets-status-bar-inset, 0px);
 	width: auto;
 	height: auto;
 	visibility: visible;
