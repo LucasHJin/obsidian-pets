@@ -1,5 +1,5 @@
 import { heartAsset } from "../catalog/assets";
-import { Floor } from "../floor";
+import { Floor, PET_FEET_OFFSET } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 import { getTooltipShift } from "./tooltip-shift";
 
@@ -131,7 +131,7 @@ export abstract class Pet {
 
 	private getGroundTopValue(): string {
 		if (this.floor.kind === "bottom") {
-			return "calc(100% - 16px * var(--pixel-pets-scale, 1))";
+			return `calc(100% - ${PET_FEET_OFFSET}px * var(--pixel-pets-scale, 1))`;
 		}
 		return `${this.floor.value}%`;
 	}

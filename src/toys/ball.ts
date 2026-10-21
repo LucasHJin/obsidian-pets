@@ -1,5 +1,5 @@
 import { SoundPlayer } from "../audio/sounds";
-import { Floor } from "../floor";
+import { Floor, getGroundY } from "../floor";
 
 const MIN_SOUND_SPEED = 3;
 const REST_SPEED = 1.5;
@@ -81,12 +81,11 @@ export class Ball {
 	}
 
 	private getGroundHeight(): number {
-		const rect = this.container.getBoundingClientRect();
-		if (this.floor.kind === "bottom") {
-			return rect.height - this.radius - 1;
-		}
-		const fraction = this.floor.value / 100;
-		return rect.height * fraction + 15;
+		return getGroundY(this.floor, this.container.getBoundingClientRect().height, this.scale);
+	}
+
+	private getDrawnRadius(): number {
+		return this.radius * this.scale;
 	}
 
 	private update() {
@@ -96,25 +95,26 @@ export class Ball {
 			return;
 		}
 
+		const radius = this.getDrawnRadius();
 		this.vy += this.gravity;
 		this.x += this.vx;
 		this.y += this.vy;
-		if (this.x - this.radius < 0) {
-			this.x = this.radius;
+		if (this.x - radius < 0) {
+			this.x = radius;
 			this.playBounce(Math.abs(this.vx));
 			this.vx *= -this.damping;
-		} else if (this.x + this.radius > rect.width) {
-			this.x = rect.width - this.radius;
+		} else if (this.x + radius > rect.width) {
+			this.x = rect.width - radius;
 			this.playBounce(Math.abs(this.vx));
 			this.vx *= -this.damping;
 		}
 		const ground = this.getGroundHeight();
 		let resting = false;
-		if (this.y - this.radius < 0) {
-			this.y = this.radius;
+		if (this.y - radius < 0) {
+			this.y = radius;
 			this.vy *= -this.damping;
-		} else if (this.y + this.radius > ground) {
-			this.y = ground - this.radius;
+		} else if (this.y + radius > ground) {
+			this.y = ground - radius;
 			const impact = Math.abs(this.vy);
 			if (impact < REST_SPEED) {
 				this.vy = 0;
