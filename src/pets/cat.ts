@@ -4,9 +4,9 @@ import { Floor } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 
 const PASS_GUARD_DELAY = 100;
-const STEP_PAUSE = 100;
 const CHASE_SPEED = 4.5;
-const CATCH_DISTANCE = 4;
+const TOY_SPEED = 3.5;
+const ARRIVED_DISTANCE = 0.5;
 const ESCAPE_DISTANCE = 16;
 const MAX_FRAME_MS = 50;
 
@@ -15,8 +15,8 @@ export class Cat extends Pet {
 	private chasingBall: Ball | null = null;
 	private chasingCursor = false;
 	private getCursorX: (() => number) | null = null;
-	private cursorMoveDist: number;
 	private readonly chaseSpeed: number;
+	private readonly toySpeed: number;
 	private interruptAction = false;
 
 	constructor(
@@ -31,8 +31,8 @@ export class Cat extends Pet {
 	) {
 		super(container, animations, moveDist, floor, scale, petName, sounds);
 		this.canFly = canFly;
-		this.cursorMoveDist = moveDist * (0.7 + Math.random() * 0.6);
 		this.chaseSpeed = moveDist * CHASE_SPEED;
+		this.toySpeed = moveDist * TOY_SPEED * (0.85 + Math.random() * 0.3);
 	}
 
 	protected override async performAction(name: AnimationName, repeats = 1): Promise<void> {
@@ -102,11 +102,11 @@ export class Cat extends Pet {
 	protected override async runPriorityBehaviour(): Promise<boolean> {
 		if (this.chasingCursor) {
 			this.interruptAction = false;
-			while (this.chasingCursor && !this.isDestroyed) {
-				await this.followCursorStep();
-				await this.sleep(STEP_PAUSE);
-			}
-			this.freezeAtCurrentPosition();
+			await this.pursue(
+				() => (this.chasingCursor && this.getCursorX ? this.getCursorX() : null),
+				this.toySpeed,
+				() => this.stopAtToy(),
+			);
 			this.setAnimation("idle");
 			return true;
 		}
@@ -144,10 +144,11 @@ export class Cat extends Pet {
 	private async pursue(
 		getTargetX: () => number | null,
 		speed: number,
-		onCatch: () => Promise<boolean>,
+		onArrive: () => Promise<boolean>,
 	): Promise<void> {
 		const el = this.requirePetEl();
-		let caught = false;
+		let holding = false;
+		let done = false;
 		let lastFrame: number | null = null;
 		while (!this.isDestroyed) {
 			if (this.actionLoopPaused) {
@@ -163,18 +164,19 @@ export class Cat extends Pet {
 			lastFrame = now;
 
 			const { minLeft, maxLeft } = this.getHorizontalBounds();
-			const dx = Math.max(minLeft, Math.min(maxLeft, targetX)) - this.currentX;
-			const distance = Math.abs(dx);
-			if (distance <= (caught ? ESCAPE_DISTANCE : CATCH_DISTANCE)) {
-				if (!caught) {
-					caught = await onCatch();
+			const goalX = Math.max(minLeft, Math.min(maxLeft, targetX));
+			const distance = Math.abs(goalX - this.currentX);
+			if (holding && distance <= ESCAPE_DISTANCE) {
+				if (!done) {
+					done = await onArrive();
 					lastFrame = null;
 				}
 				continue;
 			}
-			caught = false;
+			holding = false;
+			done = false;
 
-			this.direction = dx < 0 ? -1 : 1;
+			this.direction = goalX < this.currentX ? -1 : 1;
 			this.currentX += this.direction * Math.min(distance, (speed * elapsed) / 1000);
 			this.setAnimation("run");
 			el.setCssProps({
@@ -183,6 +185,12 @@ export class Cat extends Pet {
 				"--pixel-pets-move-duration": "0ms",
 			});
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
+
+			if (Math.abs(goalX - this.currentX) < ARRIVED_DISTANCE) {
+				holding = true;
+				done = await onArrive();
+				lastFrame = null;
+			}
 		}
 	}
 
@@ -204,28 +212,8 @@ export class Cat extends Pet {
 		return true;
 	}
 
-	private async followCursorStep(): Promise<void> {
-		if (!this.getCursorX || this.isDestroyed) return;
-		const el = this.requirePetEl();
-		const { minLeft, maxLeft } = this.getHorizontalBounds();
-
-		const targetX = Math.max(minLeft, Math.min(maxLeft, this.getCursorX()));
-		const dx = targetX - this.currentX;
-		if (Math.abs(dx) < 2) {
-			this.setAnimation("idle");
-			return;
-		}
-
-		this.direction = dx < 0 ? -1 : 1;
-		const step = Math.sign(dx) * Math.min(Math.abs(dx), this.cursorMoveDist);
-		this.currentX = Math.max(minLeft, Math.min(maxLeft, this.currentX + step));
-
-		this.setAnimation("run");
-		el.setCssProps({
-			"--pixel-pets-left": `${this.currentX}px`,
-			"--pixel-pets-scale-x": `${this.direction}`,
-			"--pixel-pets-move-duration": `${STEP_PAUSE}ms`,
-		});
-		this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
+	private stopAtToy(): Promise<boolean> {
+		this.setAnimation("idle");
+		return Promise.resolve(true);
 	}
 }
