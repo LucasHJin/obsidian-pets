@@ -17,8 +17,8 @@
 	--pixel-pets-layer-snow: 1;
 	--pixel-pets-layer-pet: 2;
 	--pixel-pets-layer-ball: 3;
-	--pixel-pets-layer-heart: 1;
-	--pixel-pets-layer-tooltip: 2;
+	--pixel-pets-layer-heart: 2;
+	--pixel-pets-layer-tooltip: 1;
 }
 
 .pixel-pets-overlay {
