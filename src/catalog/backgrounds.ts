@@ -69,7 +69,7 @@ export const BACKGROUNDS: Background[] = [
 	},
 	{
 		id: "backgrounds/castlebg-1.png",
-		label: "Topiary Terrace",
+		label: "Castle Courtyard",
 		image: castle1Background,
 		floor: 82.1,
 	},
