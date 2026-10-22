@@ -27,6 +27,7 @@ export class Ball {
 	private isPaused = false;
 	private isDestroyed = false;
 	private isVanishing = false;
+	private isChased = false;
 	private startedUnsized = false;
 	scale: number;
 
@@ -135,7 +136,7 @@ export class Ball {
 		if (resting && Math.abs(this.vx) < VANISH_SPEED) {
 			this.vx = 0;
 			this.frameId = null;
-			this.vanish();
+			if (!this.isChased) this.vanish();
 			return;
 		}
 		this.frameId = window.requestAnimationFrame(() => this.update());
@@ -168,6 +169,16 @@ export class Ball {
 
 	getHeightAboveGround(): number {
 		return this.getGroundHeight() - (this.y + this.getDrawnRadius());
+	}
+
+	chase() {
+		this.isChased = true;
+	}
+
+	release() {
+		if (!this.isChased) return;
+		this.isChased = false;
+		this.wake();
 	}
 
 	wake() {

@@ -4,10 +4,15 @@ import { Floor } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 
 const PASS_GUARD_DELAY = 100;
-const CHASE_SPEED = 4.5;
+const CHASE_SPEED = 1.15;
 const TOY_SPEED = 3.5;
-const ARRIVED_DISTANCE = 0.5;
+const REACH_DISTANCE = 4;
 const ESCAPE_DISTANCE = 16;
+const ACCEL_SECONDS = 0.35;
+const SLIDE_SECONDS = 0.5;
+const RUN_START = 0.15;
+const RUN_STOP = 0.05;
+const SNAP_SPEED = 0.25;
 const MAX_FRAME_MS = 50;
 
 export class Cat extends Pet {
@@ -31,7 +36,8 @@ export class Cat extends Pet {
 	) {
 		super(container, animations, moveDist, floor, scale, petName, sounds);
 		this.canFly = canFly;
-		this.chaseSpeed = moveDist * CHASE_SPEED;
+		this.chaseSpeed =
+			(moveDist / ((animations.run ?? animations.idle).duration / 1000)) * CHASE_SPEED;
 		this.toySpeed = moveDist * TOY_SPEED * (0.85 + Math.random() * 0.3);
 	}
 
@@ -92,11 +98,13 @@ export class Cat extends Pet {
 	startChasingBall(ball: Ball) {
 		this.chasingBall = ball;
 		this.interruptAction = true;
+		ball.chase();
 	}
 	stopChasingBall(ball: Ball) {
 		if (this.chasingBall !== ball) return;
 		this.chasingBall = null;
 		this.interruptAction = false;
+		ball.release();
 	}
 
 	protected override async runPriorityBehaviour(): Promise<boolean> {
@@ -147,19 +155,19 @@ export class Cat extends Pet {
 		pounces: boolean,
 	): Promise<void> {
 		const el = this.requirePetEl();
+		const accel = speed / ACCEL_SECONDS;
+		const brake = speed / SLIDE_SECONDS;
+		let velocity = 0;
+		let running = false;
 		let holding = false;
 		let settled = false;
 		let jumpLeft = 0;
 		let lastFrame: number | null = null;
-		const arrive = () => {
-			settled = pounces ? this.startPounce() : true;
-			jumpLeft = settled && pounces ? this.pounceDuration() : 0;
-			if (jumpLeft === 0) this.setAnimation("idle");
-		};
 		while (!this.isDestroyed) {
 			if (this.actionLoopPaused) {
 				await this.waitWhilePaused();
 				lastFrame = null;
+				velocity = 0;
 				continue;
 			}
 			const now = await this.nextFrame();
@@ -167,7 +175,10 @@ export class Cat extends Pet {
 			if (this.actionLoopPaused) continue;
 			const elapsed = lastFrame === null ? 0 : Math.min(now - lastFrame, MAX_FRAME_MS);
 			lastFrame = now;
+			const dt = elapsed / 1000;
+			const wasJumping = jumpLeft > 0;
 			jumpLeft = Math.max(0, jumpLeft - elapsed);
+			if (wasJumping && jumpLeft === 0) this.chasingBall?.release();
 			const jumping = jumpLeft > 0;
 
 			const targetX = getTargetX();
@@ -178,22 +189,40 @@ export class Cat extends Pet {
 
 			const { minLeft, maxLeft } = this.getHorizontalBounds();
 			const goalX = Math.max(minLeft, Math.min(maxLeft, targetX));
-			const distance = Math.abs(goalX - this.currentX);
-			if (!jumping && holding && distance <= ESCAPE_DISTANCE) {
-				if (settled) this.setAnimation("idle");
-				else arrive();
-				continue;
-			}
-			if (!jumping && distance > ESCAPE_DISTANCE) {
+			const offset = goalX - this.currentX;
+			if (!jumping && Math.abs(offset) > ESCAPE_DISTANCE) {
 				holding = false;
 				settled = false;
 			}
 
-			if (distance >= ARRIVED_DISTANCE) {
-				this.direction = goalX < this.currentX ? -1 : 1;
+			const resting = holding && settled && !jumping;
+			const wanted = resting
+				? 0
+				: Math.sign(offset) * Math.min(speed, Math.sqrt(2 * brake * Math.abs(offset)));
+			const change = wanted - velocity;
+			const slowing = velocity !== 0 && Math.sign(change) !== Math.sign(velocity);
+			const limit = (slowing ? brake : accel) * dt;
+			velocity += Math.max(-limit, Math.min(limit, change));
+
+			let nextX = this.currentX + velocity * dt;
+			const passedGoal = Math.sign(goalX - nextX) !== Math.sign(offset);
+			if (!resting && passedGoal && Math.abs(velocity) <= speed * SNAP_SPEED) {
+				nextX = goalX;
+				velocity = 0;
 			}
-			this.currentX += this.direction * Math.min(distance, (speed * elapsed) / 1000);
-			this.setAnimation(jumping ? "jump2" : "run");
+			if (nextX <= minLeft || nextX >= maxLeft) {
+				nextX = Math.max(minLeft, Math.min(maxLeft, nextX));
+				velocity = 0;
+			}
+			this.currentX = nextX;
+
+			const pace = Math.abs(velocity) / speed;
+			const skidding =
+				velocity !== 0 && (resting || Math.sign(offset) !== Math.sign(velocity));
+			running = !skidding && (running ? pace > RUN_STOP : pace > RUN_START);
+			if (velocity !== 0) {
+				this.direction = velocity < 0 ? -1 : 1;
+			}
 			el.setCssProps({
 				"--pixel-pets-left": `${this.currentX}px`,
 				"--pixel-pets-scale-x": `${this.direction}`,
@@ -201,10 +230,15 @@ export class Cat extends Pet {
 			});
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 
-			if (!holding && Math.abs(goalX - this.currentX) < ARRIVED_DISTANCE) {
+			if (!holding && Math.abs(goalX - this.currentX) < REACH_DISTANCE) {
 				holding = true;
-				arrive();
 			}
+			if (holding && !settled && !jumping) {
+				settled = !pounces || this.startPounce();
+				jumpLeft = settled && pounces ? this.pounceDuration() : 0;
+			}
+			if (jumpLeft > 0) this.setAnimation("jump2");
+			else this.setAnimation(running ? "run" : "idle");
 		}
 	}
 
