@@ -105,7 +105,7 @@ export class Cat extends Pet {
 			await this.pursue(
 				() => (this.chasingCursor && this.getCursorX ? this.getCursorX() : null),
 				this.toySpeed,
-				() => this.stopAtToy(),
+				false,
 			);
 			this.setAnimation("idle");
 			return true;
@@ -115,7 +115,7 @@ export class Cat extends Pet {
 			await this.pursue(
 				() => this.chasingBall?.getPosition().x ?? null,
 				this.chaseSpeed,
-				() => this.pounce(),
+				true,
 			);
 			this.setAnimation("idle");
 			return true;
@@ -144,12 +144,18 @@ export class Cat extends Pet {
 	private async pursue(
 		getTargetX: () => number | null,
 		speed: number,
-		onArrive: () => Promise<boolean>,
+		pounces: boolean,
 	): Promise<void> {
 		const el = this.requirePetEl();
 		let holding = false;
-		let done = false;
+		let settled = false;
+		let jumpLeft = 0;
 		let lastFrame: number | null = null;
+		const arrive = () => {
+			settled = pounces ? this.startPounce() : true;
+			jumpLeft = settled && pounces ? this.pounceDuration() : 0;
+			if (jumpLeft === 0) this.setAnimation("idle");
+		};
 		while (!this.isDestroyed) {
 			if (this.actionLoopPaused) {
 				await this.waitWhilePaused();
@@ -157,28 +163,37 @@ export class Cat extends Pet {
 				continue;
 			}
 			const now = await this.nextFrame();
-			const targetX = getTargetX();
-			if (targetX === null || this.isDestroyed) return;
+			if (this.isDestroyed) return;
 			if (this.actionLoopPaused) continue;
 			const elapsed = lastFrame === null ? 0 : Math.min(now - lastFrame, MAX_FRAME_MS);
 			lastFrame = now;
+			jumpLeft = Math.max(0, jumpLeft - elapsed);
+			const jumping = jumpLeft > 0;
+
+			const targetX = getTargetX();
+			if (targetX === null) {
+				if (jumping) continue;
+				return;
+			}
 
 			const { minLeft, maxLeft } = this.getHorizontalBounds();
 			const goalX = Math.max(minLeft, Math.min(maxLeft, targetX));
 			const distance = Math.abs(goalX - this.currentX);
-			if (holding && distance <= ESCAPE_DISTANCE) {
-				if (!done) {
-					done = await onArrive();
-					lastFrame = null;
-				}
+			if (!jumping && holding && distance <= ESCAPE_DISTANCE) {
+				if (settled) this.setAnimation("idle");
+				else arrive();
 				continue;
 			}
-			holding = false;
-			done = false;
+			if (!jumping && distance > ESCAPE_DISTANCE) {
+				holding = false;
+				settled = false;
+			}
 
-			this.direction = goalX < this.currentX ? -1 : 1;
+			if (distance >= ARRIVED_DISTANCE) {
+				this.direction = goalX < this.currentX ? -1 : 1;
+			}
 			this.currentX += this.direction * Math.min(distance, (speed * elapsed) / 1000);
-			this.setAnimation("run");
+			this.setAnimation(jumping ? "jump2" : "run");
 			el.setCssProps({
 				"--pixel-pets-left": `${this.currentX}px`,
 				"--pixel-pets-scale-x": `${this.direction}`,
@@ -186,34 +201,22 @@ export class Cat extends Pet {
 			});
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 
-			if (Math.abs(goalX - this.currentX) < ARRIVED_DISTANCE) {
+			if (!holding && Math.abs(goalX - this.currentX) < ARRIVED_DISTANCE) {
 				holding = true;
-				done = await onArrive();
-				lastFrame = null;
+				arrive();
 			}
 		}
 	}
 
-	private async pounce(): Promise<boolean> {
-		const ball = this.chasingBall;
-		const reach = this.animations.idle.frameWidth * this.scale;
-		if (!ball || ball.getHeightAboveGround() > reach) {
-			this.setAnimation("idle");
-			return false;
-		}
-		const jump = this.animations.jump2;
-		if (jump) {
-			this.setAnimation("jump2");
-			await this.sleep(jump.duration);
-		}
-		if (!this.actionLoopPaused) {
-			this.setAnimation("idle");
-		}
-		return true;
+	private pounceDuration(): number {
+		return this.animations.jump2?.duration ?? 0;
 	}
 
-	private stopAtToy(): Promise<boolean> {
-		this.setAnimation("idle");
-		return Promise.resolve(true);
+	private startPounce(): boolean {
+		const ball = this.chasingBall;
+		const reach = this.animations.idle.frameWidth * this.scale;
+		if (!ball || ball.getHeightAboveGround() > reach) return false;
+		if (this.animations.jump2) this.setAnimation("jump2");
+		return true;
 	}
 }
