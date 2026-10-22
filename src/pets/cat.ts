@@ -96,6 +96,7 @@ export class Cat extends Pet {
 	}
 
 	startChasingBall(ball: Ball) {
+		if (this.chasingBall !== ball) this.chasingBall?.release();
 		this.chasingBall = ball;
 		this.interruptAction = true;
 		ball.chase();

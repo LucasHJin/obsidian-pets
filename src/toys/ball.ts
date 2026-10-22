@@ -6,6 +6,7 @@ const REST_SPEED = 1.5;
 const ROLL_FRICTION = 0.95;
 const VANISH_SPEED = 0.3;
 const VANISH_MS = 250;
+const CHASED_LIFETIME = 20000;
 
 export class Ball {
 	private container: HTMLElement;
@@ -173,6 +174,10 @@ export class Ball {
 
 	chase() {
 		this.isChased = true;
+		if (this.isDestroyed || this.isVanishing) return;
+		window.clearTimeout(this.lifetimeTimer);
+		this.lifetimeLeft = Math.max(this.lifetimeLeft, CHASED_LIFETIME);
+		if (!this.isPaused) this.startLifetimeTimer();
 	}
 
 	release() {
