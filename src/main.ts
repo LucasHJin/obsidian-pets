@@ -5,10 +5,11 @@ import { Stage } from "./stage";
 import { CatToyOverlay } from "./toys/cat-toy";
 import { SoundPlayer } from "./audio/sounds";
 import { PetSettingTab } from "./ui/settings-tab";
-import { SelectorModal } from "./ui/selector-modal";
+import { SelectorModal, SelectorPreview } from "./ui/selector-modal";
 import { PetNameModal } from "./ui/pet-name-modal";
 import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
+import { getIdleAnimation } from "./pets/pet-animations";
 import { BALLS } from "./catalog/balls";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 import { registerNewNoteNotices } from "./notices";
@@ -106,7 +107,11 @@ export default class PetPlugin extends Plugin {
 				}
 				const options = this.data.pets.map((pet) => {
 					const typeLabel = getPetType(pet.type)?.label;
-					return { value: pet.id, label: `${pet.name} (${typeLabel ?? pet.type})` };
+					return {
+						value: pet.id,
+						label: `${pet.name} (${typeLabel ?? pet.type})`,
+						preview: spritePreview(pet.type),
+					};
 				});
 				new SelectorModal(this.app, options, "Search pets to remove", (id) => {
 					void this.removePetById(id);
@@ -120,7 +125,11 @@ export default class PetPlugin extends Plugin {
 	}
 
 	openAddPetPicker() {
-		const options = PETS.map(({ id, label }) => ({ value: id, label }));
+		const options = PETS.map(({ id, label }) => ({
+			value: id,
+			label,
+			preview: spritePreview(id),
+		}));
 		new SelectorModal(this.app, options, "Search pets", (type) => {
 			new PetNameModal(this.app, (name) => {
 				void this.addPet(type, name);
@@ -172,7 +181,11 @@ export default class PetPlugin extends Plugin {
 	}
 
 	openBackgroundPicker() {
-		const options = BACKGROUNDS.map(({ id, label }) => ({ value: id, label }));
+		const options = BACKGROUNDS.map(({ id, label, image }) => ({
+			value: id,
+			label,
+			preview: { kind: "thumbnail", url: image } satisfies SelectorPreview,
+		}));
 		new SelectorModal(this.app, options, "Search backgrounds", (id) => {
 			void this.setBackground(id);
 		}).open();
@@ -423,4 +436,9 @@ export default class PetPlugin extends Plugin {
 
 		petLeaf.detach();
 	}
+}
+
+function spritePreview(type: string): SelectorPreview | undefined {
+	const animation = getIdleAnimation(type);
+	return animation ? { kind: "sprite", animation } : undefined;
 }
