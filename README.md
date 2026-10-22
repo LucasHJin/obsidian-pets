@@ -39,7 +39,7 @@ Toggle the cat ribbon icon to open and close the view.
 
 ![Indicator of which ribbon icon to press.](images/ribbon-preview.png)
 
-Here is a preview of what the plugin could look like (*Selected background: "Summer #1", added pet: "Christmas cat"*).
+Here is a preview of what the plugin could look like (*Selected background: "Orchard Farmhouse", added pet: "Christmas cat"*).
 
 ![Default layout for the plugin.](images/full-preview-1.png)
 
