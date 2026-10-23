@@ -1,0 +1,47 @@
+import { Pet, AnimationName, PetAnimations } from "./pet";
+import { SoundPlayer } from "../audio/sounds";
+import { Floor } from "../floor";
+
+export class Ghost extends Pet {
+	constructor(
+		container: HTMLElement,
+		animations: PetAnimations,
+		moveDist: number,
+		floor: Floor,
+		scale: number,
+		petName: string,
+		sounds: SoundPlayer,
+	) {
+		super(container, animations, moveDist, floor, scale, petName, sounds);
+	}
+
+	protected override playSound(): void {
+		this.sounds.playPet("ghost");
+	}
+
+	protected override async performAction(name: AnimationName): Promise<void> {
+		if (name !== "idle") return;
+		this.setAnimation("idle");
+		await this.sleep(this.animations["idle"].duration);
+	}
+
+	protected override async runRoutine(): Promise<void> {
+		const shouldMove = Math.random() < 0.9;
+
+		if (shouldMove) {
+			const repeats = 3 + Math.floor(Math.random() * 6);
+			for (let i = 0; i < repeats; i++) {
+				await this.move(this.animations["idle"].duration, "idle");
+			}
+		}
+
+		await this.performAction("idle");
+		const delay2 = 2000 + Math.random() * 3000;
+		await this.sleep(delay2);
+	}
+
+	protected override async playDeathAnimation() {
+		this.requirePetEl().addClass("pixel-pets-pet--fading");
+		await new Promise((resolve) => window.setTimeout(resolve, 1000));
+	}
+}
