@@ -116,7 +116,7 @@ export abstract class Pet {
 		this.snapTo(el, this.currentX);
 	}
 
-	private snapTo(el: HTMLElement, x: number) {
+	protected snapTo(el: HTMLElement, x: number) {
 		el.addClass("pixel-pets-pet--frozen");
 		el.setCssProps({ "--pixel-pets-left": `${x}px` });
 		void el.offsetHeight;
@@ -303,6 +303,17 @@ export abstract class Pet {
 		el.removeClass("pixel-pets-pet--frozen");
 		this.currentX = parseFloat(computedLeft);
 		this.interruptMove?.();
+	}
+
+	protected setLift(spritePixels: number, durationMs: number) {
+		this.petEl?.setCssProps({
+			"--pixel-pets-lift": `${spritePixels}px`,
+			"--pixel-pets-lift-duration": `${durationMs}ms`,
+		});
+	}
+
+	protected cancelSleep() {
+		this.sleeper?.finish();
 	}
 
 	protected move(duration: number, action?: AnimationName): Promise<void> {

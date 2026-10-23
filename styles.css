@@ -101,7 +101,10 @@
 	background-image: var(--pixel-pets-sprite-url);
 	background-size: var(--pixel-pets-sprite-size);
 	image-rendering: pixelated;
-	transition: left var(--pixel-pets-move-duration, 300ms) linear;
+	translate: 0 calc(var(--pixel-pets-lift, 0px) * var(--pixel-pets-scale, 1) * -1);
+	transition:
+		left var(--pixel-pets-move-duration, 300ms) linear,
+		translate var(--pixel-pets-lift-duration, 250ms) ease-out;
 	animation: pixel-pets-sprite var(--pixel-pets-sprite-duration)
 		steps(var(--pixel-pets-frame-count)) infinite;
 	z-index: var(--pixel-pets-layer-pet);

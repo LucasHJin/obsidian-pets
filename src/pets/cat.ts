@@ -2,6 +2,9 @@ import { Pet, AnimationName, PetAnimations } from "./pet";
 import { Ball } from "../toys/ball";
 import { Floor } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
+import { Bed, BedLookup, getBedLift } from "../furniture/bed";
+import { getBedSeatX } from "../furniture/placement";
+import { getSpriteBounds } from "../ui/sprite-preview";
 
 const PASS_GUARD_DELAY = 100;
 const CHASE_SPEED = 2;
@@ -15,6 +18,14 @@ const RUN_START = 0.15;
 const RUN_STOP = 0.05;
 const SNAP_SPEED = 0.25;
 const MAX_FRAME_MS = 50;
+const BED_CHANCE = 0.4;
+const BED_SLEEP_MIN_MS = 8000;
+const BED_SLEEP_MAX_MS = 20000;
+const BED_COOLDOWN_MS = 10000;
+const BED_LIFT_MS = 250;
+const BED_MIN_WALK_MS = 150;
+const BED_MAX_WALKS = 3;
+const BED_SEAT_TOLERANCE = 1;
 
 export class Cat extends Pet {
 	private canFly: boolean;
@@ -24,6 +35,13 @@ export class Cat extends Pet {
 	private readonly chaseSpeed: number;
 	private readonly toySpeed: number;
 	private interruptAction = false;
+	bedChance = BED_CHANCE;
+	bedSleepMs = { min: BED_SLEEP_MIN_MS, max: BED_SLEEP_MAX_MS };
+	private bed: Bed | null = null;
+	private bedSeated = false;
+	private bedWoken = false;
+	private bedArtOffset = 0;
+	private bedFreeAt = 0;
 
 	constructor(
 		container: HTMLElement,
@@ -34,6 +52,7 @@ export class Cat extends Pet {
 		petName: string,
 		sounds: SoundPlayer,
 		canFly = false,
+		private readonly beds: BedLookup | null = null,
 	) {
 		super(container, animations, moveDist, floor, scale, petName, sounds);
 		this.canFly = canFly;
@@ -52,13 +71,13 @@ export class Cat extends Pet {
 			case "fly":
 				for (let i = 0; i < repeats; i++) {
 					if (this.interruptAction) break;
-					await this.move(animation.duration, name);
+					await this.travel(animation.duration, name);
 				}
 				break;
 			case "jump":
 			case "jump2":
 				if (!this.interruptAction) {
-					await this.move(animation.duration, name);
+					await this.travel(animation.duration, name);
 				}
 				break;
 			case "sit":
@@ -88,6 +107,7 @@ export class Cat extends Pet {
 		this.getCursorX = getCursorX;
 		this.chasingCursor = true;
 		this.interruptAction = true;
+		this.wakeFromBed();
 	}
 
 	stopFollowingCursor(): void {
@@ -100,6 +120,7 @@ export class Cat extends Pet {
 		if (this.chasingBall !== ball) this.chasingBall?.release();
 		this.chasingBall = ball;
 		this.interruptAction = true;
+		this.wakeFromBed();
 		ball.chase();
 	}
 	stopChasingBall(ball: Ball) {
@@ -137,6 +158,140 @@ export class Cat extends Pet {
 		await super.runRoutine();
 		if (this.isDestroyed) return;
 		await this.sleep(PASS_GUARD_DELAY);
+	}
+
+	override async clampToContainer() {
+		await super.clampToContainer();
+		this.alignWithBed();
+	}
+
+	override async destroy() {
+		this.leaveBedNow();
+		await super.destroy();
+	}
+
+	override destroyImmediate() {
+		this.leaveBedNow();
+		super.destroyImmediate();
+	}
+
+	private async travel(duration: number, action: AnimationName): Promise<void> {
+		if (this.actionLoopPaused || this.isDestroyed) return;
+		const targetX = this.planMove(action);
+		const bed = this.chooseBed(targetX);
+		if (!bed) {
+			await this.slideTo(targetX, duration);
+			return;
+		}
+		await this.sleepInBed(bed, targetX, duration, action);
+		if (!this.isDestroyed) this.setAnimation(action);
+	}
+
+	private chooseBed(targetX: number): Bed | null {
+		if (!this.beds || !this.animations.sleep || this.bedChance <= 0) return null;
+		if (window.performance.now() < this.bedFreeAt) return null;
+		for (const bed of this.beds.findBedsOnPath(this.currentX, targetX)) {
+			if (Math.random() >= this.bedChance) continue;
+			if (bed.claim(() => this.wakeFromBed())) {
+				this.bed = bed;
+				this.bedWoken = false;
+				return bed;
+			}
+		}
+		return null;
+	}
+
+	private canStay(bed: Bed): boolean {
+		return !this.isDestroyed && !this.bedWoken && this.bed === bed;
+	}
+
+	private async sleepInBed(
+		bed: Bed,
+		plannedX: number,
+		duration: number,
+		action: AnimationName,
+	): Promise<void> {
+		try {
+			const sleeping = this.requireAnimation("sleep");
+			const bounds = await getSpriteBounds(sleeping);
+			if (!this.canStay(bed)) return;
+			const spriteHeight = bounds?.height ?? sleeping.frameWidth;
+			const lift = getBedLift(spriteHeight, bounds?.bottom ?? spriteHeight);
+			this.bedArtOffset = bounds ? (bounds.left + bounds.right) / 2 - bounds.width / 2 : 0;
+
+			const paceMs = duration / Math.max(1, Math.abs(plannedX - this.currentX));
+			if (action.includes("jump") && this.animations.run) this.setAnimation("run");
+			if (!(await this.walkToBed(bed, paceMs))) return;
+
+			this.bedSeated = true;
+			this.alignWithBed();
+			this.setAnimation("sleep");
+			this.setLift(lift, BED_LIFT_MS);
+			await this.sleep(BED_LIFT_MS);
+
+			let remaining =
+				this.bedSleepMs.min + Math.random() * (this.bedSleepMs.max - this.bedSleepMs.min);
+			while (remaining > 0 && this.canStay(bed)) {
+				await this.waitWhilePaused();
+				if (!this.canStay(bed)) break;
+				this.setAnimation("sleep");
+				const chunk = Math.min(remaining, sleeping.duration);
+				await this.sleep(chunk);
+				remaining -= chunk;
+			}
+
+			await this.waitWhilePaused();
+			if (this.isDestroyed) return;
+			this.setLift(0, BED_LIFT_MS);
+			this.bedSeated = false;
+			await this.sleep(BED_LIFT_MS);
+		} finally {
+			if (this.bed === bed) {
+				this.leaveBedNow();
+				this.bedFreeAt = window.performance.now() + BED_COOLDOWN_MS;
+			}
+		}
+	}
+
+	private async walkToBed(bed: Bed, paceMs: number): Promise<boolean> {
+		for (let walks = 0; walks < BED_MAX_WALKS; walks++) {
+			const side = Math.sign(bed.getCentre() - this.currentX) || this.direction;
+			const seatX = this.getSeatX(bed, side);
+			const distance = Math.abs(seatX - this.currentX);
+			if (distance <= BED_SEAT_TOLERANCE) break;
+			await this.slideTo(seatX, Math.max(BED_MIN_WALK_MS, paceMs * distance));
+			await this.waitWhilePaused();
+			if (!this.canStay(bed)) return false;
+		}
+		return this.canStay(bed);
+	}
+
+	private getSeatX(bed: Bed, direction: number): number {
+		const { minLeft, maxLeft } = this.getHorizontalBounds();
+		const x = getBedSeatX(bed.getCentre(), direction, this.bedArtOffset, this.scale);
+		return Math.max(minLeft, Math.min(maxLeft, x));
+	}
+
+	private alignWithBed() {
+		const el = this.petEl;
+		if (!el || !this.bed || !this.bedSeated || this.container.offsetWidth === 0) return;
+		const x = this.getSeatX(this.bed, this.direction);
+		if (Math.abs(x - this.currentX) < 0.5) return;
+		this.currentX = x;
+		this.snapTo(el, x);
+	}
+
+	private wakeFromBed() {
+		if (!this.bed) return;
+		this.bedWoken = true;
+		this.cancelSleep();
+	}
+
+	private leaveBedNow() {
+		this.bed?.release();
+		this.bed = null;
+		this.bedSeated = false;
+		this.bedWoken = true;
 	}
 
 	protected override routineActions(): AnimationName[] {

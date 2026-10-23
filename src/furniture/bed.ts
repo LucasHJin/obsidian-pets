@@ -1,12 +1,22 @@
 import { Floor, getGroundCss } from "../floor";
-import { BedSpan, getBedSpan } from "./placement";
+import { BedSpan, bedCentre, getBedSpan } from "./placement";
 
 export const BED_WIDTH = 50;
 export const BED_HEIGHT = 28;
+export const BED_CUSHION_BOTTOM = 21;
+
+export interface BedLookup {
+	findBedsOnPath(fromX: number, toX: number): Bed[];
+}
+
+export function getBedLift(spriteHeight: number, spriteBottom: number): number {
+	return BED_HEIGHT - BED_CUSHION_BOTTOM - (spriteHeight - spriteBottom);
+}
 
 export class Bed {
 	readonly el: HTMLElement;
 	occupied = false;
+	private onEvict: (() => void) | null = null;
 	private isDestroyed = false;
 
 	constructor(
@@ -33,6 +43,22 @@ export class Bed {
 		return getBedSpan(this.x, this.container.offsetWidth, BED_WIDTH * this.scale);
 	}
 
+	getCentre(): number {
+		return bedCentre(this.getSpan());
+	}
+
+	claim(onEvict: () => void): boolean {
+		if (this.occupied || this.isDestroyed) return false;
+		this.occupied = true;
+		this.onEvict = onEvict;
+		return true;
+	}
+
+	release() {
+		this.occupied = false;
+		this.onEvict = null;
+	}
+
 	setScale(scale: number) {
 		this.scale = scale;
 		this.el.setCssProps({ "--pixel-pets-scale": `${scale}` });
@@ -45,7 +71,9 @@ export class Bed {
 	destroy() {
 		if (this.isDestroyed) return;
 		this.isDestroyed = true;
-		this.occupied = false;
+		const evict = this.onEvict;
+		this.release();
 		this.el.remove();
+		evict?.();
 	}
 }

@@ -14,6 +14,31 @@ export function getBedSpan(x: number, containerWidth: number, bedWidth: number):
 	return { left: centre - half, right: centre + half };
 }
 
+export function bedCentre(span: BedSpan): number {
+	return (span.left + span.right) / 2;
+}
+
+export function getBedSeatX(
+	centre: number,
+	direction: number,
+	artOffset: number,
+	scale: number,
+): number {
+	return centre - direction * artOffset * scale;
+}
+
+export function findCrossedBeds<T extends { occupied: boolean; getSpan(): BedSpan }>(
+	beds: T[],
+	fromX: number,
+	toX: number,
+): T[] {
+	return beds
+		.map((bed) => ({ bed, centre: bedCentre(bed.getSpan()) }))
+		.filter(({ bed, centre }) => !bed.occupied && (centre - fromX) * (centre - toX) < 0)
+		.sort((a, b) => Math.abs(a.centre - fromX) - Math.abs(b.centre - fromX))
+		.map(({ bed }) => bed);
+}
+
 function mergeBlocked(blocked: Interval[]): Interval[] {
 	const merged: Interval[] = [];
 	for (const interval of [...blocked].sort((a, b) => a.start - b.start)) {

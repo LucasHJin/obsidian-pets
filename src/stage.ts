@@ -9,8 +9,8 @@ import { Cat } from "./pets/cat";
 import { Bunny } from "./pets/bunny";
 import { Ghost } from "./pets/ghost";
 import { Ball } from "./toys/ball";
-import { Bed } from "./furniture/bed";
-import { BedSpan } from "./furniture/placement";
+import { Bed, BedLookup } from "./furniture/bed";
+import { BedSpan, findCrossedBeds } from "./furniture/placement";
 import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "./pets/pet-animations";
 
 export interface BedState extends BedSpan {
@@ -23,7 +23,7 @@ interface StageOptions {
 	ballLifetime: number;
 }
 
-export class Stage {
+export class Stage implements BedLookup {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
 	beds: { id: string; bed: Bed }[] = [];
@@ -58,6 +58,7 @@ export class Stage {
 					singlePet.name,
 					this.plugin.sounds,
 					petType.flying,
+					this,
 				);
 				if (this.getCursorX) {
 					cat.startFollowingCursor(this.getCursorX);
@@ -139,6 +140,14 @@ export class Stage {
 		this.beds = [];
 	}
 
+	findBedsOnPath(fromX: number, toX: number): Bed[] {
+		return findCrossedBeds(
+			this.beds.map(({ bed }) => bed),
+			fromX,
+			toX,
+		);
+	}
+
 	getBedStates(): BedState[] {
 		return this.beds.map(({ id, bed }) => ({
 			id,
@@ -218,6 +227,9 @@ export class Stage {
 	}
 
 	updatePetSize() {
+		for (const { bed } of this.beds) {
+			bed.setScale(this.plugin.data.petSize);
+		}
 		for (const { pet } of this.pets) {
 			pet.scale = this.plugin.data.petSize;
 			pet.petEl?.setCssProps({
@@ -232,9 +244,6 @@ export class Stage {
 					"--pixel-pets-scale": `${this.plugin.data.petSize}`,
 				});
 			}
-		}
-		for (const { bed } of this.beds) {
-			bed.setScale(this.plugin.data.petSize);
 		}
 	}
 
