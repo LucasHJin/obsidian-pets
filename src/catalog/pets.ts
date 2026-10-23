@@ -5,6 +5,7 @@ export interface PetType {
 	label: string;
 	species: Species;
 	flying?: boolean;
+	noJump?: boolean;
 }
 
 export const PETS: PetType[] = [
@@ -29,7 +30,7 @@ export const PETS: PetType[] = [
 	{ id: "pets/tiger-cat", label: "Tiger cat", species: "cat" },
 	{ id: "pets/vampire-cat", label: "Vampire cat", species: "cat" },
 	{ id: "pets/white-cat", label: "White cat", species: "cat" },
-	{ id: "pets/witch-cat", label: "Witch cat", species: "cat", flying: true },
+	{ id: "pets/witch-cat", label: "Witch cat", species: "cat", flying: true, noJump: true },
 ];
 
 export function getPetType(id: string): PetType | undefined {
