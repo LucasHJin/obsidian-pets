@@ -12,6 +12,7 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
     - You can play fetch and throw balls for your pets to retrieve
     - You can pet your pets
     - You can get them to follow you with a pet toy
+    - You can put out cat beds for your cats to nap in
 - ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
 
 ## Getting Started
@@ -61,6 +62,9 @@ Here is what it looks like if you enable the full vault overlay.
 - Interacting with pets
     - `Add a ball`: Chooses a random ball and launches it in the view for a pet to chase after.
     - `Cat toy mouse toggle`: Changes your mouse to a cat toy for your cats to follow.
+- Cat beds
+    - `Add a cat bed`: Choose a bed and place it in the view. Cats walking past a free bed sometimes curl up and sleep in it. Up to three beds at a time.
+    - `Remove all cat beds`: Removes every bed from the view.
 - Background
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.
 
