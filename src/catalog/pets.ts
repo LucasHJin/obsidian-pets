@@ -28,6 +28,8 @@ export const PETS: PetType[] = [
 	{ id: "pets/grey-bunny", label: "Grey bunny", species: "bunny" },
 	{ id: "pets/grey-cat", label: "Grey cat", species: "cat" },
 	{ id: "pets/lilac-cat", label: "Lilac cat", species: "cat" },
+	{ id: "pets/mint-ghost", label: "Mint ghost", species: "ghost" },
+	{ id: "pets/pink-ghost", label: "Pink ghost", species: "ghost" },
 	{ id: "pets/pirate-cat", label: "Pirate cat", species: "cat" },
 	{ id: "pets/pirate-v2-cat", label: "Pirate cat v2", species: "cat" },
 	{ id: "pets/pirate-v3-cat", label: "Pirate cat v3", species: "cat" },
