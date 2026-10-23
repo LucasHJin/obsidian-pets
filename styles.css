@@ -255,14 +255,9 @@ body.pixel-pets-hide-cursor {
 	padding: 8px;
 }
 
-.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-title {
-	display: flex;
-	order: -1;
-	margin-right: auto;
-}
-
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-actions {
 	display: flex;
+	margin-left: auto;
 	margin-right: var(--pixel-pets-status-bar-inset, 0px);
 	width: auto;
 	height: auto;
@@ -278,6 +273,7 @@ body.pixel-pets-hide-cursor {
 }
 
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-nav-buttons,
+.workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-title-container,
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-header-icon,
 .workspace-leaf > .workspace-leaf-content[data-type="pet-view"] .view-action.mod-bookmark,
 .workspace-leaf
