@@ -312,6 +312,12 @@ body.pixel-pets-hide-cursor {
 		steps(var(--pixel-pets-frame-count)) infinite;
 }
 
+.pixel-pets-suggestion__image {
+	flex: none;
+	display: block;
+	image-rendering: pixelated;
+}
+
 .pixel-pets-suggestion__thumbnail {
 	flex: none;
 	width: 64px;
