@@ -12,6 +12,7 @@ export const PETS: PetType[] = [
 	{ id: "pets/batman-black-cat", label: "Black batman cat", species: "cat" },
 	{ id: "pets/batman-blue-cat", label: "Blue batman cat", species: "cat" },
 	{ id: "pets/black-cat", label: "Black cat", species: "cat" },
+	{ id: "pets/brown-bunny", label: "Brown bunny", species: "bunny" },
 	{ id: "pets/brown-cat", label: "Brown cat", species: "cat" },
 	{ id: "pets/chocolate-cat", label: "Chocolate cat", species: "cat" },
 	{ id: "pets/xmas-cat", label: "Christmas cat", species: "cat" },
@@ -34,6 +35,7 @@ export const PETS: PetType[] = [
 	{ id: "pets/three-cat", label: "Tri-colored cat", species: "cat" },
 	{ id: "pets/tiger-cat", label: "Tiger cat", species: "cat" },
 	{ id: "pets/vampire-cat", label: "Vampire cat", species: "cat" },
+	{ id: "pets/white-bunny", label: "White bunny", species: "bunny" },
 	{ id: "pets/white-cat", label: "White cat", species: "cat" },
 	{ id: "pets/witch-cat", label: "Witch cat", species: "cat", flying: true, noJump: true },
 ];
