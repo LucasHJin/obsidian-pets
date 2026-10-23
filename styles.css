@@ -21,8 +21,9 @@
 .pixel-pets-overlay {
 	--pixel-pets-layer-background: 0;
 	--pixel-pets-layer-snow: 1;
-	--pixel-pets-layer-pet: 2;
-	--pixel-pets-layer-ball: 3;
+	--pixel-pets-layer-bed: 2;
+	--pixel-pets-layer-pet: 3;
+	--pixel-pets-layer-ball: 4;
 	--pixel-pets-layer-heart: 2;
 	--pixel-pets-layer-tooltip: 1;
 }
@@ -70,6 +71,23 @@
 	z-index: var(--pixel-pets-layer-snow);
 }
 
+.pixel-pets-bed {
+	position: absolute;
+	left: clamp(
+		calc(var(--pixel-pets-bed-width) * var(--pixel-pets-scale, 1) / 2),
+		calc(var(--pixel-pets-bed-x) * 100%),
+		calc(100% - var(--pixel-pets-bed-width) * var(--pixel-pets-scale, 1) / 2)
+	);
+	top: var(--pixel-pets-bed-ground);
+	width: calc(var(--pixel-pets-bed-width) * var(--pixel-pets-scale, 1));
+	height: calc(var(--pixel-pets-bed-height) * var(--pixel-pets-scale, 1));
+	max-width: none;
+	transform: translate(-50%, -100%);
+	image-rendering: pixelated;
+	pointer-events: none;
+	z-index: var(--pixel-pets-layer-bed);
+}
+
 .pixel-pets-pet {
 	position: absolute;
 	width: var(--pixel-pets-pet-size);
@@ -83,7 +101,10 @@
 	background-image: var(--pixel-pets-sprite-url);
 	background-size: var(--pixel-pets-sprite-size);
 	image-rendering: pixelated;
-	transition: left var(--pixel-pets-move-duration, 300ms) linear;
+	translate: 0 calc(var(--pixel-pets-lift, 0px) * var(--pixel-pets-scale, 1) * -1);
+	transition:
+		left var(--pixel-pets-move-duration, 300ms) linear,
+		translate var(--pixel-pets-lift-duration, 250ms) ease-out;
 	animation: pixel-pets-sprite var(--pixel-pets-sprite-duration)
 		steps(var(--pixel-pets-frame-count)) infinite;
 	z-index: var(--pixel-pets-layer-pet);
@@ -310,6 +331,12 @@ body.pixel-pets-hide-cursor {
 .pixel-pets-suggestion.is-selected .pixel-pets-suggestion__sprite {
 	animation: pixel-pets-sprite var(--pixel-pets-sprite-duration)
 		steps(var(--pixel-pets-frame-count)) infinite;
+}
+
+.pixel-pets-suggestion__image {
+	flex: none;
+	display: block;
+	image-rendering: pixelated;
 }
 
 .pixel-pets-suggestion__thumbnail {

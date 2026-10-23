@@ -116,7 +116,7 @@ export abstract class Pet {
 		this.snapTo(el, this.currentX);
 	}
 
-	private snapTo(el: HTMLElement, x: number) {
+	protected snapTo(el: HTMLElement, x: number) {
 		el.addClass("pixel-pets-pet--frozen");
 		el.setCssProps({ "--pixel-pets-left": `${x}px` });
 		void el.offsetHeight;
@@ -305,9 +305,23 @@ export abstract class Pet {
 		this.interruptMove?.();
 	}
 
+	protected setLift(spritePixels: number, durationMs: number) {
+		this.petEl?.setCssProps({
+			"--pixel-pets-lift": `${spritePixels}px`,
+			"--pixel-pets-lift-duration": `${durationMs}ms`,
+		});
+	}
+
+	protected cancelSleep() {
+		this.sleeper?.finish();
+	}
+
 	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused || this.isDestroyed) return Promise.resolve();
-		const el = this.requirePetEl();
+		return this.slideTo(this.planMove(action), duration);
+	}
+
+	protected planMove(action?: AnimationName): number {
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		const magnitude = action?.includes("jump")
@@ -321,11 +335,15 @@ export abstract class Pet {
 		if (possibleX < minLeft || possibleX > maxLeft) {
 			dx = -dx;
 		}
-		const targetX = Math.max(minLeft, Math.min(maxLeft, this.currentX + dx));
+		return Math.max(minLeft, Math.min(maxLeft, this.currentX + dx));
+	}
 
+	protected slideTo(targetX: number, duration: number): Promise<void> {
+		if (this.actionLoopPaused || this.isDestroyed) return Promise.resolve();
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
+		const el = this.requirePetEl();
 
 		this.direction = targetX < this.currentX ? -1 : 1;
 

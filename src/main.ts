@@ -11,8 +11,21 @@ import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
 import { getIdleAnimation } from "./pets/pet-animations";
 import { BALLS } from "./catalog/balls";
-import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
+import { BEDS, getBed } from "./catalog/beds";
+import { BED_WIDTH } from "./furniture/bed";
+import { pickBedX } from "./furniture/placement";
+import {
+	BedInstance,
+	MAX_BEDS,
+	PetInstance,
+	PetPluginData,
+	deleteChatDatabase,
+	nextBedId,
+	resolveSavedData,
+} from "./data";
 import { registerNewNoteNotices } from "./notices";
+
+const FALLBACK_STAGE_WIDTH = 300;
 
 export default class PetPlugin extends Plugin {
 	data!: PetPluginData;
@@ -37,10 +50,7 @@ export default class PetPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(async () => {
 			if (this.data.overlayMode) {
 				await this.closeView();
-				this.overlayView = new OverlayPetView(this, this.mainDocument);
-				for (const pet of this.data.pets) {
-					this.overlayView.stage.addPet(pet);
-				}
+				this.startOverlay();
 			} else {
 				const isOpen =
 					hadPetLeaf || this.app.workspace.getLeavesOfType(VIEW_TYPE_PET).length > 0;
@@ -84,6 +94,12 @@ export default class PetPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "add-cat-bed",
+			name: "Add a cat bed",
+			callback: () => this.openAddBedPicker(),
+		});
+
+		this.addCommand({
 			id: "add-cat-toy-dropdown",
 			name: "Cat toy mouse toggle",
 			callback: async () => this.toggleCatToy(),
@@ -94,6 +110,14 @@ export default class PetPlugin extends Plugin {
 			name: "Remove all pets",
 			callback: async () => {
 				await this.removeAllPetsWithNotice();
+			},
+		});
+
+		this.addCommand({
+			id: "clear-all-cat-beds",
+			name: "Remove all cat beds",
+			callback: async () => {
+				await this.removeAllBedsWithNotice();
 			},
 		});
 
@@ -134,6 +158,21 @@ export default class PetPlugin extends Plugin {
 			new PetNameModal(this.app, getIdleAnimation(type), (name) => {
 				void this.addPet(type, name);
 			}).open();
+		}).open();
+	}
+
+	openAddBedPicker() {
+		if (this.data.beds.length >= MAX_BEDS) {
+			this.noticeBedsFull();
+			return;
+		}
+		const options = BEDS.map(({ id, label, image }) => ({
+			value: id,
+			label,
+			preview: { kind: "image", url: image } satisfies SelectorPreview,
+		}));
+		new SelectorModal(this.app, options, "Search cat beds", (id) => {
+			void this.addBed(id);
 		}).open();
 	}
 
@@ -297,6 +336,57 @@ export default class PetPlugin extends Plugin {
 		}
 	}
 
+	async addBed(color: string): Promise<void> {
+		if (!getBed(color)) return;
+		if (this.data.beds.length >= MAX_BEDS) {
+			this.noticeBedsFull();
+			return;
+		}
+		await this.openViewIfClosed();
+		const stages = this.getStages();
+		const width = stages[0]?.container.offsetWidth || FALLBACK_STAGE_WIDTH;
+		const bed: BedInstance = {
+			id: nextBedId(this.data.beds),
+			color,
+			x: pickBedX(
+				width,
+				BED_WIDTH * this.data.petSize,
+				this.data.beds.map((existing) => existing.x),
+			),
+		};
+		this.data.beds.push(bed);
+		await this.saveSettings();
+
+		for (const stage of stages) {
+			stage.addBed(bed);
+		}
+	}
+
+	getBedList(): BedInstance[] {
+		return this.data.beds;
+	}
+
+	async clearAllBeds(): Promise<void> {
+		this.data.beds = [];
+		await this.saveSettings();
+
+		for (const stage of this.getStages()) {
+			stage.removeAllBeds();
+		}
+	}
+
+	async removeAllBedsWithNotice(): Promise<void> {
+		if (this.data.beds.length === 0) {
+			new Notice("You have no cat beds to remove.");
+			return;
+		}
+		await this.clearAllBeds();
+	}
+
+	private noticeBedsFull() {
+		new Notice(`You already have ${MAX_BEDS} cat beds. Remove them to add more.`);
+	}
+
 	getPetList(): PetInstance[] {
 		return this.data.pets;
 	}
@@ -338,16 +428,24 @@ export default class PetPlugin extends Plugin {
 
 		if (enabled) {
 			await this.closeView();
-			this.overlayView = new OverlayPetView(this, this.mainDocument);
-			for (const pet of this.data.pets) {
-				this.overlayView.stage.addPet(pet);
-			}
+			this.startOverlay();
 		} else {
 			if (this.overlayView) {
 				this.overlayView.destroy();
 				this.overlayView = null;
 			}
 			await this.openView();
+		}
+	}
+
+	private startOverlay() {
+		const overlay = new OverlayPetView(this, this.mainDocument);
+		this.overlayView = overlay;
+		for (const pet of this.data.pets) {
+			overlay.stage.addPet(pet);
+		}
+		for (const bed of this.data.beds) {
+			overlay.stage.addBed(bed);
 		}
 	}
 

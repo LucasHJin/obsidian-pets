@@ -1,23 +1,32 @@
 import PetPlugin from "./main";
-import { PetInstance } from "./data";
+import { BedInstance, PetInstance } from "./data";
 import { Floor } from "./floor";
 import { getPetType } from "./catalog/pets";
 import { getBallImage } from "./catalog/balls";
+import { getBedImage } from "./catalog/beds";
 import { Pet } from "./pets/pet";
 import { Cat } from "./pets/cat";
 import { Bunny } from "./pets/bunny";
 import { Ghost } from "./pets/ghost";
 import { Ball } from "./toys/ball";
+import { Bed, BedLookup } from "./furniture/bed";
+import { BedSpan, findCrossedBeds } from "./furniture/placement";
 import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "./pets/pet-animations";
+
+export interface BedState extends BedSpan {
+	id: string;
+	occupied: boolean;
+}
 
 interface StageOptions {
 	getFloor: () => Floor;
 	ballLifetime: number;
 }
 
-export class Stage {
+export class Stage implements BedLookup {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
+	beds: { id: string; bed: Bed }[] = [];
 	private getCursorX: (() => number) | null = null;
 	private paused = false;
 
@@ -49,6 +58,7 @@ export class Stage {
 					singlePet.name,
 					this.plugin.sounds,
 					petType.flying,
+					this,
 				);
 				if (this.getCursorX) {
 					cat.startFollowingCursor(this.getCursorX);
@@ -105,6 +115,45 @@ export class Stage {
 			void pet.destroy();
 		}
 		this.pets = [];
+	}
+
+	addBed(instance: BedInstance) {
+		if (this.beds.some((b) => b.id === instance.id)) return;
+		try {
+			const bed = new Bed(
+				this.container,
+				getBedImage(instance.color),
+				instance.x,
+				this.options.getFloor(),
+				this.plugin.data.petSize,
+			);
+			this.beds.push({ id: instance.id, bed });
+		} catch (error: unknown) {
+			console.error(`Failed to create bed ${instance.id}:`, error);
+		}
+	}
+
+	removeAllBeds() {
+		for (const { bed } of this.beds) {
+			bed.destroy();
+		}
+		this.beds = [];
+	}
+
+	findBedsOnPath(fromX: number, toX: number): Bed[] {
+		return findCrossedBeds(
+			this.beds.map(({ bed }) => bed),
+			fromX,
+			toX,
+		);
+	}
+
+	getBedStates(): BedState[] {
+		return this.beds.map(({ id, bed }) => ({
+			id,
+			occupied: bed.occupied,
+			...bed.getSpan(),
+		}));
 	}
 
 	throwBall(id: string) {
@@ -178,6 +227,9 @@ export class Stage {
 	}
 
 	updatePetSize() {
+		for (const { bed } of this.beds) {
+			bed.setScale(this.plugin.data.petSize);
+		}
 		for (const { pet } of this.pets) {
 			pet.scale = this.plugin.data.petSize;
 			pet.petEl?.setCssProps({
@@ -200,6 +252,9 @@ export class Stage {
 		for (const { pet } of this.pets) {
 			pet.updateVerticalPosition(floor);
 		}
+		for (const { bed } of this.beds) {
+			bed.setFloor(floor);
+		}
 	}
 
 	async clampPets() {
@@ -217,5 +272,6 @@ export class Stage {
 		for (const { ball } of [...this.balls]) {
 			ball.destroy();
 		}
+		this.removeAllBeds();
 	}
 }

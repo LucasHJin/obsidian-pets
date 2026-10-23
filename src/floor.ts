@@ -8,3 +8,10 @@ export function getGroundY(floor: Floor, height: number, scale: number): number 
 	}
 	return (height * floor.value) / 100 + PET_FEET_OFFSET * scale;
 }
+
+export function getGroundCss(floor: Floor): string {
+	if (floor.kind === "bottom") {
+		return "100%";
+	}
+	return `calc(${floor.value}% + ${PET_FEET_OFFSET}px * var(--pixel-pets-scale, 1))`;
+}

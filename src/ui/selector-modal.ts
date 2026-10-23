@@ -3,7 +3,9 @@ import { AnimationConfig } from "../pets/pet";
 import { createSprite, getCenteringOffset, getSpriteBounds } from "./sprite-preview";
 
 export type SelectorPreview =
-	{ kind: "sprite"; animation: AnimationConfig } | { kind: "thumbnail"; url?: string };
+	| { kind: "sprite"; animation: AnimationConfig }
+	| { kind: "thumbnail"; url?: string }
+	| { kind: "image"; url: string };
 
 export interface SelectorOption {
 	value: string;
@@ -39,6 +41,8 @@ export class SelectorModal extends FuzzySuggestModal<SelectorOption> {
 		el.addClass("pixel-pets-suggestion");
 		if (preview.kind === "sprite") {
 			this.renderSprite(el, preview.animation);
+		} else if (preview.kind === "image") {
+			this.renderImage(el, preview.url);
 		} else {
 			this.renderThumbnail(el, preview.url);
 		}
@@ -60,6 +64,13 @@ export class SelectorModal extends FuzzySuggestModal<SelectorOption> {
 				"--pixel-pets-sprite-offset-x": `${offset.x}px`,
 				"--pixel-pets-sprite-offset-y": `${offset.y}px`,
 			});
+		});
+	}
+
+	private renderImage(el: HTMLElement, url: string) {
+		el.createEl("img", {
+			cls: "pixel-pets-suggestion__image",
+			attr: { src: url, alt: "" },
 		});
 	}
 
