@@ -8,6 +8,7 @@ const CHASE_SPEED = 2;
 const TOY_SPEED = 3.5;
 const REACH_DISTANCE = 4;
 const ESCAPE_DISTANCE = 16;
+const POUNCE_LEAD = 0.75;
 const ACCEL_SECONDS = 0.35;
 const SLIDE_SECONDS = 0.5;
 const RUN_START = 0.15;
@@ -158,6 +159,9 @@ export class Cat extends Pet {
 		const el = this.requirePetEl();
 		const accel = speed / ACCEL_SECONDS;
 		const brake = speed / SLIDE_SECONDS;
+		const lead = pounces
+			? this.animations.idle.frameWidth * this.scale * POUNCE_LEAD
+			: REACH_DISTANCE;
 		let velocity = 0;
 		let running = false;
 		let holding = false;
@@ -191,7 +195,7 @@ export class Cat extends Pet {
 			const { minLeft, maxLeft } = this.getHorizontalBounds();
 			const goalX = Math.max(minLeft, Math.min(maxLeft, targetX));
 			const offset = goalX - this.currentX;
-			if (!jumping && Math.abs(offset) > ESCAPE_DISTANCE) {
+			if (!jumping && Math.abs(offset) > lead + ESCAPE_DISTANCE) {
 				holding = false;
 				settled = false;
 			}
@@ -231,10 +235,11 @@ export class Cat extends Pet {
 			});
 			this.tooltipEl?.setCssProps({ "--pixel-pets-scale-x": `${this.direction}` });
 
-			if (!holding && Math.abs(goalX - this.currentX) < REACH_DISTANCE) {
+			const distance = Math.abs(goalX - this.currentX);
+			if (!holding && distance < REACH_DISTANCE) {
 				holding = true;
 			}
-			if (holding && !settled && !jumping) {
+			if (!settled && !jumping && distance < lead) {
 				settled = !pounces || this.startPounce();
 				jumpLeft = settled && pounces ? this.pounceDuration() : 0;
 			}
