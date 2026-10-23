@@ -21,8 +21,9 @@
 .pixel-pets-overlay {
 	--pixel-pets-layer-background: 0;
 	--pixel-pets-layer-snow: 1;
-	--pixel-pets-layer-pet: 2;
-	--pixel-pets-layer-ball: 3;
+	--pixel-pets-layer-bed: 2;
+	--pixel-pets-layer-pet: 3;
+	--pixel-pets-layer-ball: 4;
 	--pixel-pets-layer-heart: 2;
 	--pixel-pets-layer-tooltip: 1;
 }
@@ -68,6 +69,23 @@
 	height: 100%;
 	object-fit: cover;
 	z-index: var(--pixel-pets-layer-snow);
+}
+
+.pixel-pets-bed {
+	position: absolute;
+	left: clamp(
+		calc(var(--pixel-pets-bed-width) * var(--pixel-pets-scale, 1) / 2),
+		calc(var(--pixel-pets-bed-x) * 100%),
+		calc(100% - var(--pixel-pets-bed-width) * var(--pixel-pets-scale, 1) / 2)
+	);
+	top: var(--pixel-pets-bed-ground);
+	width: calc(var(--pixel-pets-bed-width) * var(--pixel-pets-scale, 1));
+	height: calc(var(--pixel-pets-bed-height) * var(--pixel-pets-scale, 1));
+	max-width: none;
+	transform: translate(-50%, -100%);
+	image-rendering: pixelated;
+	pointer-events: none;
+	z-index: var(--pixel-pets-layer-bed);
 }
 
 .pixel-pets-pet {

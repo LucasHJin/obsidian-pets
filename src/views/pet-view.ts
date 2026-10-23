@@ -55,6 +55,10 @@ export class PetView extends ItemView {
 			this.plugin.throwRandomBall();
 		});
 
+		this.addAction("bed", "Add a cat bed", () => {
+			this.plugin.openAddBedPicker();
+		});
+
 		this.addAction("paw-print", "Add a pet", () => {
 			this.plugin.openAddPetPicker();
 		});
@@ -82,6 +86,10 @@ export class PetView extends ItemView {
 			if (!existingPetIds.has(pet.id)) {
 				this.stage.addPet(pet);
 			}
+		}
+
+		for (const bed of this.plugin.getBedList()) {
+			this.stage.addBed(bed);
 		}
 	}
 
