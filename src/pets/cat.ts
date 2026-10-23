@@ -4,7 +4,7 @@ import { Floor } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 
 const PASS_GUARD_DELAY = 100;
-const CHASE_SPEED = 1.15;
+const CHASE_SPEED = 2;
 const TOY_SPEED = 3.5;
 const REACH_DISTANCE = 4;
 const ESCAPE_DISTANCE = 16;
