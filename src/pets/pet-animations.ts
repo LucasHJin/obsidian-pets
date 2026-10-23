@@ -1,6 +1,6 @@
 import { AnimationConfig, PetAnimations } from "./pet";
 import { getPetAsset } from "../catalog/assets";
-import { getPetType } from "../catalog/pets";
+import { PetType, Species, getPetType } from "../catalog/pets";
 
 function alterDuration(base: number, variation = 100): number {
 	const offset = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
@@ -145,15 +145,17 @@ export function getGhostAnimations(type: string): PetAnimations {
 	return animations;
 }
 
+const ANIMATION_BUILDERS: Record<Species, (type: string) => PetAnimations> = {
+	cat: getCatAnimations,
+	bunny: getBunnyAnimations,
+	ghost: getGhostAnimations,
+};
+
+export function getPetAnimations(petType: PetType): PetAnimations {
+	return ANIMATION_BUILDERS[petType.species](petType.id);
+}
+
 export function getIdleAnimation(type: string): AnimationConfig | undefined {
-	switch (getPetType(type)?.species) {
-		case "cat":
-			return getCatAnimations(type).idle;
-		case "bunny":
-			return getBunnyAnimations(type).idle;
-		case "ghost":
-			return getGhostAnimations(type).idle;
-		default:
-			return undefined;
-	}
+	const petType = getPetType(type);
+	return petType ? getPetAnimations(petType).idle : undefined;
 }
