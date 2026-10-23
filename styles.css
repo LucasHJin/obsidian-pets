@@ -385,7 +385,7 @@ body.pixel-pets-hide-cursor {
 	box-shadow: none;
 	color: var(--text-normal);
 	caret-color: var(--text-normal);
-	font-size: var(--font-ui-medium);
+	font-size: var(--font-ui-large);
 	line-height: var(--line-height-tight);
 	text-align: center;
 }
