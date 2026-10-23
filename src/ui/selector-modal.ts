@@ -1,5 +1,6 @@
 import { App, FuzzyMatch, FuzzySuggestModal } from "obsidian";
 import { AnimationConfig } from "../pets/pet";
+import { createSprite, getCenteringOffset, getSpriteBounds } from "./sprite-preview";
 
 export type SelectorPreview =
 	{ kind: "sprite"; animation: AnimationConfig } | { kind: "thumbnail"; url?: string };
@@ -49,13 +50,16 @@ export class SelectorModal extends FuzzySuggestModal<SelectorOption> {
 	}
 
 	private renderSprite(el: HTMLElement, animation: AnimationConfig) {
-		const sprite = el.createDiv({ cls: "pixel-pets-suggestion__sprite" });
-		sprite.setCssProps({
-			"--pixel-pets-sprite-url": `url(${animation.spriteUrl})`,
-			"--pixel-pets-sprite-size": `${animation.frameCount * animation.frameWidth}px auto`,
-			"--pixel-pets-sprite-total-width": `-${animation.frameCount * animation.frameWidth}px`,
-			"--pixel-pets-sprite-duration": `${animation.duration}ms`,
-			"--pixel-pets-frame-count": `${animation.frameCount}`,
+		const sprite = createSprite(el, "pixel-pets-suggestion__sprite", animation);
+		void getSpriteBounds(animation).then((bounds) => {
+			if (!bounds) {
+				return;
+			}
+			const offset = getCenteringOffset(bounds);
+			sprite.setCssProps({
+				"--pixel-pets-sprite-offset-x": `${offset.x}px`,
+				"--pixel-pets-sprite-offset-y": `${offset.y}px`,
+			});
 		});
 	}
 

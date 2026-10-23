@@ -308,6 +308,7 @@ body.pixel-pets-hide-cursor {
 	background-repeat: no-repeat;
 	background-position: 0 0;
 	image-rendering: pixelated;
+	translate: var(--pixel-pets-sprite-offset-x, 0px) var(--pixel-pets-sprite-offset-y, 0px);
 }
 
 .pixel-pets-suggestion.is-selected .pixel-pets-suggestion__sprite {
