@@ -39,7 +39,7 @@ export class PetView extends ItemView {
 			return;
 		}
 
-		this.addAction("paw-print", "Cat toy toggle", () => {
+		this.addAction("feather", "Cat toy toggle", () => {
 			this.plugin.toggleCatToy();
 		});
 
@@ -55,7 +55,7 @@ export class PetView extends ItemView {
 			this.plugin.throwRandomBall();
 		});
 
-		this.addAction("plus", "Add a pet", () => {
+		this.addAction("paw-print", "Add a pet", () => {
 			this.plugin.openAddPetPicker();
 		});
 
