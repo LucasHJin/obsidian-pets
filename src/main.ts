@@ -131,7 +131,7 @@ export default class PetPlugin extends Plugin {
 			preview: spritePreview(id),
 		}));
 		new SelectorModal(this.app, options, "Search pets", (type) => {
-			new PetNameModal(this.app, (name) => {
+			new PetNameModal(this.app, getIdleAnimation(type), (name) => {
 				void this.addPet(type, name);
 			}).open();
 		}).open();
