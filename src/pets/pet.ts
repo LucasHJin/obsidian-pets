@@ -307,7 +307,10 @@ export abstract class Pet {
 
 	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused || this.isDestroyed) return Promise.resolve();
-		const el = this.requirePetEl();
+		return this.slideTo(this.planMove(action), duration);
+	}
+
+	protected planMove(action?: AnimationName): number {
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		const magnitude = action?.includes("jump")
@@ -321,11 +324,15 @@ export abstract class Pet {
 		if (possibleX < minLeft || possibleX > maxLeft) {
 			dx = -dx;
 		}
-		const targetX = Math.max(minLeft, Math.min(maxLeft, this.currentX + dx));
+		return Math.max(minLeft, Math.min(maxLeft, this.currentX + dx));
+	}
 
+	protected slideTo(targetX: number, duration: number): Promise<void> {
+		if (this.actionLoopPaused || this.isDestroyed) return Promise.resolve();
 		if (targetX === this.currentX) {
 			return Promise.resolve();
 		}
+		const el = this.requirePetEl();
 
 		this.direction = targetX < this.currentX ? -1 : 1;
 
