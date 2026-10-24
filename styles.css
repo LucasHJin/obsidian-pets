@@ -175,13 +175,18 @@
 	left: var(--pixel-pets-heart-random-x);
 	top: -10px;
 	transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1));
-	background-image: var(--pixel-pets-heart-url);
-	background-size: cover;
-	image-rendering: pixelated;
 	opacity: 0;
 	pointer-events: none;
 	z-index: var(--pixel-pets-layer-heart);
 	animation: pixel-pets-heart-float 1s ease-out forwards;
+}
+
+.pixel-pets-pet__heart-sprite {
+	width: 100%;
+	height: 100%;
+	background-image: var(--pixel-pets-heart-url);
+	background-size: cover;
+	image-rendering: pixelated;
 }
 
 @keyframes pixel-pets-heart-float {
@@ -197,6 +202,25 @@
 		opacity: 0;
 		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-30px)
 			scale(0.8);
+	}
+}
+
+.pixel-pets-rainbow {
+	animation: pixel-pets-rainbow 1.2s steps(12) infinite;
+}
+
+@keyframes pixel-pets-rainbow {
+	from {
+		filter: hue-rotate(0deg);
+	}
+	to {
+		filter: hue-rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pixel-pets-rainbow {
+		animation: none;
 	}
 }
 

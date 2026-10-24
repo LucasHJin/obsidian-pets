@@ -10,8 +10,8 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
 - 🖼️ 9 different backgrounds for your pets to play in
 - 🎾 Pet interactivity 
     - You can play fetch and throw balls for your pets to retrieve
-    - You can pet your pets
-    - You can get them to follow you with a pet toy
+    - You can pet your pets and get a heart in a random color (and, rarely, a rainbow one)
+    - You can get them to follow you with a pet toy, which has a random color each time you turn it on
 - ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
 
 ## Getting Started
