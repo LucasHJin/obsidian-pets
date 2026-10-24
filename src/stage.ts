@@ -7,8 +7,14 @@ import { Pet } from "./pets/pet";
 import { Cat } from "./pets/cat";
 import { Bunny } from "./pets/bunny";
 import { Ghost } from "./pets/ghost";
+import { Bird } from "./pets/bird";
 import { Ball } from "./toys/ball";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "./pets/pet-animations";
+import {
+	getCatAnimations,
+	getBunnyAnimations,
+	getGhostAnimations,
+	getBirdAnimations,
+} from "./pets/pet-animations";
 
 interface StageOptions {
 	getFloor: () => Floor;
@@ -86,6 +92,21 @@ export class Stage {
 				this.pets.push({ id: singlePet.id, pet: ghost });
 				if (this.paused) ghost.pause();
 				ghost.start();
+			} else if (petType?.species === "bird") {
+				const birdAnimations = getBirdAnimations(singlePet.type);
+				const moveDist = Math.floor(Math.random() * 12) + 18;
+				const bird = new Bird(
+					this.container,
+					birdAnimations,
+					moveDist,
+					floor,
+					this.plugin.data.petSize,
+					singlePet.name,
+					this.plugin.sounds,
+				);
+				this.pets.push({ id: singlePet.id, pet: bird });
+				if (this.paused) bird.pause();
+				bird.start();
 			}
 		} catch (error) {
 			console.error(`Failed to create pet ${singlePet.id}:`, error);

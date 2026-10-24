@@ -14,6 +14,8 @@ const ANIMATION_NAMES = [
 	"die",
 	"liking",
 	"fly",
+	"takeoff",
+	"land",
 ] as const;
 
 export type AnimationName = (typeof ANIMATION_NAMES)[number];
