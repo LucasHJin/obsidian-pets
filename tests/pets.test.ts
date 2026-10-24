@@ -106,6 +106,22 @@ describe("dog animations", () => {
 	);
 });
 
+describe("dog breeds", () => {
+	const dogs = PETS.filter((pet) => pet.species === "dog");
+
+	it("offers a husky, chihuahua, golden retriever, beagle and dalmatian", () => {
+		const ids = dogs.map((pet) => pet.id);
+		for (const breed of ["husky", "chihuahua", "golden-retriever", "beagle", "dalmatian"]) {
+			expect(ids).toContain(`pets/${breed}-dog`);
+		}
+	});
+
+	it.each(dogs)("$id is labelled after its breed", (pet) => {
+		const breed = pet.id.replace(/^pets\//, "").replace(/-dog$/, "");
+		expect(pet.label.toLowerCase()).toBe(`${breed.replace(/-/g, " ")} dog`);
+	});
+});
+
 describe("pet capabilities", () => {
 	it("lets cats and dogs chase balls but only cats follow the cat toy", () => {
 		expect(canChaseBalls(Cat.prototype)).toBe(true);
