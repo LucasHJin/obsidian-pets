@@ -21,8 +21,9 @@
 .pixel-pets-overlay {
 	--pixel-pets-layer-background: 0;
 	--pixel-pets-layer-snow: 1;
-	--pixel-pets-layer-pet: 2;
-	--pixel-pets-layer-ball: 3;
+	--pixel-pets-layer-fish: 2;
+	--pixel-pets-layer-pet: 3;
+	--pixel-pets-layer-ball: 4;
 	--pixel-pets-layer-heart: 2;
 	--pixel-pets-layer-tooltip: 1;
 }
@@ -168,6 +169,44 @@
 	height: 100%;
 }
 
+.pixel-pets-fish {
+	position: absolute;
+	left: var(--pixel-pets-fish-x, 0);
+	top: var(--pixel-pets-fish-ground);
+	width: var(--pixel-pets-fish-width);
+	height: var(--pixel-pets-fish-height);
+	transform: scale(var(--pixel-pets-scale, 1)) translate(-50%, -100%);
+	transform-origin: 0 0;
+	pointer-events: none;
+	z-index: var(--pixel-pets-layer-fish);
+}
+
+.pixel-pets-fish img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	image-rendering: pixelated;
+	transform: scale(var(--pixel-pets-tooltip-pop));
+	transform-origin: bottom center;
+	animation:
+		pixel-pets-tooltip-pop 300ms ease-out,
+		pixel-pets-fade-in 200ms ease;
+}
+
+.pixel-pets-fish--fading {
+	opacity: 0;
+	transition: opacity 600ms ease-out;
+}
+
+@keyframes pixel-pets-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
 .pixel-pets-pet__heart {
 	position: absolute;
 	width: 13px;
@@ -197,6 +236,12 @@
 		opacity: 0;
 		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-30px)
 			scale(0.8);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pixel-pets-fish img {
+		animation: none;
 	}
 }
 

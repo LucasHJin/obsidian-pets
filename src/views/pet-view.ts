@@ -3,6 +3,7 @@ import PetPlugin from "../main";
 import { Stage } from "../stage";
 import { Floor } from "../floor";
 import { SNOW_ANIMATION, getBackground } from "../catalog/backgrounds";
+import { FISH_LIFETIME_MS } from "../food/fish";
 
 export const VIEW_TYPE_PET = "pet-view";
 
@@ -55,6 +56,10 @@ export class PetView extends ItemView {
 			this.plugin.throwRandomBall();
 		});
 
+		this.addAction("fish", "Drop a fish", () => {
+			this.plugin.dropRandomFish();
+		});
+
 		this.addAction("paw-print", "Add a pet", () => {
 			this.plugin.openAddPetPicker();
 		});
@@ -63,6 +68,7 @@ export class PetView extends ItemView {
 		this.stage = new Stage(wrapper, this.plugin, {
 			getFloor: () => this.getFloor(),
 			ballLifetime: 5000,
+			fishLifetime: FISH_LIFETIME_MS,
 		});
 		this.updateView();
 		this.setupResizeObserver();

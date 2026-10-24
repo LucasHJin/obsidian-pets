@@ -11,6 +11,7 @@ import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
 import { getIdleAnimation } from "./pets/pet-animations";
 import { BALLS } from "./catalog/balls";
+import { FISH } from "./catalog/fish";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 import { registerNewNoteNotices } from "./notices";
 
@@ -81,6 +82,12 @@ export default class PetPlugin extends Plugin {
 			id: "add-ball-dropdown",
 			name: "Add a ball",
 			callback: async () => this.throwRandomBall(),
+		});
+
+		this.addCommand({
+			id: "drop-fish",
+			name: "Drop a fish",
+			callback: () => this.dropRandomFish(),
 		});
 
 		this.addCommand({
@@ -178,6 +185,16 @@ export default class PetPlugin extends Plugin {
 		}
 		const randomBall = BALLS[Math.floor(Math.random() * BALLS.length)];
 		void this.addBall(randomBall.id);
+	}
+
+	dropRandomFish() {
+		const hasCat = this.data.pets.some((pet) => getPetType(pet.type)?.species === "cat");
+		if (!hasCat) {
+			new Notice("Add a cat to feed it a fish.");
+			return;
+		}
+		const randomFish = FISH[Math.floor(Math.random() * FISH.length)];
+		void this.addFish(randomFish.id);
 	}
 
 	openBackgroundPicker() {
@@ -294,6 +311,13 @@ export default class PetPlugin extends Plugin {
 		await this.openViewIfClosed();
 		for (const stage of this.getStages()) {
 			stage.throwBall(id);
+		}
+	}
+
+	async addFish(id: string): Promise<void> {
+		await this.openViewIfClosed();
+		for (const stage of this.getStages()) {
+			stage.dropFish(id);
 		}
 	}
 
