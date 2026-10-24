@@ -73,7 +73,7 @@ Here is what it looks like if you enable the full vault overlay.
 - **New note notices**: a short pet message when you create a new Markdown note. On by default.
 
 ## Contacts
-If you have any kind of feedback or questions, feel free to reach out via GitHub issues or @hi.bye_2025 on the [Obsidian Discord server](https://discord.gg/obsidianmd).
+If you have any kind of feedback or questions, feel free to reach out via GitHub issues.
 
 ## Credits
 | Link| Description|
