@@ -52,7 +52,12 @@ export class Stage {
 					this.plugin.data.petSize,
 					singlePet.name,
 					this.plugin.sounds,
-					petType.flying,
+					{
+						flying: petType.flying,
+						mouth: petType.mouth,
+						headTop: petType.headTop,
+						fish: this,
+					},
 				);
 				if (this.getCursorX) {
 					cat.startFollowingCursor(this.getCursorX);

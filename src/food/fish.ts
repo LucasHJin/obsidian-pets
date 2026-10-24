@@ -18,6 +18,11 @@ export function pickFishX(width: number, scale: number, random: number): number 
 	return clampFishX(half + random * (width - half * 2), width, scale);
 }
 
+export interface FishSource {
+	findFishOnPath(fromX: number, toX: number): Fish | null;
+	claimFish(fish: Fish): boolean;
+}
+
 export function nearestFishOnPath<T extends { getX(): number; isAvailable(): boolean }>(
 	fish: readonly T[],
 	fromX: number,
@@ -45,8 +50,11 @@ export class Fish {
 	private countdown: Countdown;
 	private startedUnsized = false;
 	private taken = false;
+	private held = false;
+	private paused = false;
 	private fading = false;
 	private destroyed = false;
+	private goneWaiters: (() => void)[] = [];
 
 	constructor(
 		private readonly container: HTMLElement,
@@ -88,10 +96,11 @@ export class Fish {
 	}
 
 	private fade() {
+		this.countdown.stop();
 		this.fading = true;
 		this.fishEl.addClass("pixel-pets-fish--fading");
 		this.countdown = new Countdown(FADE_MS, () => this.destroy());
-		this.countdown.start();
+		if (!this.paused) this.countdown.start();
 	}
 
 	getX(): number {
@@ -105,8 +114,41 @@ export class Fish {
 	claim(): boolean {
 		if (!this.isAvailable()) return false;
 		this.taken = true;
-		this.countdown.stop();
+		this.countdown.pause();
 		return true;
+	}
+
+	release() {
+		if (!this.taken || this.held || this.destroyed) return;
+		this.taken = false;
+		if (!this.paused) this.countdown.start();
+	}
+
+	hold(parent: HTMLElement, x: number, y: number) {
+		if (!this.taken || this.held || this.destroyed) return;
+		this.held = true;
+		parent.appendChild(this.fishEl);
+		this.fishEl.addClass("pixel-pets-fish--held");
+		this.setHeldOrigin(x, y);
+	}
+
+	setHeldOrigin(x: number, y: number) {
+		this.fishEl.setCssProps({
+			"--pixel-pets-held-x": `${x}px`,
+			"--pixel-pets-held-y": `${y}px`,
+		});
+	}
+
+	fadeOut(): Promise<void> {
+		if (!this.destroyed && !this.fading) this.fade();
+		return this.gone();
+	}
+
+	gone(): Promise<void> {
+		if (this.destroyed) return Promise.resolve();
+		return new Promise((resolve) => {
+			this.goneWaiters.push(resolve);
+		});
 	}
 
 	setFloor(floor: Floor) {
@@ -121,21 +163,23 @@ export class Fish {
 
 	clamp() {
 		const width = this.container.offsetWidth;
-		if (this.destroyed || width === 0) return;
+		if (this.destroyed || this.held || width === 0) return;
 		this.x = clampFishX(this.x, width, this.scale);
 		this.renderPosition();
 	}
 
 	pause() {
+		this.paused = true;
 		this.countdown.pause();
 	}
 
 	resume() {
+		this.paused = false;
 		if (this.destroyed) return;
-		if (this.startedUnsized && this.container.offsetWidth > 0) {
+		if (!this.held && this.startedUnsized && this.container.offsetWidth > 0) {
 			this.placeAtStart();
 		}
-		this.countdown.start();
+		if (!this.taken || this.fading) this.countdown.start();
 	}
 
 	destroy() {
@@ -144,5 +188,10 @@ export class Fish {
 		this.countdown.stop();
 		this.fishEl.remove();
 		this.onDestroy?.();
+		const waiters = this.goneWaiters;
+		this.goneWaiters = [];
+		for (const resolve of waiters) {
+			resolve();
+		}
 	}
 }

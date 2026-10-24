@@ -5,5 +5,6 @@ export default defineConfig({
 	plugins: [petAssetsVitePlugin()],
 	test: {
 		include: ["tests/**/*.test.ts"],
+		css: { include: [/styles\.css/] },
 	},
 });
