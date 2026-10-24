@@ -145,6 +145,54 @@ export function getGhostAnimations(type: string): PetAnimations {
 	return animations;
 }
 
+export function getBirdAnimations(type: string): PetAnimations {
+	const animations: PetAnimations = {
+		idle: {
+			spriteUrl: getPetAsset(type, "idle-bird.png"),
+			frameCount: 8,
+			frameWidth: 32,
+			duration: alterDuration(1200, 100),
+		},
+		run: {
+			spriteUrl: getPetAsset(type, "run-bird.png"),
+			frameCount: 6,
+			frameWidth: 32,
+			duration: alterDuration(720, 80),
+		},
+		jump: {
+			spriteUrl: getPetAsset(type, "jump-bird.png"),
+			frameCount: 6,
+			frameWidth: 32,
+			duration: alterDuration(600, 60),
+		},
+		fly: {
+			spriteUrl: getPetAsset(type, "fly-bird.png"),
+			frameCount: 6,
+			frameWidth: 32,
+			duration: alterDuration(480, 40),
+		},
+		takeoff: {
+			spriteUrl: getPetAsset(type, "takeoff-bird.png"),
+			frameCount: 5,
+			frameWidth: 32,
+			duration: 450,
+		},
+		land: {
+			spriteUrl: getPetAsset(type, "land-bird.png"),
+			frameCount: 5,
+			frameWidth: 32,
+			duration: 500,
+		},
+		die: {
+			spriteUrl: getPetAsset(type, "die-bird.png"),
+			frameCount: 12,
+			frameWidth: 32,
+			duration: 1200,
+		},
+	};
+	return animations;
+}
+
 export function getIdleAnimation(type: string): AnimationConfig | undefined {
 	switch (getPetType(type)?.species) {
 		case "cat":
@@ -153,6 +201,8 @@ export function getIdleAnimation(type: string): AnimationConfig | undefined {
 			return getBunnyAnimations(type).idle;
 		case "ghost":
 			return getGhostAnimations(type).idle;
+		case "bird":
+			return getBirdAnimations(type).idle;
 		default:
 			return undefined;
 	}

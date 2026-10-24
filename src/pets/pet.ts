@@ -1,7 +1,7 @@
 import { heartAsset } from "../catalog/assets";
-import { Floor, PET_FEET_OFFSET } from "../floor";
+import { Floor, PET_FEET_OFFSET, getGroundY } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
-import { getTooltipShift } from "./tooltip-shift";
+import { getTooltipFlip, getTooltipShift } from "./tooltip-shift";
 
 const ANIMATION_NAMES = [
 	"idle",
@@ -14,12 +14,15 @@ const ANIMATION_NAMES = [
 	"die",
 	"liking",
 	"fly",
+	"takeoff",
+	"land",
 ] as const;
 
 export type AnimationName = (typeof ANIMATION_NAMES)[number];
 
 const MOVE_TIMEOUT_MARGIN = 200;
 const TOOLTIP_POP_PEAK = 1.1;
+const HEART_RISE = 48;
 
 function isAnimationName(key: string): key is AnimationName {
 	return (ANIMATION_NAMES as readonly string[]).includes(key);
@@ -163,7 +166,7 @@ export abstract class Pet {
 			this.hovered = true;
 			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
-			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
+			this.setAnimation(this.getHoverAnimation());
 			this.fitTooltip();
 		});
 
@@ -186,10 +189,15 @@ export abstract class Pet {
 		});
 	}
 
+	protected getHoverAnimation(): AnimationName {
+		return this.animations["sit"] ? "sit" : "idle";
+	}
+
 	private fitTooltip() {
 		const tooltip = this.tooltipEl;
 		if (!tooltip || !this.hovered || this.container.offsetWidth === 0) return;
 
+		tooltip.removeClass("pixel-pets-pet__tooltip--below");
 		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": "0px" });
 		const rect = tooltip.getBoundingClientRect();
 		const center = (rect.left + rect.right) / 2;
@@ -198,17 +206,36 @@ export abstract class Pet {
 				window.getComputedStyle(tooltip).getPropertyValue("--pixel-pets-tooltip-pop"),
 			) || 1;
 		const halfWidth = ((rect.right - rect.left) / pop) * (TOOLTIP_POP_PEAK / 2);
+		const bounds = this.container.getBoundingClientRect();
 		const shift = getTooltipShift(
 			{ left: center - halfWidth, right: center + halfWidth },
-			this.container.getBoundingClientRect(),
+			bounds,
 		);
 		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": `${shift}px` });
+		const height = (rect.height / pop) * TOOLTIP_POP_PEAK;
+		tooltip.toggleClass(
+			"pixel-pets-pet__tooltip--below",
+			getTooltipFlip(
+				{ top: rect.bottom - height, bottom: rect.bottom },
+				bounds,
+				bounds.bottom - this.requirePetEl().getBoundingClientRect().bottom,
+			),
+		);
 	}
 
 	protected playSound(): void {}
 
 	protected showHeart() {
-		const heart = this.requirePetEl().createDiv({ cls: "pixel-pets-pet__heart" });
+		const el = this.requirePetEl();
+		const heart = el.createDiv({ cls: "pixel-pets-pet__heart" });
+		const rect = el.getBoundingClientRect();
+		const bounds = this.container.getBoundingClientRect();
+		const above = rect.top - bounds.top;
+		const below = bounds.bottom - rect.bottom;
+		heart.toggleClass(
+			"pixel-pets-pet__heart--below",
+			above < HEART_RISE * this.scale && below > above,
+		);
 
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
@@ -264,8 +291,28 @@ export abstract class Pet {
 
 	updateVerticalPosition(newFloor: Floor) {
 		this.floor = newFloor;
-		const newTop = this.getGroundTopValue();
-		this.petEl?.setCssProps({ "--pixel-pets-top": newTop });
+		this.applyRestPosition();
+	}
+
+	protected applyRestPosition() {
+		this.setTop(null);
+	}
+
+	protected getRestY(): number {
+		return (
+			getGroundY(this.floor, this.container.offsetHeight, this.scale) -
+			PET_FEET_OFFSET * this.scale
+		);
+	}
+
+	protected setTop(y: number | null) {
+		this.petEl?.setCssProps({
+			"--pixel-pets-top": y === null ? this.getGroundTopValue() : `${y}px`,
+		});
+	}
+
+	protected setLabelDrop(px: number) {
+		this.petEl?.setCssProps({ "--pixel-pets-label-drop": `${px}px` });
 	}
 
 	protected setAnimation(animationName: AnimationName) {

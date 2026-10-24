@@ -3,6 +3,7 @@ import { petAssets } from "../src/catalog/assets";
 import { PETS, PetType, Species, getPetType } from "../src/catalog/pets";
 import { AnimationConfig, AnimationName, PetAnimations } from "../src/pets/pet";
 import {
+	getBirdAnimations,
 	getBunnyAnimations,
 	getCatAnimations,
 	getGhostAnimations,
@@ -12,12 +13,14 @@ const ANIMATION_BUILDERS: Record<Species, (type: string) => PetAnimations> = {
 	cat: getCatAnimations,
 	bunny: getBunnyAnimations,
 	ghost: getGhostAnimations,
+	bird: getBirdAnimations,
 };
 
 const REQUIRED_ANIMATIONS: Record<Species, AnimationName[]> = {
 	cat: ["idle", "run", "die"],
 	bunny: ["idle", "run", "die"],
 	ghost: ["idle"],
+	bird: ["idle", "run", "jump", "fly", "takeoff", "land", "die"],
 };
 
 function buildAnimations(pet: PetType): PetAnimations {
@@ -40,6 +43,17 @@ describe("pet catalog", () => {
 
 	it("has an asset set for every pet and no asset set without a pet", () => {
 		expect(Object.keys(petAssets).sort()).toEqual(PETS.map((pet) => pet.id).sort());
+	});
+
+	it("marks every bird as flying and labels it in sentence case", () => {
+		const birds = PETS.filter((pet) => pet.species === "bird");
+		expect(birds.length).toBeGreaterThan(0);
+		for (const bird of birds) {
+			expect(bird.flying).toBe(true);
+			expect(bird.label).toBe(
+				bird.label.charAt(0).toUpperCase() + bird.label.slice(1).toLowerCase(),
+			);
+		}
 	});
 
 	it("looks pets up by id", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getTooltipShift } from "../src/pets/tooltip-shift";
+import { getTooltipFlip, getTooltipShift } from "../src/pets/tooltip-shift";
 
 const BOUNDS = { left: 50, right: 334 };
 
@@ -24,5 +24,25 @@ describe("getTooltipShift", () => {
 		expect(getTooltipShift({ left: -66, right: 235 }, BOUNDS)).toBe(116);
 		expect(getTooltipShift({ left: 60, right: 380 }, BOUNDS)).toBe(-10);
 		expect(getTooltipShift({ left: 50, right: 334 }, BOUNDS)).toBe(0);
+	});
+});
+
+describe("getTooltipFlip", () => {
+	const tooltip = (top: number) => ({ top, bottom: top + 24 });
+
+	it("keeps a tooltip above the pet while it fits inside the view", () => {
+		expect(getTooltipFlip(tooltip(40), { top: 0 }, 200)).toBe(false);
+		expect(getTooltipFlip(tooltip(0), { top: 0 }, 200)).toBe(false);
+		expect(getTooltipFlip(tooltip(120), { top: 100 }, 200)).toBe(false);
+	});
+
+	it("moves a tooltip below the pet when it would stick out of the top", () => {
+		expect(getTooltipFlip(tooltip(-1), { top: 0 }, 200)).toBe(true);
+		expect(getTooltipFlip(tooltip(80), { top: 100 }, 200)).toBe(true);
+	});
+
+	it("keeps a tooltip above the pet when there is no room for it below either", () => {
+		expect(getTooltipFlip(tooltip(-10), { top: 0 }, 10)).toBe(false);
+		expect(getTooltipFlip(tooltip(-10), { top: 0 }, 24)).toBe(true);
 	});
 });

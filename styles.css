@@ -83,7 +83,9 @@
 	background-image: var(--pixel-pets-sprite-url);
 	background-size: var(--pixel-pets-sprite-size);
 	image-rendering: pixelated;
-	transition: left var(--pixel-pets-move-duration, 300ms) linear;
+	transition:
+		left var(--pixel-pets-move-duration, 300ms) linear,
+		top var(--pixel-pets-fall-duration, 0ms) cubic-bezier(0.5, 0, 1, 1);
 	animation: pixel-pets-sprite var(--pixel-pets-sprite-duration)
 		steps(var(--pixel-pets-frame-count)) infinite;
 	z-index: var(--pixel-pets-layer-pet);
@@ -110,7 +112,8 @@
 		var(--pixel-pets-tooltip-shift, 0px) * var(--pixel-pets-scale-x, 1) /
 			var(--pixel-pets-scale, 1)
 	);
-	transform: translateX(calc(-50% + var(--pixel-pets-tooltip-offset))) translateY(-2px)
+	transform: translateX(calc(-50% + var(--pixel-pets-tooltip-offset)))
+		translateY(calc(var(--pixel-pets-label-drop, 0px) - 2px))
 		scaleX(var(--pixel-pets-scale-x, 1)) scale(var(--pixel-pets-tooltip-pop));
 	transform-origin: bottom center;
 	background-color: color-mix(in srgb, var(--background-secondary) 80%, transparent);
@@ -123,6 +126,14 @@
 	opacity: 0;
 	transition: opacity 0.2s ease;
 	z-index: var(--pixel-pets-layer-tooltip);
+}
+
+.pixel-pets-pet__tooltip--below {
+	bottom: auto;
+	top: 100%;
+	transform: translateX(calc(-50% + var(--pixel-pets-tooltip-offset))) translateY(8px)
+		scaleX(var(--pixel-pets-scale-x, 1)) scale(var(--pixel-pets-tooltip-pop));
+	transform-origin: top center;
 }
 
 .pixel-pets-pet:hover .pixel-pets-pet__tooltip {
@@ -173,7 +184,7 @@
 	width: 13px;
 	height: 12px;
 	left: var(--pixel-pets-heart-random-x);
-	top: -10px;
+	top: calc(var(--pixel-pets-label-drop, 0px) - 10px);
 	transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1));
 	background-image: var(--pixel-pets-heart-url);
 	background-size: cover;
@@ -197,6 +208,27 @@
 		opacity: 0;
 		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-30px)
 			scale(0.8);
+	}
+}
+
+.pixel-pets-pet__heart--below {
+	top: auto;
+	bottom: -10px;
+	animation-name: pixel-pets-heart-sink;
+}
+
+@keyframes pixel-pets-heart-sink {
+	0% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(0) scale(0.5);
+	}
+	50% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(15px) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(30px) scale(0.8);
 	}
 }
 

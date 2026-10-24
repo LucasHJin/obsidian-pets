@@ -13,3 +13,11 @@ export function getTooltipShift(tooltip: HorizontalSpan, bounds: HorizontalSpan)
 	}
 	return 0;
 }
+
+export function getTooltipFlip(
+	tooltip: { top: number; bottom: number },
+	bounds: { top: number },
+	roomBelow: number,
+): boolean {
+	return tooltip.top < bounds.top && roomBelow >= tooltip.bottom - tooltip.top;
+}

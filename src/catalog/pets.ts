@@ -1,4 +1,4 @@
-export type Species = "cat" | "bunny" | "ghost";
+export type Species = "cat" | "bunny" | "ghost" | "bird";
 
 export interface PetType {
 	id: string;
@@ -21,6 +21,7 @@ export const PETS: PetType[] = [
 	{ id: "pets/egypt-cat", label: "Egyptian cat", species: "cat" },
 	{ id: "pets/ghost", label: "Ghost", species: "ghost" },
 	{ id: "pets/grey-bunny", label: "Grey bunny", species: "bunny" },
+	{ id: "pets/parrot", label: "Parrot", species: "bird", flying: true },
 	{ id: "pets/pirate-cat", label: "Pirate cat", species: "cat" },
 	{ id: "pets/pirate-v2-cat", label: "Pirate cat v2", species: "cat" },
 	{ id: "pets/pirate-v3-cat", label: "Pirate cat v3", species: "cat" },
