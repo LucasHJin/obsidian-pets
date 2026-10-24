@@ -3,7 +3,7 @@ import { PetInstance } from "./data";
 import { Floor } from "./floor";
 import { getPetType } from "./catalog/pets";
 import { getBallImage } from "./catalog/balls";
-import { getFishImage } from "./catalog/fish";
+import { getFishType } from "./catalog/fish";
 import { Pet } from "./pets/pet";
 import { Cat } from "./pets/cat";
 import { Bunny } from "./pets/bunny";
@@ -147,12 +147,14 @@ export class Stage {
 
 	dropFish(id: string): boolean {
 		try {
+			const type = getFishType(id);
 			const fish = new Fish(
 				this.container,
-				getFishImage(id),
+				type.image,
 				this.options.getFloor(),
 				this.plugin.data.petSize,
 				this.options.fishLifetime,
+				type.rainbow,
 			);
 			this.fish.push({ id, fish });
 			if (this.paused) fish.pause();

@@ -275,6 +275,19 @@
 	transition: opacity 600ms ease-out;
 }
 
+.pixel-pets-rainbow {
+	animation: pixel-pets-rainbow 1.2s steps(12) infinite;
+}
+
+@keyframes pixel-pets-rainbow {
+	from {
+		filter: hue-rotate(0deg);
+	}
+	to {
+		filter: hue-rotate(360deg);
+	}
+}
+
 @keyframes pixel-pets-fade-in {
 	from {
 		opacity: 0;
@@ -359,6 +372,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.pixel-pets-fish img,
+	.pixel-pets-rainbow,
 	.pixel-pets-pet__snack-heart {
 		animation: none;
 	}

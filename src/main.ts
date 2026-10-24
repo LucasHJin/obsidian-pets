@@ -11,7 +11,7 @@ import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
 import { getIdleAnimation } from "./pets/pet-animations";
 import { BALLS } from "./catalog/balls";
-import { FISH } from "./catalog/fish";
+import { pickFish } from "./catalog/fish";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 import { registerNewNoteNotices } from "./notices";
 
@@ -193,8 +193,7 @@ export default class PetPlugin extends Plugin {
 			new Notice("Add a cat to feed it a fish.");
 			return;
 		}
-		const randomFish = FISH[Math.floor(Math.random() * FISH.length)];
-		void this.addFish(randomFish.id);
+		void this.addFish(pickFish().id);
 	}
 
 	openBackgroundPicker() {

@@ -40,7 +40,7 @@ class FakeElement {
 	}
 }
 
-function makeFish(lifetime = 1000) {
+function makeFish(lifetime = 1000, rainbow = false) {
 	const container = new FakeElement();
 	const fish = new Fish(
 		container as unknown as HTMLElement,
@@ -48,6 +48,7 @@ function makeFish(lifetime = 1000) {
 		{ kind: "bottom" },
 		1,
 		lifetime,
+		rainbow,
 	);
 	const fishEl = fish.fishEl as unknown as FakeElement;
 	return { container, fish, fishEl };
@@ -127,6 +128,22 @@ describe("Fish", () => {
 		fish.setHeldOrigin(17, 17);
 		expect(fishEl.props["--pixel-pets-held-x"]).toBe("17px");
 		expect(fishEl.props["--pixel-pets-held-y"]).toBe("17px");
+	});
+
+	it("shimmers only when it is a rainbow fish", () => {
+		expect(makeFish(1000, true).fishEl.classes.has("pixel-pets-rainbow")).toBe(true);
+		expect(makeFish(1000, false).fishEl.classes.has("pixel-pets-rainbow")).toBe(false);
+		expect(makeFish().fishEl.classes.has("pixel-pets-rainbow")).toBe(false);
+	});
+
+	it("keeps shimmering while it is held and fading", () => {
+		const { fish, fishEl } = makeFish(1000, true);
+		fish.claim();
+		fish.hold(new FakeElement() as unknown as HTMLElement, 15, 19);
+		void fish.fadeOut();
+		expect(fishEl.classes.has("pixel-pets-rainbow")).toBe(true);
+		expect(fishEl.classes.has("pixel-pets-fish--held")).toBe(true);
+		expect(fishEl.classes.has("pixel-pets-fish--fading")).toBe(true);
 	});
 
 	it("cannot be released once held", () => {

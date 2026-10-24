@@ -62,18 +62,20 @@ export class Fish {
 		floor: Floor,
 		scale: number,
 		lifetime: number,
+		rainbow = false,
 	) {
 		this.scale = scale;
 
-		this.fishEl = this.createFishElement(spriteUrl, floor);
+		this.fishEl = this.createFishElement(spriteUrl, floor, rainbow);
 		this.placeAtStart();
 
 		this.countdown = new Countdown(lifetime, () => this.fade());
 		this.countdown.start();
 	}
 
-	private createFishElement(spriteUrl: string, floor: Floor): HTMLElement {
+	private createFishElement(spriteUrl: string, floor: Floor, rainbow: boolean): HTMLElement {
 		const el = this.container.createDiv({ cls: "pixel-pets-fish" });
+		if (rainbow) el.addClass("pixel-pets-rainbow");
 		el.createEl("img", { attr: { src: spriteUrl, alt: "" } });
 		el.setCssProps({
 			"--pixel-pets-fish-width": `${FISH_WIDTH}px`,
