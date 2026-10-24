@@ -1,4 +1,3 @@
-import { catToyAsset } from "../catalog/assets";
 import { SoundPlayer } from "../audio/sounds";
 
 const FRAME_COUNT = 6;
@@ -12,13 +11,14 @@ export class CatToyOverlay {
 	constructor(
 		doc: Document,
 		petSize: number,
+		image: string,
 		private readonly sounds: SoundPlayer,
 		private clientX: number,
 	) {
 		this.doc = doc;
 		this.cursorEl = doc.body.createDiv({ cls: "pixel-pets-cat-toy" });
 		this.cursorEl.setCssProps({
-			"--pixel-pets-cat-toy-url": `url(${catToyAsset})`,
+			"--pixel-pets-cat-toy-url": `url(${image})`,
 			"--pixel-pets-cursor-x": "-100px",
 			"--pixel-pets-cursor-y": "-100px",
 			"--pixel-pets-cat-toy-scale": `${1.1 * petSize}`,

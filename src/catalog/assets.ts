@@ -1,9 +1,6 @@
 import { petAssets } from "virtual:pet-assets";
-import catToy from "../../assets/toys/cat-toy.png";
 
 export { petAssets };
-
-export const catToyAsset = catToy;
 
 export function getPetAsset(petType: string, assetName: string): string {
 	const assets = petAssets[petType];

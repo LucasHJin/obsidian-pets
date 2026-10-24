@@ -11,6 +11,7 @@ import { BACKGROUNDS } from "./catalog/backgrounds";
 import { PETS, getPetType } from "./catalog/pets";
 import { getIdleAnimation } from "./pets/pet-animations";
 import { BALLS } from "./catalog/balls";
+import { pickCatToyImage } from "./catalog/cat-toy-colors";
 import { PetInstance, PetPluginData, deleteChatDatabase, resolveSavedData } from "./data";
 import { registerNewNoteNotices } from "./notices";
 
@@ -147,6 +148,7 @@ export default class PetPlugin extends Plugin {
 			this.catToy = new CatToyOverlay(
 				this.mainDocument,
 				this.data.petSize,
+				pickCatToyImage(),
 				this.sounds,
 				this.lastCatToyClientX,
 			);
