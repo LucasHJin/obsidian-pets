@@ -1,4 +1,4 @@
-import { heartAsset } from "../catalog/assets";
+import { pickHeartImage } from "../catalog/heart-colors";
 import { Floor, PET_FEET_OFFSET } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 import { getTooltipShift } from "./tooltip-shift";
@@ -147,7 +147,6 @@ export abstract class Pet {
 			"--pixel-pets-pet-size": `${this.animations["idle"].frameWidth}px`,
 			"--pixel-pets-scale-x": `${this.direction}`,
 			"--pixel-pets-scale": `${this.scale}`,
-			"--pixel-pets-heart-url": `url(${heartAsset})`,
 		});
 
 		this.tooltipEl = el.createDiv({ cls: "pixel-pets-pet__tooltip" });
@@ -213,6 +212,7 @@ export abstract class Pet {
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
 			"--pixel-pets-heart-random-x": `${randomX}%`,
+			"--pixel-pets-heart-url": `url(${pickHeartImage()})`,
 		});
 
 		window.setTimeout(() => {
