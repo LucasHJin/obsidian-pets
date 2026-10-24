@@ -1,4 +1,4 @@
-import { pickHeartImage } from "../catalog/heart-colors";
+import { pickHeart } from "../catalog/heart-colors";
 import { Floor, PET_FEET_OFFSET } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 import { getTooltipShift } from "./tooltip-shift";
@@ -208,11 +208,14 @@ export abstract class Pet {
 
 	protected showHeart() {
 		const heart = this.requirePetEl().createDiv({ cls: "pixel-pets-pet__heart" });
+		const { image, rainbow } = pickHeart();
+		const sprite = heart.createDiv({ cls: "pixel-pets-pet__heart-sprite" });
+		sprite.toggleClass("pixel-pets-rainbow", rainbow);
 
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
 			"--pixel-pets-heart-random-x": `${randomX}%`,
-			"--pixel-pets-heart-url": `url(${pickHeartImage()})`,
+			"--pixel-pets-heart-url": `url(${image})`,
 		});
 
 		window.setTimeout(() => {
