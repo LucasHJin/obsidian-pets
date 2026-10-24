@@ -51,7 +51,7 @@ export abstract class Pet {
 	petEl: HTMLElement | null = null;
 	protected currentX = 0;
 	protected direction = 1;
-	private currentAnimation: AnimationName | "none" = "none";
+	protected currentAnimation: AnimationName | "none" = "none";
 	protected animations: PetAnimations;
 	protected isDestroyed = false;
 	protected moveDist: number;
@@ -279,9 +279,7 @@ export abstract class Pet {
 		}
 
 		const el = this.requirePetEl();
-		el.addClass("pixel-pets-pet--restart");
-		void el.offsetHeight;
-		el.removeClass("pixel-pets-pet--restart");
+		this.restartAnimation();
 
 		el.setCssProps({
 			"--pixel-pets-sprite-duration": `${animation.duration}ms`,
@@ -292,6 +290,13 @@ export abstract class Pet {
 		});
 
 		this.currentAnimation = animationName;
+	}
+
+	protected restartAnimation() {
+		const el = this.requirePetEl();
+		el.addClass("pixel-pets-pet--restart");
+		void el.offsetHeight;
+		el.removeClass("pixel-pets-pet--restart");
 	}
 
 	protected freezeAtCurrentPosition() {
@@ -307,7 +312,6 @@ export abstract class Pet {
 
 	protected move(duration: number, action?: AnimationName): Promise<void> {
 		if (this.actionLoopPaused || this.isDestroyed) return Promise.resolve();
-		const el = this.requirePetEl();
 		const { minLeft, maxLeft } = this.getHorizontalBounds();
 
 		const magnitude = action?.includes("jump")
@@ -318,6 +322,16 @@ export abstract class Pet {
 		let dx = magnitude * direction;
 		const possibleX = this.currentX + dx;
 
+		const intendedX = Math.max(minLeft, Math.min(maxLeft, possibleX));
+		if (intendedX !== this.currentX) {
+			const redirectedX = this.redirectMove({ targetX: intendedX, action });
+			if (redirectedX !== null) {
+				const travelled =
+					Math.abs(redirectedX - this.currentX) / Math.abs(intendedX - this.currentX);
+				return this.slideTo(redirectedX, duration * travelled);
+			}
+		}
+
 		if (possibleX < minLeft || possibleX > maxLeft) {
 			dx = -dx;
 		}
@@ -327,6 +341,16 @@ export abstract class Pet {
 			return Promise.resolve();
 		}
 
+		return this.slideTo(targetX, duration);
+	}
+
+	protected redirectMove(_move: { targetX: number; action?: AnimationName }): number | null {
+		return null;
+	}
+
+	protected slideTo(targetX: number, duration: number): Promise<void> {
+		if (targetX === this.currentX || this.isDestroyed) return Promise.resolve();
+		const el = this.requirePetEl();
 		this.direction = targetX < this.currentX ? -1 : 1;
 
 		return new Promise((res) => {
@@ -368,6 +392,10 @@ export abstract class Pet {
 	protected resumeActionLoop() {
 		this.actionLoopPaused = false;
 		this.releasePauseWaiters();
+	}
+
+	protected isStagePaused(): boolean {
+		return this.stagePaused;
 	}
 
 	pause() {

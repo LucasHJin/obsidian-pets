@@ -12,6 +12,7 @@ A community plugin based off of the VSCode extension "[vscode-pets](https://mark
     - You can play fetch and throw balls for your pets to retrieve
     - You can pet your pets
     - You can get them to follow you with a pet toy
+    - You can drop fish for your cats to find and eat
 - ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
 
 ## Getting Started
@@ -60,6 +61,7 @@ Here is what it looks like if you enable the full vault overlay.
     - `Remove all pets`: Removes all pets from the view.
 - Interacting with pets
     - `Add a ball`: Chooses a random ball and launches it in the view for a pet to chase after.
+    - `Drop a fish`: Drops a random fish onto the ground for your cats to find, as many as you like. About one drop in a hundred is a rare rainbow fish that shimmers through every color. A cat that walks across a fish picks it up and carries it in its mouth for four to eight seconds, walking and idling with a heart floating over its head, then the fish fades away. Hovering a cat sits it down and shows its name instead of the heart. A fish that nobody finds fades away after 30 seconds.
     - `Cat toy mouse toggle`: Changes your mouse to a cat toy for your cats to follow.
 - Background
     - `Choose pet view background`: Changes the background for the pet view. The background can also be changed in the settings tab.

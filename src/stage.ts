@@ -3,21 +3,25 @@ import { PetInstance } from "./data";
 import { Floor } from "./floor";
 import { getPetType } from "./catalog/pets";
 import { getBallImage } from "./catalog/balls";
+import { getFishType } from "./catalog/fish";
 import { Pet } from "./pets/pet";
 import { Cat } from "./pets/cat";
 import { Bunny } from "./pets/bunny";
 import { Ghost } from "./pets/ghost";
 import { Ball } from "./toys/ball";
+import { Fish, nearestFishOnPath } from "./food/fish";
 import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "./pets/pet-animations";
 
 interface StageOptions {
 	getFloor: () => Floor;
 	ballLifetime: number;
+	fishLifetime: number;
 }
 
 export class Stage {
 	pets: { id: string; pet: Pet }[] = [];
 	balls: { id: string; ball: Ball }[] = [];
+	fish: { id: string; fish: Fish }[] = [];
 	private getCursorX: (() => number) | null = null;
 	private paused = false;
 
@@ -48,7 +52,12 @@ export class Stage {
 					this.plugin.data.petSize,
 					singlePet.name,
 					this.plugin.sounds,
-					petType.flying,
+					{
+						flying: petType.flying,
+						mouth: petType.mouth,
+						headTop: petType.headTop,
+						fish: this,
+					},
 				);
 				if (this.getCursorX) {
 					cat.startFollowingCursor(this.getCursorX);
@@ -136,6 +145,44 @@ export class Stage {
 		}
 	}
 
+	dropFish(id: string): boolean {
+		try {
+			const type = getFishType(id);
+			const fish = new Fish(
+				this.container,
+				type.image,
+				this.options.getFloor(),
+				this.plugin.data.petSize,
+				this.options.fishLifetime,
+				type.rainbow,
+			);
+			this.fish.push({ id, fish });
+			if (this.paused) fish.pause();
+			fish.onDestroy = () => {
+				const index = this.fish.findIndex((f) => f.fish === fish);
+				if (index !== -1) {
+					this.fish.splice(index, 1);
+				}
+			};
+			return true;
+		} catch (error: unknown) {
+			console.error("Failed to drop fish:", error);
+			return false;
+		}
+	}
+
+	findFishOnPath(fromX: number, toX: number): Fish | null {
+		return nearestFishOnPath(
+			this.fish.map(({ fish }) => fish),
+			fromX,
+			toX,
+		);
+	}
+
+	claimFish(fish: Fish): boolean {
+		return this.fish.some((f) => f.fish === fish) && fish.claim();
+	}
+
 	pause() {
 		if (this.paused) return;
 		this.paused = true;
@@ -144,6 +191,9 @@ export class Stage {
 		}
 		for (const { ball } of this.balls) {
 			ball.pause();
+		}
+		for (const { fish } of this.fish) {
+			fish.pause();
 		}
 	}
 
@@ -155,6 +205,9 @@ export class Stage {
 		}
 		for (const { ball } of this.balls) {
 			ball.resume();
+		}
+		for (const { fish } of this.fish) {
+			fish.resume();
 		}
 	}
 
@@ -193,6 +246,9 @@ export class Stage {
 				});
 			}
 		}
+		for (const { fish } of this.fish) {
+			fish.setScale(this.plugin.data.petSize);
+		}
 	}
 
 	updateFloor() {
@@ -200,11 +256,17 @@ export class Stage {
 		for (const { pet } of this.pets) {
 			pet.updateVerticalPosition(floor);
 		}
+		for (const { fish } of this.fish) {
+			fish.setFloor(floor);
+		}
 	}
 
 	async clampPets() {
 		for (const { ball } of this.balls) {
 			ball.wake();
+		}
+		for (const { fish } of this.fish) {
+			fish.clamp();
 		}
 		await Promise.all(this.pets.map(({ pet }) => pet.clampToContainer()));
 	}
@@ -216,6 +278,9 @@ export class Stage {
 		this.pets = [];
 		for (const { ball } of [...this.balls]) {
 			ball.destroy();
+		}
+		for (const { fish } of [...this.fish]) {
+			fish.destroy();
 		}
 	}
 }

@@ -11,6 +11,12 @@
 	initial-value: 1;
 }
 
+@property --pixel-pets-mouth-bob {
+	syntax: "<length>";
+	inherits: true;
+	initial-value: 0px;
+}
+
 @property --pixel-pets-tooltip-pop {
 	syntax: "<number>";
 	inherits: false;
@@ -21,8 +27,9 @@
 .pixel-pets-overlay {
 	--pixel-pets-layer-background: 0;
 	--pixel-pets-layer-snow: 1;
-	--pixel-pets-layer-pet: 2;
-	--pixel-pets-layer-ball: 3;
+	--pixel-pets-layer-fish: 2;
+	--pixel-pets-layer-pet: 3;
+	--pixel-pets-layer-ball: 4;
 	--pixel-pets-layer-heart: 2;
 	--pixel-pets-layer-tooltip: 1;
 }
@@ -89,6 +96,27 @@
 	z-index: var(--pixel-pets-layer-pet);
 }
 
+.pixel-pets-pet--mouth-idle {
+	animation:
+		pixel-pets-sprite var(--pixel-pets-sprite-duration) steps(var(--pixel-pets-frame-count))
+			infinite,
+		pixel-pets-mouth-bob-idle var(--pixel-pets-sprite-duration) step-end infinite;
+}
+
+.pixel-pets-pet--mouth-run {
+	animation:
+		pixel-pets-sprite var(--pixel-pets-sprite-duration) steps(var(--pixel-pets-frame-count))
+			infinite,
+		pixel-pets-mouth-bob-run var(--pixel-pets-sprite-duration) step-end infinite;
+}
+
+.pixel-pets-pet--mouth-sit {
+	animation:
+		pixel-pets-sprite var(--pixel-pets-sprite-duration) steps(var(--pixel-pets-frame-count))
+			infinite,
+		pixel-pets-mouth-bob-sit var(--pixel-pets-sprite-duration) step-end infinite;
+}
+
 .pixel-pets-pet--restart {
 	animation: none;
 }
@@ -130,6 +158,45 @@
 	animation: pixel-pets-tooltip-pop 300ms ease-out;
 }
 
+@keyframes pixel-pets-mouth-bob-idle {
+	0% {
+		--pixel-pets-mouth-bob: 0px;
+	}
+	28.5714% {
+		--pixel-pets-mouth-bob: 1px;
+	}
+	57.1429% {
+		--pixel-pets-mouth-bob: 2px;
+	}
+	85.7143% {
+		--pixel-pets-mouth-bob: 1px;
+	}
+}
+
+@keyframes pixel-pets-mouth-bob-run {
+	0% {
+		--pixel-pets-mouth-bob: 0px;
+	}
+	14.2857% {
+		--pixel-pets-mouth-bob: 2px;
+	}
+	42.8571% {
+		--pixel-pets-mouth-bob: -2px;
+	}
+}
+
+@keyframes pixel-pets-mouth-bob-sit {
+	0% {
+		--pixel-pets-mouth-bob: 0px;
+	}
+	33.3333% {
+		--pixel-pets-mouth-bob: 1px;
+	}
+	66.6667% {
+		--pixel-pets-mouth-bob: 0px;
+	}
+}
+
 @keyframes pixel-pets-tooltip-pop {
 	0% {
 		--pixel-pets-tooltip-pop: 0.8;
@@ -168,6 +235,68 @@
 	height: 100%;
 }
 
+.pixel-pets-fish {
+	position: absolute;
+	left: var(--pixel-pets-fish-x, 0);
+	top: var(--pixel-pets-fish-ground);
+	width: var(--pixel-pets-fish-width);
+	height: var(--pixel-pets-fish-height);
+	transform: scale(var(--pixel-pets-scale, 1)) translate(-50%, -100%);
+	transform-origin: 0 0;
+	pointer-events: none;
+	z-index: var(--pixel-pets-layer-fish);
+}
+
+.pixel-pets-fish img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	image-rendering: pixelated;
+	transform: scale(var(--pixel-pets-tooltip-pop));
+	transform-origin: bottom center;
+	animation:
+		pixel-pets-tooltip-pop 300ms ease-out,
+		pixel-pets-fade-in 200ms ease;
+}
+
+.pixel-pets-fish--held {
+	left: var(--pixel-pets-held-x);
+	top: calc(var(--pixel-pets-held-y) + var(--pixel-pets-mouth-bob));
+	transform: none;
+	z-index: auto;
+}
+
+.pixel-pets-fish--held img {
+	animation: none;
+}
+
+.pixel-pets-fish--fading {
+	opacity: 0;
+	transition: opacity 600ms ease-out;
+}
+
+.pixel-pets-rainbow {
+	animation: pixel-pets-rainbow 1.2s steps(12) infinite;
+}
+
+@keyframes pixel-pets-rainbow {
+	from {
+		filter: hue-rotate(0deg);
+	}
+	to {
+		filter: hue-rotate(360deg);
+	}
+}
+
+@keyframes pixel-pets-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
 .pixel-pets-pet__heart {
 	position: absolute;
 	width: 13px;
@@ -197,6 +326,55 @@
 		opacity: 0;
 		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-30px)
 			scale(0.8);
+	}
+}
+
+.pixel-pets-pet__snack-heart {
+	--pixel-pets-snack-heart-clearance: 8px;
+	position: absolute;
+	width: 13px;
+	height: 12px;
+	left: var(--pixel-pets-snack-heart-x);
+	bottom: calc(100% - var(--pixel-pets-head-top) + var(--pixel-pets-snack-heart-clearance));
+	transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1));
+	transform-origin: 50% 100%;
+	background-image: var(--pixel-pets-heart-url);
+	background-size: cover;
+	image-rendering: pixelated;
+	pointer-events: none;
+	z-index: var(--pixel-pets-layer-heart);
+	transition: opacity 200ms ease;
+	animation:
+		pixel-pets-snack-heart var(--pixel-pets-snack-heart-duration) ease-in-out
+			var(--pixel-pets-snack-heart-delay) infinite,
+		pixel-pets-fade-in 200ms ease;
+}
+
+.pixel-pets-pet:hover .pixel-pets-pet__snack-heart {
+	opacity: 0;
+}
+
+.pixel-pets-pet__snack-heart--fading {
+	opacity: 0;
+	transition: opacity 600ms ease-out;
+}
+
+@keyframes pixel-pets-snack-heart {
+	0%,
+	100% {
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(0) scale(0.9);
+	}
+	50% {
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-3px)
+			scale(1.05);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pixel-pets-fish img,
+	.pixel-pets-rainbow,
+	.pixel-pets-pet__snack-heart {
+		animation: none;
 	}
 }
 

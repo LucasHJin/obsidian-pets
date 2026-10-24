@@ -10,6 +10,10 @@ declare module "*.mp3" {
 	const value: string;
 	export default value;
 }
+declare module "*.css?raw" {
+	const value: string;
+	export default value;
+}
 declare module "virtual:pet-assets" {
 	export const petAssets: Record<string, Record<string, string>>;
 }

@@ -1,5 +1,6 @@
 import PetPlugin from "../main";
 import { Stage } from "../stage";
+import { FISH_LIFETIME_MS } from "../food/fish";
 
 export class OverlayPetView {
 	private overlayEl: HTMLElement;
@@ -16,6 +17,7 @@ export class OverlayPetView {
 		this.stage = new Stage(this.overlayEl, plugin, {
 			getFloor: () => ({ kind: "bottom" }),
 			ballLifetime: 6000,
+			fishLifetime: FISH_LIFETIME_MS,
 		});
 		this.updateOverlayBounds();
 
