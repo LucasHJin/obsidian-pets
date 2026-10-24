@@ -125,6 +125,14 @@
 	z-index: var(--pixel-pets-layer-tooltip);
 }
 
+.pixel-pets-pet__tooltip--below {
+	bottom: auto;
+	top: 100%;
+	transform: translateX(calc(-50% + var(--pixel-pets-tooltip-offset))) translateY(8px)
+		scaleX(var(--pixel-pets-scale-x, 1)) scale(var(--pixel-pets-tooltip-pop));
+	transform-origin: top center;
+}
+
 .pixel-pets-pet:hover .pixel-pets-pet__tooltip {
 	opacity: 1;
 	animation: pixel-pets-tooltip-pop 300ms ease-out;
@@ -197,6 +205,27 @@
 		opacity: 0;
 		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(-30px)
 			scale(0.8);
+	}
+}
+
+.pixel-pets-pet__heart--below {
+	top: auto;
+	bottom: -10px;
+	animation-name: pixel-pets-heart-sink;
+}
+
+@keyframes pixel-pets-heart-sink {
+	0% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(0) scale(0.5);
+	}
+	50% {
+		opacity: 1;
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(15px) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(-50%) scaleX(var(--pixel-pets-scale-x, 1)) translateY(30px) scale(0.8);
 	}
 }
 

@@ -1,7 +1,7 @@
 import { heartAsset } from "../catalog/assets";
 import { Floor, PET_FEET_OFFSET } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
-import { getTooltipShift } from "./tooltip-shift";
+import { getTooltipFlip, getTooltipShift } from "./tooltip-shift";
 
 const ANIMATION_NAMES = [
 	"idle",
@@ -20,6 +20,7 @@ export type AnimationName = (typeof ANIMATION_NAMES)[number];
 
 const MOVE_TIMEOUT_MARGIN = 200;
 const TOOLTIP_POP_PEAK = 1.1;
+const HEART_RISE = 48;
 
 function isAnimationName(key: string): key is AnimationName {
 	return (ANIMATION_NAMES as readonly string[]).includes(key);
@@ -190,6 +191,7 @@ export abstract class Pet {
 		const tooltip = this.tooltipEl;
 		if (!tooltip || !this.hovered || this.container.offsetWidth === 0) return;
 
+		tooltip.removeClass("pixel-pets-pet__tooltip--below");
 		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": "0px" });
 		const rect = tooltip.getBoundingClientRect();
 		const center = (rect.left + rect.right) / 2;
@@ -198,17 +200,36 @@ export abstract class Pet {
 				window.getComputedStyle(tooltip).getPropertyValue("--pixel-pets-tooltip-pop"),
 			) || 1;
 		const halfWidth = ((rect.right - rect.left) / pop) * (TOOLTIP_POP_PEAK / 2);
+		const bounds = this.container.getBoundingClientRect();
 		const shift = getTooltipShift(
 			{ left: center - halfWidth, right: center + halfWidth },
-			this.container.getBoundingClientRect(),
+			bounds,
 		);
 		tooltip.setCssProps({ "--pixel-pets-tooltip-shift": `${shift}px` });
+		const height = (rect.height / pop) * TOOLTIP_POP_PEAK;
+		tooltip.toggleClass(
+			"pixel-pets-pet__tooltip--below",
+			getTooltipFlip(
+				{ top: rect.bottom - height, bottom: rect.bottom },
+				bounds,
+				bounds.bottom - this.requirePetEl().getBoundingClientRect().bottom,
+			),
+		);
 	}
 
 	protected playSound(): void {}
 
 	protected showHeart() {
-		const heart = this.requirePetEl().createDiv({ cls: "pixel-pets-pet__heart" });
+		const el = this.requirePetEl();
+		const heart = el.createDiv({ cls: "pixel-pets-pet__heart" });
+		const rect = el.getBoundingClientRect();
+		const bounds = this.container.getBoundingClientRect();
+		const above = rect.top - bounds.top;
+		const below = bounds.bottom - rect.bottom;
+		heart.toggleClass(
+			"pixel-pets-pet__heart--below",
+			above < HEART_RISE * this.scale && below > above,
+		);
 
 		const randomX = 25 + Math.random() * 50;
 		heart.setCssProps({
