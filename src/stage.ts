@@ -4,11 +4,9 @@ import { Floor } from "./floor";
 import { getPetType } from "./catalog/pets";
 import { getBallImage } from "./catalog/balls";
 import { Pet } from "./pets/pet";
-import { Cat } from "./pets/cat";
-import { Bunny } from "./pets/bunny";
-import { Ghost } from "./pets/ghost";
+import { canChaseBalls, canFollowToy } from "./pets/capabilities";
+import { createPet } from "./pets/pet-factory";
 import { Ball } from "./toys/ball";
-import { getCatAnimations, getBunnyAnimations, getGhostAnimations } from "./pets/pet-animations";
 
 interface StageOptions {
 	getFloor: () => Floor;
@@ -34,59 +32,22 @@ export class Stage {
 
 	addPet(singlePet: PetInstance) {
 		try {
-			const floor = this.options.getFloor();
 			const petType = getPetType(singlePet.type);
-
-			if (petType?.species === "cat") {
-				const catAnimations = getCatAnimations(singlePet.type);
-				const moveDist = Math.floor(Math.random() * 20) + 25;
-				const cat = new Cat(
-					this.container,
-					catAnimations,
-					moveDist,
-					floor,
-					this.plugin.data.petSize,
-					singlePet.name,
-					this.plugin.sounds,
-					petType.flying,
-				);
-				if (this.getCursorX) {
-					cat.startFollowingCursor(this.getCursorX);
-				}
-				this.pets.push({ id: singlePet.id, pet: cat });
-				if (this.paused) cat.pause();
-				cat.start();
-			} else if (petType?.species === "bunny") {
-				const bunnyAnimations = getBunnyAnimations(singlePet.type);
-				const moveDist = Math.floor(Math.random() * 30) + 45;
-				const bunny = new Bunny(
-					this.container,
-					bunnyAnimations,
-					moveDist,
-					floor,
-					this.plugin.data.petSize,
-					singlePet.name,
-					this.plugin.sounds,
-				);
-				this.pets.push({ id: singlePet.id, pet: bunny });
-				if (this.paused) bunny.pause();
-				bunny.start();
-			} else if (petType?.species === "ghost") {
-				const ghostAnimations = getGhostAnimations(singlePet.type);
-				const moveDist = Math.floor(Math.random() * 20) + 20;
-				const ghost = new Ghost(
-					this.container,
-					ghostAnimations,
-					moveDist,
-					floor,
-					this.plugin.data.petSize,
-					singlePet.name,
-					this.plugin.sounds,
-				);
-				this.pets.push({ id: singlePet.id, pet: ghost });
-				if (this.paused) ghost.pause();
-				ghost.start();
+			if (!petType) return;
+			const pet = createPet({
+				container: this.container,
+				type: petType,
+				name: singlePet.name,
+				floor: this.options.getFloor(),
+				scale: this.plugin.data.petSize,
+				sounds: this.plugin.sounds,
+			});
+			if (this.getCursorX && canFollowToy(pet)) {
+				pet.startFollowingCursor(this.getCursorX);
 			}
+			this.pets.push({ id: singlePet.id, pet });
+			if (this.paused) pet.pause();
+			pet.start();
 		} catch (error) {
 			console.error(`Failed to create pet ${singlePet.id}:`, error);
 		}
@@ -120,12 +81,12 @@ export class Stage {
 			this.balls.push({ id, ball });
 			if (this.paused) ball.pause();
 
-			const cats = this.pets.filter((p) => p.pet instanceof Cat);
-			const randomCat =
-				cats.length > 0 ? (cats[Math.floor(Math.random() * cats.length)].pet as Cat) : null;
-			randomCat?.startChasingBall(ball);
+			const chasers = this.pets.map(({ pet }) => pet).filter(canChaseBalls);
+			const chaser =
+				chasers.length > 0 ? chasers[Math.floor(Math.random() * chasers.length)] : null;
+			chaser?.startChasingBall(ball);
 			ball.onDestroy = () => {
-				randomCat?.stopChasingBall(ball);
+				chaser?.stopChasingBall(ball);
 				const index = this.balls.findIndex((b) => b.ball === ball);
 				if (index !== -1) {
 					this.balls.splice(index, 1);
@@ -162,7 +123,7 @@ export class Stage {
 		const getCursorX = () => getClientX() - this.container.getBoundingClientRect().left;
 		this.getCursorX = getCursorX;
 		for (const { pet } of this.pets) {
-			if (pet instanceof Cat) {
+			if (canFollowToy(pet)) {
 				pet.startFollowingCursor(getCursorX);
 			}
 		}
@@ -171,7 +132,7 @@ export class Stage {
 	stopCursorFollow() {
 		this.getCursorX = null;
 		for (const { pet } of this.pets) {
-			if (pet instanceof Cat) {
+			if (canFollowToy(pet)) {
 				pet.stopFollowingCursor();
 			}
 		}

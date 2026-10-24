@@ -1,4 +1,4 @@
-export type Species = "cat" | "bunny" | "ghost";
+export type Species = "cat" | "dog" | "bunny" | "ghost";
 
 export interface PetType {
 	id: string;
@@ -8,19 +8,25 @@ export interface PetType {
 }
 
 export const PETS: PetType[] = [
+	{ id: "pets/beagle-dog", label: "Beagle dog", species: "dog" },
 	{ id: "pets/batman-black-cat", label: "Black batman cat", species: "cat" },
 	{ id: "pets/batman-blue-cat", label: "Blue batman cat", species: "cat" },
 	{ id: "pets/black-cat", label: "Black cat", species: "cat" },
 	{ id: "pets/brown-cat", label: "Brown cat", species: "cat" },
+	{ id: "pets/chihuahua-dog", label: "Chihuahua dog", species: "dog" },
 	{ id: "pets/xmas-cat", label: "Christmas cat", species: "cat" },
 	{ id: "pets/xmas-v2-cat", label: "Christmas cat v2", species: "cat" },
 	{ id: "pets/xmas-v3-cat", label: "Christmas cat v3", species: "cat" },
 	{ id: "pets/classic-cat", label: "Classic cat", species: "cat" },
+	{ id: "pets/corgi-dog", label: "Corgi dog", species: "dog" },
+	{ id: "pets/dalmatian-dog", label: "Dalmatian dog", species: "dog" },
 	{ id: "pets/deer-cat", label: "Deer cat", species: "cat" },
 	{ id: "pets/demon-cat", label: "Demonic cat", species: "cat" },
 	{ id: "pets/egypt-cat", label: "Egyptian cat", species: "cat" },
 	{ id: "pets/ghost", label: "Ghost", species: "ghost" },
+	{ id: "pets/golden-retriever-dog", label: "Golden retriever dog", species: "dog" },
 	{ id: "pets/grey-bunny", label: "Grey bunny", species: "bunny" },
+	{ id: "pets/husky-dog", label: "Husky dog", species: "dog" },
 	{ id: "pets/pirate-cat", label: "Pirate cat", species: "cat" },
 	{ id: "pets/pirate-v2-cat", label: "Pirate cat v2", species: "cat" },
 	{ id: "pets/pirate-v3-cat", label: "Pirate cat v3", species: "cat" },

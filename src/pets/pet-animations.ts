@@ -1,86 +1,55 @@
 import { AnimationConfig, PetAnimations } from "./pet";
 import { getPetAsset } from "../catalog/assets";
-import { getPetType } from "../catalog/pets";
+import { PetType, Species, getPetType } from "../catalog/pets";
 
 function alterDuration(base: number, variation = 100): number {
 	const offset = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
 	return base + offset;
 }
 
-export function getCatAnimations(type: string): PetAnimations {
-	const animations: PetAnimations = {
-		idle: {
-			spriteUrl: getPetAsset(type, "idle-cat.png"),
-			frameCount: 7,
-			frameWidth: 32,
-			duration: alterDuration(700, 100),
-		},
-		jump: {
-			spriteUrl: getPetAsset(type, "jump-cat.png"),
-			frameCount: 13,
-			frameWidth: 32,
-			duration: alterDuration(1300, 100),
-		},
-		jump2: {
-			spriteUrl: getPetAsset(type, "jump2-cat.png"),
-			frameCount: 9,
-			frameWidth: 32,
-			duration: alterDuration(900, 100),
-		},
-		run: {
-			spriteUrl: getPetAsset(type, "run-cat.png"),
-			frameCount: 7,
-			frameWidth: 32,
-			duration: alterDuration(700, 100),
-		},
-		sit: {
-			spriteUrl: getPetAsset(type, "sitting-cat.png"),
-			frameCount: 3,
-			frameWidth: 32,
-			duration: alterDuration(750, 100),
-		},
-		sleep: {
-			spriteUrl: getPetAsset(type, "sleep-cat.png"),
-			frameCount: 3,
-			frameWidth: 32,
-			duration: alterDuration(750, 100),
-		},
-		die: {
-			spriteUrl: getPetAsset(type, "die-cat.png"),
-			frameCount: 15,
-			frameWidth: 32,
-			duration: alterDuration(1500, 100),
-		},
+function sheet(type: string, file: string, frameCount: number, duration: number): AnimationConfig {
+	return {
+		spriteUrl: getPetAsset(type, file),
+		frameCount,
+		frameWidth: 32,
+		duration: alterDuration(duration, 100),
 	};
+}
+
+function getFourLeggedAnimations(type: string, species: "cat" | "dog"): PetAnimations {
+	return {
+		idle: sheet(type, `idle-${species}.png`, 7, 700),
+		jump: sheet(type, `jump-${species}.png`, 13, 1300),
+		jump2: sheet(type, `jump2-${species}.png`, 9, 900),
+		run: sheet(type, `run-${species}.png`, 7, 700),
+		sit: sheet(type, `sitting-${species}.png`, 3, 750),
+		sleep: sheet(type, `sleep-${species}.png`, 3, 750),
+		die: sheet(type, `die-${species}.png`, 15, 1500),
+	};
+}
+
+export function getCatAnimations(type: string): PetAnimations {
+	const animations = getFourLeggedAnimations(type, "cat");
 
 	if (type !== "pets/batman-black-cat" && type !== "pets/batman-blue-cat") {
-		animations.idle2 = {
-			spriteUrl: getPetAsset(type, "idle2-cat.png"),
-			frameCount: 14,
-			frameWidth: 32,
-			duration: alterDuration(1400, 100),
-		};
+		animations.idle2 = sheet(type, "idle2-cat.png", 14, 1400);
 	}
 
 	if (type === "pets/witch-cat") {
 		// Remove jumping from witch cat because of issue with spritesheet
 		delete animations.jump;
 		delete animations.jump2;
-		animations.fly = {
-			spriteUrl: getPetAsset(type, "fly-cat.png"),
-			frameCount: 3,
-			frameWidth: 32,
-			duration: alterDuration(600, 100),
-		};
+		animations.fly = sheet(type, "fly-cat.png", 3, 600);
 	} else if (type === "pets/classic-cat") {
-		animations.liking = {
-			spriteUrl: getPetAsset(type, "liking-cat.png"),
-			frameCount: 18,
-			frameWidth: 32,
-			duration: alterDuration(1800, 100),
-		};
+		animations.liking = sheet(type, "liking-cat.png", 18, 1800);
 	}
 
+	return animations;
+}
+
+export function getDogAnimations(type: string): PetAnimations {
+	const animations = getFourLeggedAnimations(type, "dog");
+	animations.idle2 = sheet(type, "idle2-dog.png", 14, 1400);
 	return animations;
 }
 
@@ -145,15 +114,18 @@ export function getGhostAnimations(type: string): PetAnimations {
 	return animations;
 }
 
+const ANIMATION_BUILDERS: Record<Species, (type: string) => PetAnimations> = {
+	cat: getCatAnimations,
+	dog: getDogAnimations,
+	bunny: getBunnyAnimations,
+	ghost: getGhostAnimations,
+};
+
+export function getPetAnimations(petType: PetType): PetAnimations {
+	return ANIMATION_BUILDERS[petType.species](petType.id);
+}
+
 export function getIdleAnimation(type: string): AnimationConfig | undefined {
-	switch (getPetType(type)?.species) {
-		case "cat":
-			return getCatAnimations(type).idle;
-		case "bunny":
-			return getBunnyAnimations(type).idle;
-		case "ghost":
-			return getGhostAnimations(type).idle;
-		default:
-			return undefined;
-	}
+	const petType = getPetType(type);
+	return petType ? getPetAnimations(petType).idle : undefined;
 }

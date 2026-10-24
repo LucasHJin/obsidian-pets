@@ -5,13 +5,13 @@
 A community plugin based off of the VSCode extension "[vscode-pets](https://marketplace.visualstudio.com/items?itemName=tonybaloney.vscode-pets)". It allows you to open a view in your vault where your various pixel pets can play.
 
 ## Key Features
-- 🐱 22 pets (20 cats, a bunny and a ghost) with up to 9 animations each (and more pets on the way!)
+- 🐱 28 pets (20 cats, 6 dog breeds, a bunny and a ghost) with up to 9 animations each (and more pets on the way!)
     - Customizable with individual names
 - 🖼️ 9 different backgrounds for your pets to play in
 - 🎾 Pet interactivity 
-    - You can play fetch and throw balls for your pets to retrieve
+    - You can play fetch and throw balls for your cats and dogs to retrieve
     - You can pet your pets
-    - You can get them to follow you with a pet toy
+    - You can get your cats to follow you with a pet toy
 - ➡️ Movable view to allow for personal customization OR turn your entire Obsidian vault into your pets' playground
 
 ## Getting Started
