@@ -1,5 +1,5 @@
 import { heartAsset } from "../catalog/assets";
-import { Floor, PET_FEET_OFFSET } from "../floor";
+import { Floor, PET_FEET_OFFSET, getGroundY } from "../floor";
 import { SoundPlayer } from "../audio/sounds";
 import { getTooltipFlip, getTooltipShift } from "./tooltip-shift";
 
@@ -164,7 +164,7 @@ export abstract class Pet {
 			this.hovered = true;
 			this.pauseActionLoop();
 			this.freezeAtCurrentPosition();
-			this.setAnimation(this.animations["sit"] ? "sit" : "idle");
+			this.setAnimation(this.getHoverAnimation());
 			this.fitTooltip();
 		});
 
@@ -185,6 +185,10 @@ export abstract class Pet {
 			this.showHeart();
 			this.playSound();
 		});
+	}
+
+	protected getHoverAnimation(): AnimationName {
+		return this.animations["sit"] ? "sit" : "idle";
 	}
 
 	private fitTooltip() {
@@ -285,8 +289,28 @@ export abstract class Pet {
 
 	updateVerticalPosition(newFloor: Floor) {
 		this.floor = newFloor;
-		const newTop = this.getGroundTopValue();
-		this.petEl?.setCssProps({ "--pixel-pets-top": newTop });
+		this.applyRestPosition();
+	}
+
+	protected applyRestPosition() {
+		this.setTop(null);
+	}
+
+	protected getRestY(): number {
+		return (
+			getGroundY(this.floor, this.container.offsetHeight, this.scale) -
+			PET_FEET_OFFSET * this.scale
+		);
+	}
+
+	protected setTop(y: number | null) {
+		this.petEl?.setCssProps({
+			"--pixel-pets-top": y === null ? this.getGroundTopValue() : `${y}px`,
+		});
+	}
+
+	protected setLabelDrop(px: number) {
+		this.petEl?.setCssProps({ "--pixel-pets-label-drop": `${px}px` });
 	}
 
 	protected setAnimation(animationName: AnimationName) {
