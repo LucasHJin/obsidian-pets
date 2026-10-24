@@ -1,11 +1,24 @@
-import { AnimationConfig, PetAnimations } from "./pet";
-import { getPetAsset } from "../catalog/assets";
+import { AnimationConfig, AnimationName, PetAnimations } from "./pet";
+import { findPetAsset, getPetAsset } from "../catalog/assets";
 import { getPetType } from "../catalog/pets";
 
 function alterDuration(base: number, variation = 100): number {
 	const offset = Math.floor(Math.random() * (variation * 2 + 1)) - variation;
 	return base + offset;
 }
+
+interface OptionalCatAnimation {
+	name: AnimationName;
+	file: string;
+	frameCount: number;
+	duration: number;
+}
+
+const OPTIONAL_CAT_ANIMATIONS: OptionalCatAnimation[] = [
+	{ name: "idle2", file: "idle2-cat.png", frameCount: 14, duration: 1400 },
+	{ name: "liking", file: "liking-cat.png", frameCount: 18, duration: 1800 },
+	{ name: "fly", file: "fly-cat.png", frameCount: 3, duration: 600 },
+];
 
 export function getCatAnimations(type: string): PetAnimations {
 	const animations: PetAnimations = {
@@ -53,31 +66,19 @@ export function getCatAnimations(type: string): PetAnimations {
 		},
 	};
 
-	if (type !== "pets/batman-black-cat" && type !== "pets/batman-blue-cat") {
-		animations.idle2 = {
-			spriteUrl: getPetAsset(type, "idle2-cat.png"),
-			frameCount: 14,
-			frameWidth: 32,
-			duration: alterDuration(1400, 100),
-		};
-	}
-
-	if (type === "pets/witch-cat") {
-		// Remove jumping from witch cat because of issue with spritesheet
+	if (getPetType(type)?.noJump) {
 		delete animations.jump;
 		delete animations.jump2;
-		animations.fly = {
-			spriteUrl: getPetAsset(type, "fly-cat.png"),
-			frameCount: 3,
+	}
+
+	for (const { name, file, frameCount, duration } of OPTIONAL_CAT_ANIMATIONS) {
+		const spriteUrl = findPetAsset(type, file);
+		if (!spriteUrl) continue;
+		animations[name] = {
+			spriteUrl,
+			frameCount,
 			frameWidth: 32,
-			duration: alterDuration(600, 100),
-		};
-	} else if (type === "pets/classic-cat") {
-		animations.liking = {
-			spriteUrl: getPetAsset(type, "liking-cat.png"),
-			frameCount: 18,
-			frameWidth: 32,
-			duration: alterDuration(1800, 100),
+			duration: alterDuration(duration, 100),
 		};
 	}
 

@@ -8,6 +8,10 @@ export const catToyAsset = catToy;
 
 export const heartAsset = heart;
 
+export function findPetAsset(petType: string, assetName: string): string | undefined {
+	return petAssets[petType]?.[assetName];
+}
+
 export function getPetAsset(petType: string, assetName: string): string {
 	const assets = petAssets[petType];
 	if (!assets) {
