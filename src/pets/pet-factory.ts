@@ -3,6 +3,7 @@ import { SoundPlayer } from "../audio/sounds";
 import { PetType, Species } from "../catalog/pets";
 import { Pet, PetAnimations } from "./pet";
 import { Cat } from "./cat";
+import { Dog } from "./dog";
 import { Bunny } from "./bunny";
 import { Ghost } from "./ghost";
 import { getPetAnimations } from "./pet-animations";
@@ -36,6 +37,20 @@ const SPECIES: Record<Species, SpeciesSpec> = {
 				spawn.name,
 				spawn.sounds,
 				spawn.type.flying,
+			),
+	},
+	dog: {
+		minMoveDist: 25,
+		moveDistRange: 20,
+		create: (spawn, animations, moveDist) =>
+			new Dog(
+				spawn.container,
+				animations,
+				moveDist,
+				spawn.floor,
+				spawn.scale,
+				spawn.name,
+				spawn.sounds,
 			),
 	},
 	bunny: {

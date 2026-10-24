@@ -5,17 +5,25 @@ import { AnimationConfig, AnimationName, PetAnimations } from "../src/pets/pet";
 import {
 	getBunnyAnimations,
 	getCatAnimations,
+	getDogAnimations,
 	getGhostAnimations,
 } from "../src/pets/pet-animations";
+import { Bunny } from "../src/pets/bunny";
+import { Cat } from "../src/pets/cat";
+import { canChaseBalls, canFollowToy } from "../src/pets/capabilities";
+import { Dog } from "../src/pets/dog";
+import { Ghost } from "../src/pets/ghost";
 
 const ANIMATION_BUILDERS: Record<Species, (type: string) => PetAnimations> = {
 	cat: getCatAnimations,
+	dog: getDogAnimations,
 	bunny: getBunnyAnimations,
 	ghost: getGhostAnimations,
 };
 
 const REQUIRED_ANIMATIONS: Record<Species, AnimationName[]> = {
 	cat: ["idle", "run", "die"],
+	dog: ["idle", "idle2", "jump", "jump2", "run", "sit", "sleep", "die"],
 	bunny: ["idle", "run", "die"],
 	ghost: ["idle"],
 };
@@ -72,5 +80,44 @@ describe("pet animations", () => {
 
 	it.each(PETS)("$id has a fly animation exactly when it is flying", (pet) => {
 		expect(buildAnimations(pet).fly !== undefined).toBe(pet.flying === true);
+	});
+});
+
+function sheetShape(animations: PetAnimations): (string | number)[][] {
+	return listConfigs(animations)
+		.map(([name, config]) => [name, config.frameCount, config.frameWidth])
+		.sort();
+}
+
+describe("dog animations", () => {
+	const cat = getCatAnimations("pets/black-cat");
+	const catDurations = new Map(listConfigs(cat).map(([name, config]) => [name, config.duration]));
+
+	it.each(PETS.filter((pet) => pet.species === "dog"))(
+		"$id uses the same sheet layout and timing as a cat",
+		(pet) => {
+			const dog = buildAnimations(pet);
+			expect(sheetShape(dog)).toEqual(sheetShape(cat));
+			for (const [name, config] of listConfigs(dog)) {
+				const catDuration = catDurations.get(name) ?? 0;
+				expect(Math.abs(config.duration - catDuration), name).toBeLessThanOrEqual(200);
+			}
+		},
+	);
+});
+
+describe("pet capabilities", () => {
+	it("lets cats and dogs chase balls but only cats follow the cat toy", () => {
+		expect(canChaseBalls(Cat.prototype)).toBe(true);
+		expect(canChaseBalls(Dog.prototype)).toBe(true);
+		expect(canFollowToy(Cat.prototype)).toBe(true);
+		expect(canFollowToy(Dog.prototype)).toBe(false);
+	});
+
+	it("keeps bunnies and ghosts out of both", () => {
+		for (const pet of [Bunny.prototype, Ghost.prototype]) {
+			expect(canChaseBalls(pet)).toBe(false);
+			expect(canFollowToy(pet)).toBe(false);
+		}
 	});
 });
